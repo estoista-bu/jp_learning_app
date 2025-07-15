@@ -8,6 +8,14 @@ export const quizzes: Quiz[] = [
     questions: [
       {
         question: "Which sentence correctly uses the SOV (Subject-Object-Verb) structure?",
+        questionJapanese: [
+          { text: "私", furigana: "わたし" },
+          { text: "は" },
+          { text: "寿司", furigana: "すし" },
+          { text: "を" },
+          { text: "食", furigana: "た" },
+          { text: "べます" },
+        ],
         options: [
           "食べます私は寿司を (Tabemasu watashi wa sushi o)",
           "私は寿司を食べます (Watashi wa sushi o tabemasu)",
@@ -18,7 +26,15 @@ export const quizzes: Quiz[] = [
         explanation: "Japanese sentence structure is typically Subject-Object-Verb. '私は' (I) is the subject, '寿司を' (sushi) is the object, and '食べます' (eat) is the verb."
       },
       {
-        question: "Select the correct particle to fill in the blank for possession: 'これは私___本です' (Kore wa watashi ___ hon desu - This is my book).",
+        question: "Select the correct particle for possession: 'これは私___本です' (Kore wa watashi ___ hon desu).",
+        questionJapanese: [
+            { text: "これ" },
+            { text: "は" },
+            { text: "私", furigana: "わたし" },
+            { text: "___" },
+            { text: "本", furigana: "ほん" },
+            { text: "です" },
+        ],
         options: ["は (wa)", "が (ga)", "を (o)", "の (no)"],
         correctAnswer: "の (no)",
         explanation: "The particle の (no) is used to show possession, like 's in English. '私の本' means 'my book'."
@@ -29,7 +45,7 @@ export const quizzes: Quiz[] = [
         correctAnswer: "大きい (ookii - big)",
         explanation: "i-adjectives, in their dictionary form, end with the hiragana character い (i). 大きい (ookii) is a classic example."
       },
-      {
+       {
         question: "Which particle marks the topic of a sentence?",
         options: ["が (ga)", "を (o)", "は (wa)", "に (ni)"],
         correctAnswer: "は (wa)",
@@ -37,6 +53,14 @@ export const quizzes: Quiz[] = [
       },
       {
         question: "How do you say 'I watched a movie yesterday' in polite form?",
+        questionJapanese: [
+            { text: "昨日", furigana: "きのう" },
+            { text: "、" },
+            { text: "映画", furigana: "えいが" },
+            { text: "を" },
+            { text: "見", furigana: "み" },
+            { text: "ました" },
+        ],
         options: [
             "昨日、映画を見ます (Kinou, eiga o mimasu)",
             "昨日、映画を見ません (Kinou, eiga o mimasen)",
@@ -46,11 +70,16 @@ export const quizzes: Quiz[] = [
         correctAnswer: "昨日、映画を見ました (Kinou, eiga o mimashita)",
         explanation: "The polite past tense of verbs is formed by changing the '-masu' ending to '-mashita'."
       },
-      {
+       {
         question: "When describing an action in progress, like 'I am studying', which verb form is used?",
+        explanationJapanese: [
+            { text: "勉強", furigana: "べんきょう" },
+            { text: "して" },
+            { text: "います" },
+        ],
         options: ["Te-form + います (imasu)", "Dictionary Form", "Ta-form", "Nai-form"],
         correctAnswer: "Te-form + います (imasu)",
-        explanation: "The Te-form + います (imasu) structure is used to express the present progressive tense, similar to '-ing' in English. E.g., 勉強しています (benkyou shite imasu)."
+        explanation: "The Te-form + います (imasu) structure is used to express the present progressive tense, similar to '-ing' in English."
       },
       {
         question: "What is the plain form (dictionary form) of the verb '食べます' (tabemasu)?",
@@ -60,6 +89,12 @@ export const quizzes: Quiz[] = [
       },
       {
         question: "How do you say 'I can speak Japanese' using the potential form?",
+        questionJapanese: [
+            { text: "日本語", furigana: "にほんご" },
+            { text: "を" },
+            { text: "話", furigana: "はな" },
+            { text: "せます" },
+        ],
         options: [
             "日本語を話します (Nihongo o hanashimasu)",
             "日本語を話せます (Nihongo o hanasemasu)",
@@ -71,6 +106,15 @@ export const quizzes: Quiz[] = [
       },
       {
         question: "Which sentence correctly gives advice using '〜方がいいです' (hou ga ii desu)?",
+        questionJapanese: [
+            { text: "薬", furigana: "くすり" },
+            { text: "を" },
+            { text: "飲", furigana: "の" },
+            { text: "んだ" },
+            { text: "方", furigana: "ほう" },
+            { text: "が" },
+            { text: "いいです" },
+        ],
         options: [
             "薬を飲みます方がいいです (Kusuri o nomimasu hou ga ii desu)",
             "薬を飲んで方がいいです (Kusuri o nonde hou ga ii desu)",
@@ -82,6 +126,12 @@ export const quizzes: Quiz[] = [
       },
       {
         question: "What is the function of the particle 'を' (o)?",
+        explanationJapanese: [
+            { text: "パン" },
+            { text: "を" },
+            { text: "食", furigana: "た" },
+            { text: "べます" },
+        ],
         options: ["Indicates location", "Marks the direct object", "Shows possession", "Marks the subject"],
         correctAnswer: "Marks the direct object",
         explanation: "The particle 'を' (o) is used to mark the direct object of a verb. For example, in 'パンを食べます' (pan o tabemasu - I eat bread), 'パン' (bread) is the direct object."
@@ -123,6 +173,13 @@ export const quizzes: Quiz[] = [
       },
        {
         question: "How do you say 'Mr. Sato is married.' to describe a continuous state?",
+        questionJapanese: [
+            { text: "佐藤", furigana: "さとう" },
+            { text: "さんは" },
+            { text: "結婚", furigana: "けっこん" },
+            { text: "して" },
+            { text: "います" },
+        ],
         options: ["佐藤さんは結婚します (Satou-san wa kekkon shimasu)", "佐藤さんは結婚しました (Satou-san wa kekkon shimashita)", "佐藤さんは結婚しています (Satou-san wa kekkon shite imasu)", "佐藤さんは結婚しません (Satou-san wa kekkon shimasen)"],
         correctAnswer: "佐藤さんは結婚しています (Satou-san wa kekkon shite imasu)",
         explanation: "The 'te-form + います' structure is used not only for actions in progress but also to describe a continuous state, like being married."
@@ -135,18 +192,37 @@ export const quizzes: Quiz[] = [
       },
       {
         question: "To connect two actions, 'I eat breakfast and then go to school,' what form is used for 'eat'?",
+        explanationJapanese: [
+          { text: "朝", furigana: "あさ" },
+          { text: "ごはんを" },
+          { text: "食", furigana: "た" },
+          { text: "べて、" },
+          { text: "学校", furigana: "がっこう" },
+          { text: "に" },
+          { text: "行", furigana: "い" },
+          { text: "きます。" },
+        ],
         options: ["Te-form (食べて)", "Dictionary form (食べる)", "Masu-form (食べます)", "Ta-form (食べた)"],
         correctAnswer: "Te-form (食べて)",
-        explanation: "The te-form is used to link successive actions. '朝ごはんを食べて、学校に行きます。' (Asagohan o tabete, gakkou ni ikimasu.)"
+        explanation: "The te-form is used to link successive actions. '朝ごはんを食べて、学校に行きます。'"
       },
       {
         question: "How do you say 'quiet library' using a na-adjective?",
+        questionJapanese: [
+            { text: "静", furigana: "しず" },
+            { text: "かな" },
+            { text: "図書館", furigana: "としょかん" },
+        ],
         options: ["静か図書館 (shizuka toshokan)", "静かな図書館 (shizuka na toshokan)", "静かい図書館 (shizukai toshokan)", "静かで図書館 (shizuka de toshokan)"],
         correctAnswer: "静かな図書館 (shizuka na toshokan)",
         explanation: "When a na-adjective comes directly before a noun, you must add な (na) between them."
       },
       {
         question: "What does '〜ませんか' (masen ka) express?",
+        explanationJapanese: [
+            { text: "行", furigana: "い" },
+            { text: "きませんか？" },
+        ],
         options: ["A direct command", "A question about ability", "A polite invitation", "A statement of fact"],
         correctAnswer: "A polite invitation",
         explanation: "'〜ませんか' (e.g., '行きませんか?' - Won't you go?) is a gentle and polite way to invite someone to do something."
@@ -171,18 +247,40 @@ export const quizzes: Quiz[] = [
       },
       {
         question: "Which of the following means 'I think it will rain'?",
+        questionJapanese: [
+            { text: "雨", furigana: "あめ" },
+            { text: "が" },
+            { text: "降", furigana: "ふ" },
+            { text: "ると" },
+            { text: "思", furigana: "おも" },
+            { text: "います" },
+        ],
         options: ["雨が降ると思います (Ame ga furu to omoimasu)", "雨が降ると言いました (Ame ga furu to iimashita)", "雨が降るでしょう (Ame ga furu deshou)", "雨が降るそうです (Ame ga furu sou desu)"],
         correctAnswer: "雨が降ると思います (Ame ga furu to omoimasu)",
         explanation: "To express your own opinion ('I think...'), you use the plain form of a verb followed by 'と思います' (to omoimasu)."
       },
       {
         question: "How do you correctly say 'I cannot eat sushi' in the potential form?",
+        questionJapanese: [
+            { text: "寿司", furigana: "すし" },
+            { text: "を" },
+            { text: "食", furigana: "た" },
+            { text: "べられません" },
+        ],
         options: ["寿司を食べません (Sushi o tabemasen)", "寿司を食べられません (Sushi o taberaremasen)", "寿司を食べたくない (Sushi o tabetakunai)", "寿司を食べませんです (Sushi o tabemasen desu)"],
         correctAnswer: "寿司を食べられません (Sushi o taberaremasen)",
         explanation: "The potential form of the ru-verb '食べる' is '食べられる'. The polite negative is '食べられません'."
       },
        {
         question: "When reporting what someone else said, you use '〜と言っていました'. What form of the verb/adjective comes before it?",
+        explanationJapanese: [
+            { text: "彼", furigana: "かれ" },
+            { text: "は" },
+            { text: "来", furigana: "こ" },
+            { text: "ないと" },
+            { text: "言", furigana: "い" },
+            { text: "っていました" },
+        ],
         options: ["Masu-form", "Te-form", "Nai-form", "Plain Form"],
         correctAnswer: "Plain Form",
         explanation: "When quoting someone, you use the plain form of the verb or adjective before 'と言っていました'. For example, '彼は来ないと言っていました' (He said he isn't coming)."
@@ -195,6 +293,12 @@ export const quizzes: Quiz[] = [
       },
       {
         question: "The structure '〜ことがあります' is used to express:",
+        explanationJapanese: [
+            { text: "日本", furigana: "にほん" },
+            { text: "に" },
+            { text: "行", furigana: "い" },
+            { text: "ったことがあります" },
+        ],
         options: ["Obligation", "Experience", "Desire", "Ability"],
         correctAnswer: "Experience",
         explanation: "The 'ta-form + ことがあります' pattern is used to talk about things you have experienced. For example, '日本に行ったことがあります' (I have been to Japan)."
@@ -207,12 +311,26 @@ export const quizzes: Quiz[] = [
       },
       {
         question: "Which particle is often used with the potential form to mark the object?",
+        explanationJapanese: [
+            { text: "日本語", furigana: "にほんご" },
+            { text: "が" },
+            { text: "話", furigana: "はな" },
+            { text: "せます" },
+        ],
         options: ["を (o)", "が (ga)", "は (wa)", "で (de)"],
         correctAnswer: "が (ga)",
         explanation: "While 'を' (o) is not wrong, it's very common to use 'が' (ga) to mark the object of a potential verb. E.g., '日本語が話せます' (Nihongo ga hanasemasu)."
       },
       {
         question: "How do you say 'I like to read books' in casual speech?",
+        questionJapanese: [
+            { text: "本", furigana: "ほん" },
+            { text: "を" },
+            { text: "読", furigana: "よ" },
+            { text: "むのが" },
+            { text: "好", furigana: "す" },
+            { text: "きだ" },
+        ],
         options: ["本を読むのが好きです (Hon o yomu no ga suki desu)", "本を読みますのが好きだ (Hon o yomimasu no ga suki da)", "本を読むのが好きだ (Hon o yomu no ga suki da)", "本を読んでのが好きだ (Hon o yonde no ga suki da)"],
         correctAnswer: "本を読むのが好きだ (Hon o yomu no ga suki da)",
         explanation: "In this structure, the plain form '読む' is used to nominalize the verb, and the sentence ends with the plain copula 'だ'."
@@ -231,6 +349,14 @@ export const quizzes: Quiz[] = [
     questions: [
       {
         question: "How do you form a polite invitation? 'Won't you go to the movies together?'",
+        questionJapanese: [
+          { text: "一緒", furigana: "いっしょ" },
+          { text: "に" },
+          { text: "映画", furigana: "えいが" },
+          { text: "に" },
+          { text: "行", furigana: "い" },
+          { text: "きませんか" },
+        ],
         options: [
           "一緒に映画に行きましょう (Issho ni eiga ni ikimashou)",
           "一緒に映画に行きませんか (Issho ni eiga ni ikimasen ka)",
@@ -242,6 +368,12 @@ export const quizzes: Quiz[] = [
       },
       {
         question: "Which sentence correctly uses 'から' (kara) to give a reason?",
+        questionJapanese: [
+          { text: "時間", furigana: "じかん" },
+          { text: "がないから、" },
+          { text: "急", furigana: "いそ" },
+          { text: "ぎます" },
+        ],
         options: [
           "急ぎますから、時間がない (Isogimasu kara, jikan ga nai)",
           "時間がないから、急ぎます (Jikan ga nai kara, isogimasu)",
@@ -253,6 +385,10 @@ export const quizzes: Quiz[] = [
       },
       {
         question: "What is the correct way to express obligation? 'I must study.'",
+        questionJapanese: [
+          { text: "勉強", furigana: "べんきょう" },
+          { text: "しなければなりません" },
+        ],
         options: [
           "勉強すると思います (Benkyou suru to omoimasu)",
           "勉強したいです (Benkyou shitai desu)",
@@ -264,6 +400,15 @@ export const quizzes: Quiz[] = [
       },
       {
         question: "Choose the correct comparison: 'The train is faster than the bus.'",
+        questionJapanese: [
+          { text: "バスより" },
+          { text: "電車", furigana: "でんしゃ" },
+          { text: "の" },
+          { text: "方", furigana: "ほう" },
+          { text: "が" },
+          { text: "速", furigana: "はや" },
+          { text: "いです" },
+        ],
         options: [
           "電車はバスの方が速いです (Densha wa basu no hou ga hayai desu)",
           "バスは電車より速いです (Basu wa densha yori hayai desu)",
@@ -275,6 +420,13 @@ export const quizzes: Quiz[] = [
       },
        {
         question: "How do you give negative advice? 'It's better not to drink too much.'",
+        questionJapanese: [
+          { text: "飲", furigana: "の" },
+          { text: "みすぎない" },
+          { text: "方", furigana: "ほう" },
+          { text: "が" },
+          { text: "いいです" },
+        ],
         options: [
           "飲みすぎない方がいいです (Nomisuginai hou ga ii desu)",
           "飲みすぎた方がいいです (Nomisugita hou ga ii desu)",
@@ -304,6 +456,14 @@ export const quizzes: Quiz[] = [
       },
       {
         question: "How do you use the volitional form with 'と思っています' to express a long-held intention?",
+        questionJapanese: [
+          { text: "日本", furigana: "にほん" },
+          { text: "に" },
+          { text: "行", furigana: "い" },
+          { text: "こうと" },
+          { text: "思", furigana: "おも" },
+          { text: "っています" },
+        ],
         options: [
           "日本に行きたいと思います (Nihon ni ikitai to omoimasu)",
           "日本に行こうと思っています (Nihon ni ikou to omotte imasu)",
@@ -333,6 +493,16 @@ export const quizzes: Quiz[] = [
       },
       {
         question: "How would you combine these sentences using the te-form? 'I will buy a ticket. I will see a movie.'",
+        questionJapanese: [
+          { text: "切符", furigana: "きっぷ" },
+          { text: "を" },
+          { text: "買", furigana: "か" },
+          { text: "って、" },
+          { text: "映画", furigana: "えいが" },
+          { text: "を" },
+          { text: "見", furigana: "み" },
+          { text: "ます" },
+        ],
         options: [
           "切符を買って、映画を見ます (Kippu o katte, eiga o mimasu)",
           "切符を買うから、映画を見ます (Kippu o kau kara, eiga o mimasu)",
@@ -350,6 +520,12 @@ export const quizzes: Quiz[] = [
       },
       {
         question: "How do you ask for permission using the te-form? 'May I take a photo?'",
+        questionJapanese: [
+          { text: "写真", furigana: "しゃしん" },
+          { text: "を" },
+          { text: "撮", furigana: "と" },
+          { text: "ってもいいですか" },
+        ],
         options: [
           "写真を撮ってもいいですか (Shashin o tottemo ii desu ka)",
           "写真を撮らなければなりません (Shashin o toranakereba narimasen)",
@@ -367,12 +543,22 @@ export const quizzes: Quiz[] = [
       },
       {
         question: "How do you express a desire to do something, e.g., 'I want to drink water.'?",
+        questionJapanese: [
+          { text: "水", furigana: "みず" },
+          { text: "が" },
+          { text: "飲", furigana: "の" },
+          { text: "みたいです" },
+        ],
         options: ["水が飲めます (Mizu ga nomemasu)", "水を飲みます (Mizu o nomimasu)", "水が飲みたいです (Mizu ga nomitai desu)", "水を飲もう (Mizu o nomou)"],
         correctAnswer: "水が飲みたいです (Mizu ga nomitai desu)",
         explanation: "To express desire, you change the 'ます' (masu) from the verb stem to 'たいです' (tai desu). '飲みます' (nomimasu) becomes '飲みたいです' (nomitai desu)."
       },
       {
         question: "Which of these sentences means 'You must not enter'?",
+        questionJapanese: [
+          { text: "入", furigana: "はい" },
+          { text: "ってはいけません" },
+        ],
         options: ["入らなくてもいいです (Hairanakutemo ii desu)", "入ってはいけません (Haitte wa ikemasen)", "入ることができます (Hairu koto ga dekimasu)", "入らないでください (Hairanaide kudasai)"],
         correctAnswer: "入ってはいけません (Haitte wa ikemasen)",
         explanation: "The structure '(Verb, te-form) + はいけません' is a strong way to express prohibition."
@@ -391,6 +577,12 @@ export const quizzes: Quiz[] = [
       },
       {
         question: "Which sentence means 'Because it was expensive, I didn't buy it'?",
+        questionJapanese: [
+          { text: "高", furigana: "たか" },
+          { text: "かったから、" },
+          { text: "買", furigana: "か" },
+          { text: "いませんでした" },
+        ],
         options: [
           "高かったから、買いませんでした (Takakatta kara, kaimasen deshita)",
           "高いから、買いませんでした (Takai kara, kaimasen deshita)",

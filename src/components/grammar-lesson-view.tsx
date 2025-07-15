@@ -1,14 +1,27 @@
 
+"use client"
+import { useState } from "react";
 import type { GrammarLesson } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { JapaneseText } from "./japanese-text";
+import { BookText } from "lucide-react";
+
 
 interface GrammarLessonViewProps {
   lesson: GrammarLesson;
 }
 
 export function GrammarLessonView({ lesson }: GrammarLessonViewProps) {
+  const [showFurigana, setShowFurigana] = useState(false);
   return (
     <div className="p-4">
+      <div className="flex justify-end mb-2">
+        <Button variant="ghost" size="sm" onClick={() => setShowFurigana(!showFurigana)}>
+            <BookText className="mr-2 h-4 w-4"/>
+            {showFurigana ? "Hide Reading" : "Show Reading"}
+        </Button>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>{lesson.title}</CardTitle>
@@ -25,7 +38,9 @@ export function GrammarLessonView({ lesson }: GrammarLessonViewProps) {
               <ul className="space-y-4">
                 {lesson.exampleSentences.map((ex, exIndex) => (
                   <li key={exIndex} className="border-l-2 border-primary pl-4">
-                    <p className="font-bold text-lg">{ex.japanese}</p>
+                    <p className="font-bold text-lg">
+                       <JapaneseText text={ex.japanese} showFurigana={showFurigana} />
+                    </p>
                     <p className="text-md text-muted-foreground">{ex.reading}</p>
                     <p className="text-md italic text-muted-foreground/80">{ex.meaning}</p>
                   </li>
