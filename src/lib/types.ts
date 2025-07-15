@@ -24,11 +24,9 @@ export type GrammarLesson = {
 
 export type QuizQuestion = {
   question: string;
-  questionJapanese?: string;
   options: string[];
   correctAnswer: string;
   explanation: string;
-  explanationJapanese?: string;
 };
 
 export type Quiz = {
@@ -37,3 +35,5 @@ export type Quiz = {
   questions: QuizQuestion[];
   score?: number | null;
 };
+
+    

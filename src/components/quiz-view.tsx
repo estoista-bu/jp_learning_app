@@ -94,11 +94,6 @@ export function QuizView({ quiz }: QuizViewProps) {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">{currentQuestion.question}</CardTitle>
-          {currentQuestion.questionJapanese && (
-            <p className="text-xl font-semibold pt-2">
-              {currentQuestion.questionJapanese}
-            </p>
-          )}
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -133,11 +128,6 @@ export function QuizView({ quiz }: QuizViewProps) {
       {selectedAnswer && (
         <div className="p-4 bg-muted/50 rounded-lg animate-in fade-in space-y-4">
             <p className="text-sm text-muted-foreground">{currentQuestion.explanation}</p>
-             {currentQuestion.explanationJapanese && (
-                <p className="text-md font-semibold">
-                  {currentQuestion.explanationJapanese}
-                </p>
-              )}
             <Button onClick={goToNextQuestion} className="w-full">
             {currentQuestionIndex < quiz.questions.length - 1 ? "Next Question" : "Finish Quiz"}
             </Button>
@@ -146,3 +136,5 @@ export function QuizView({ quiz }: QuizViewProps) {
     </div>
   );
 }
+
+    
