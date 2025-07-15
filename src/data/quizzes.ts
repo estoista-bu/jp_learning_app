@@ -25,6 +25,7 @@ export const quizzes: Quiz[] = [
       },
       {
         question: "Select the correct particle for possession: 'これは私___本です'.",
+        questionReading: "これはわたし___ほんです",
         options: ["は", "が", "を", "の"],
         correctAnswer: "の",
         explanation: "The particle の is used to show possession, like 's in English. '私の本' means 'my book'.",
@@ -517,5 +518,3 @@ export const quizzes: Quiz[] = [
     ]
   }
 ];
-
-    

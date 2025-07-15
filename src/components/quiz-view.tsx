@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { CheckCircle, XCircle, RefreshCw } from "lucide-react";
+import { CheckCircle, XCircle, RefreshCw, Circle, CheckCircle2 } from "lucide-react";
 import { ClickableReading } from "./clickable-reading";
 
 interface QuizViewProps {
@@ -117,11 +117,16 @@ export function QuizView({ quiz }: QuizViewProps) {
                     "w-full justify-start h-auto py-3 text-left whitespace-normal",
                     hasAnswered && isCorrect && "bg-green-100 border-green-400 text-green-800 hover:bg-green-100 dark:bg-green-900/50 dark:border-green-700 dark:text-green-300",
                     hasAnswered && !isCorrect && isSelected && "bg-red-100 border-red-400 text-red-800 hover:bg-red-100 dark:bg-red-900/50 dark:border-red-700 dark:text-red-300",
-                    !hasAnswered && "hover:bg-accent/50"
+                    !hasAnswered && "hover:bg-accent/5"
                   )}
                   onClick={() => handleSelectAnswer(option)}
                   disabled={hasAnswered}
                 >
+                  {hasAnswered && isSelected ? (
+                     <CheckCircle2 className="mr-3 h-5 w-5 text-primary"/>
+                  ) : (
+                     <Circle className="mr-3 h-5 w-5 text-muted-foreground/50"/>
+                  )}
                   <span className="flex-1">
                      <ClickableReading
                         japanese={option}
