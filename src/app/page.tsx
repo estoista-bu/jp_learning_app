@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Shuffle } from "lucide-react";
 import type { VocabularyWord } from "@/lib/types";
 import { VocabularyForm } from "@/components/vocabulary-form";
 import { Button } from "@/components/ui/button";
@@ -59,6 +59,18 @@ export default function Home() {
     setCurrentIndex((prev) => (prev - 1 + words.length) % words.length);
   };
 
+  const shuffleWords = () => {
+    setWords((currentWords) => {
+      const shuffled = [...currentWords];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    });
+    setCurrentIndex(0);
+  };
+
   const currentWord = words.length > 0 ? words[currentIndex] : null;
 
   return (
@@ -111,9 +123,15 @@ export default function Home() {
               <ChevronLeft className="h-4 w-4" />
               <span className="sr-only">Previous word</span>
             </Button>
-            <p className="text-sm text-muted-foreground">
-              {currentIndex + 1} / {words.length}
-            </p>
+            <div className="flex items-center gap-4">
+              <Button variant="outline" size="icon" onClick={shuffleWords}>
+                <Shuffle className="h-4 w-4" />
+                <span className="sr-only">Shuffle words</span>
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                {currentIndex + 1} / {words.length}
+              </p>
+            </div>
             <Button variant="outline" size="icon" onClick={goToNext}>
               <ChevronRight className="h-4 w-4" />
               <span className="sr-only">Next word</span>
