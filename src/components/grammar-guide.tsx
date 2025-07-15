@@ -62,6 +62,80 @@ const grammarLessons = [
         meaning: "I don't drink alcohol. (Negative)"
       }
     ]
+  },
+  {
+    title: "Particle の (no) for Possession",
+    explanation: "The particle の (no) is used to show possession, similar to 's in English. It connects two nouns, where the first noun possesses or describes the second noun.",
+    exampleSentences: [
+      {
+        japanese: "これは私の本です。",
+        reading: "Kore wa watashi no hon desu.",
+        meaning: "This is my book."
+      },
+      {
+        japanese: "あれは山田さんの車です。",
+        reading: "Are wa Yamada-san no kuruma desu.",
+        meaning: "That is Mr. Yamada's car."
+      },
+      {
+        japanese: "日本語の先生",
+        reading: "Nihongo no sensei",
+        meaning: "A teacher of Japanese (Japanese teacher)."
+      }
+    ]
+  },
+  {
+    title: "i-Adjectives and na-Adjectives",
+    explanation: "Japanese has two types of adjectives. 'i-adjectives' always end in い (i) (e.g., 大きい - ookii, 'big'). 'na-adjectives' do not end in い, and require な (na) when placed before a noun (e.g., きれいな花 - kirei na hana, 'beautiful flower').",
+    exampleSentences: [
+      {
+        japanese: "このカバンは大きいです。",
+        reading: "Kono kaban wa ookii desu.",
+        meaning: "This bag is big. (i-adjective)"
+      },
+      {
+        japanese: "静かな図書館",
+        reading: "Shizuka na toshokan",
+        meaning: "A quiet library. (na-adjective before noun)"
+      },
+      {
+        japanese: "この町は静かです。",
+        reading: "Kono machi wa shizuka desu.",
+        meaning: "This town is quiet. (na-adjective at end of sentence)"
+      }
+    ]
+  },
+  {
+    title: "Particle に (ni) for Time and Location",
+    explanation: "The particle に (ni) is used to mark a specific point in time (e.g., on Sunday, at 3 o'clock) or the location of existence for inanimate objects (used with verbs like あります - arimasu).",
+    exampleSentences: [
+      {
+        japanese: "３時に会いましょう。",
+        reading: "San-ji ni aimashou.",
+        meaning: "Let's meet at 3 o'clock. (Time)"
+      },
+      {
+        japanese: "机の上に本があります。",
+        reading: "Tsukue no ue ni hon ga arimasu.",
+        meaning: "There is a book on the desk. (Location of existence)"
+      }
+    ]
+  },
+  {
+    title: "The Te-form (て形)",
+    explanation: "The te-form is a versatile verb conjugation that doesn't indicate tense. It's used for making requests (〜てください), connecting successive actions (action 1, and then action 2), and much more.",
+    exampleSentences: [
+      {
+        japanese: "朝ごはんを食べて、学校に行きます。",
+        reading: "Asagohan o tabete, gakkou ni ikimasu.",
+        meaning: "I eat breakfast and then go to school."
+      },
+      {
+        japanese: "ちょっと待ってください。",
+        reading: "Chotto matte kudasai.",
+        meaning: "Please wait a moment."
+      }
+    ]
   }
 ];
 
