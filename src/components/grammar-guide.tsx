@@ -1,8 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
-import { ChevronRight, ArrowLeft } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { GrammarLessonsList } from "./grammar-lessons-list";
 import { GrammarLessonView } from "./grammar-lesson-view";
 import type { GrammarLesson } from "@/lib/types";
@@ -10,51 +9,19 @@ import { cn } from "@/lib/utils";
 
 type GrammarView = "main" | "lessons" | "lesson" | "quizzes";
 
-export function GrammarGuide() {
-  const [currentView, setCurrentView] = useState<GrammarView>("main");
-  const [selectedLesson, setSelectedLesson] = useState<GrammarLesson | null>(null);
-  const [animation, setAnimation] = useState<'in' | 'out' | null>(null);
+interface GrammarGuideProps {
+    currentView: GrammarView;
+    selectedLesson: GrammarLesson | null;
+    animation: 'in' | 'out' | null;
+    onNavigate: (view: GrammarView, lesson?: GrammarLesson) => void;
+}
 
-  const handleNavigate = (view: GrammarView, lesson: GrammarLesson | null = null) => {
-    setAnimation('out');
-    setTimeout(() => {
-        setCurrentView(view);
-        setSelectedLesson(lesson);
-        setAnimation('in');
-    }, 300);
-  };
-
-  const handleBack = () => {
-    setAnimation('out');
-    setTimeout(() => {
-        if(selectedLesson) {
-            setCurrentView('lessons');
-            setSelectedLesson(null);
-        } else {
-            setCurrentView('main');
-        }
-        setAnimation('in');
-    }, 300);
-  }
-
-  const getTitle = () => {
-    switch (currentView) {
-      case "lessons":
-        return "Lessons";
-      case "lesson":
-        return selectedLesson?.title || "Lesson";
-      case "quizzes":
-        return "Quizzes";
-      case "main":
-      default:
-        return "Grammar Guide";
-    }
-  }
+export function GrammarGuide({ currentView, selectedLesson, animation, onNavigate }: GrammarGuideProps) {
 
   const renderContent = () => {
     switch (currentView) {
       case "lessons":
-        return <GrammarLessonsList onSelectLesson={(lesson) => handleNavigate("lesson", lesson)} />;
+        return <GrammarLessonsList onSelectLesson={(lesson) => onNavigate("lesson", lesson)} />;
       case "lesson":
         return selectedLesson ? <GrammarLessonView lesson={selectedLesson} /> : null;
       case "quizzes":
@@ -71,7 +38,7 @@ export function GrammarGuide() {
             <ul className="space-y-2">
               <li>
                 <button
-                  onClick={() => handleNavigate("lessons")}
+                  onClick={() => onNavigate("lessons")}
                   className="flex items-center justify-between w-full p-4 rounded-lg bg-card hover:bg-muted transition-colors"
                 >
                   <span>Lessons</span>
@@ -80,7 +47,7 @@ export function GrammarGuide() {
               </li>
               <li>
                 <button
-                   onClick={() => handleNavigate("quizzes")}
+                   onClick={() => onNavigate("quizzes")}
                    className="flex items-center justify-between w-full p-4 rounded-lg bg-card hover:bg-muted transition-colors"
                 >
                   <span>Quizzes</span>
@@ -95,18 +62,6 @@ export function GrammarGuide() {
 
   return (
     <div className="flex flex-col h-full">
-      {currentView !== 'main' && (
-        <div className="flex items-center p-2 border-b sticky top-0 bg-background/95 backdrop-blur-sm z-10">
-           <button onClick={handleBack} className="flex items-center text-sm p-2 rounded-md hover:bg-muted">
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Back
-          </button>
-          <h3 className="font-semibold text-center flex-1 px-4 truncate">
-            {getTitle()}
-          </h3>
-          <div className="w-[68px]"></div>
-        </div>
-      )}
       <div className={cn(
           "flex-1",
            animation === 'in' && 'animate-slide-in-from-right',
