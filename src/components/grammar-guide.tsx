@@ -95,7 +95,7 @@ export function GrammarGuide() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 flex items-center p-2 border-b min-h-[57px]">
+      <div className="flex items-center p-2 border-b min-h-[57px]">
         {currentView !== 'main' && (
              <button onClick={handleBack} className="flex items-center text-sm p-2 rounded-md hover:bg-muted">
                 <ArrowLeft className="h-4 w-4 mr-1" />

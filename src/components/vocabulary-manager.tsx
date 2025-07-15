@@ -77,10 +77,10 @@ export function VocabularyManager() {
   };
 
   return (
-    <div className="flex justify-center items-start min-h-full">
+    <div className="flex flex-col h-full">
       <Dialog open={isFormOpen} onOpenChange={handleFormOpenChange}>
-        <div className="w-full max-w-sm flex flex-col">
-          <header className="flex items-center justify-between p-4 pt-0 border-b">
+        <div className="w-full flex flex-col">
+          <header className="flex items-center justify-between p-4 border-b">
             <h2 className="font-headline text-lg font-bold">
               My Decks
             </h2>
@@ -92,7 +92,7 @@ export function VocabularyManager() {
             </DialogTrigger>
           </header>
 
-          <div className="flex-1 p-4 overflow-y-auto">
+          <div className="flex-1 p-4">
             <div className="grid gap-4">
               {decks.length > 0 ? (
                 decks.map((deck) => (

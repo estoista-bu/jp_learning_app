@@ -16,7 +16,7 @@ export default function Home() {
             </h1>
           </header>
 
-          <main className="flex-1 flex flex-col">
+          <main className="flex-1 flex flex-col overflow-y-auto">
              <Tabs defaultValue="vocabulary" className="w-full flex-1 flex flex-col">
                 <div className="px-4 border-b">
                   <TabsList className="grid w-full grid-cols-2 bg-transparent p-0">
