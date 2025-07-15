@@ -34,7 +34,6 @@ export function GrammarLessonView({ lesson }: GrammarLessonViewProps) {
     <div className="p-4">
       <Card>
         <CardHeader>
-          <CardTitle>{lesson.title}</CardTitle>
           <CardDescription>
             {lesson.explanation}
           </CardDescription>
