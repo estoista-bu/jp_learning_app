@@ -21,6 +21,7 @@ const initialWords: VocabularyWord[] = [
   { id: "2", japanese: "食べる", reading: "たべる", meaning: "To eat" },
   { id: "3", japanese: "大きい", reading: "おおきい", meaning: "Big" },
   { id: "4", japanese: "コンピューター", reading: "こんぴゅーたー", meaning: "Computer" },
+  { id: "5", japanese: "アプリケーション", reading: "あぷりけーしょん", meaning: "Application" },
 ];
 
 export default function Home() {
