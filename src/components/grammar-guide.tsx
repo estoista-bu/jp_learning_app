@@ -95,18 +95,18 @@ export function GrammarGuide() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center p-2 border-b min-h-[57px] sticky top-0 bg-background/95 backdrop-blur-sm z-10">
-        {currentView !== 'main' && (
-             <button onClick={handleBack} className="flex items-center text-sm p-2 rounded-md hover:bg-muted">
-                <ArrowLeft className="h-4 w-4 mr-1" />
-                Back
-            </button>
-        )}
-         <h3 className="font-semibold text-center flex-1 px-4 truncate">
-           {getTitle()}
-         </h3>
-         {currentView !== 'main' && <div className="w-[68px]"></div>}
-      </div>
+      {currentView !== 'main' && (
+        <div className="flex items-center p-2 border-b sticky top-0 bg-background/95 backdrop-blur-sm z-10">
+           <button onClick={handleBack} className="flex items-center text-sm p-2 rounded-md hover:bg-muted">
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Back
+          </button>
+          <h3 className="font-semibold text-center flex-1 px-4 truncate">
+            {getTitle()}
+          </h3>
+          <div className="w-[68px]"></div>
+        </div>
+      )}
       <div className={cn(
           "flex-1",
            animation === 'in' && 'animate-slide-in-from-right',
