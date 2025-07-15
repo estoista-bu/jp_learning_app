@@ -18,7 +18,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { generateSpeech } from "@/ai/tts";
 
 
 interface FlashcardProps {
@@ -31,8 +30,7 @@ interface FlashcardProps {
 }
 
 export function Flashcard({ word, onRemove, onEdit, isKana = false, isFlipped, onFlip }: FlashcardProps) {
-  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -43,26 +41,19 @@ export function Flashcard({ word, onRemove, onEdit, isKana = false, isFlipped, o
     e.stopPropagation();
   }
 
-  const handlePlayAudio = async (e: React.MouseEvent) => {
+  const handlePlayAudio = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (isGeneratingAudio) return;
-
-    if (audioUrl) {
-      new Audio(audioUrl).play();
+    if (typeof window === 'undefined' || !window.speechSynthesis || isPlaying) {
       return;
     }
 
-    setIsGeneratingAudio(true);
-    try {
-      const newAudioUrl = await generateSpeech(word.reading || word.japanese);
-      setAudioUrl(newAudioUrl);
-      new Audio(newAudioUrl).play();
-    } catch (error) {
-      console.error("Failed to generate speech", error);
-      // You could add a toast notification here to inform the user
-    } finally {
-      setIsGeneratingAudio(false);
-    }
+    setIsPlaying(true);
+    const utterance = new SpeechSynthesisUtterance(word.reading || word.japanese);
+    utterance.lang = 'ja-JP';
+    utterance.onend = () => setIsPlaying(false);
+    utterance.onerror = () => setIsPlaying(false);
+    
+    window.speechSynthesis.speak(utterance);
   };
 
 
@@ -151,11 +142,11 @@ export function Flashcard({ word, onRemove, onEdit, isKana = false, isFlipped, o
                 variant="ghost" 
                 size="icon" 
                 onClick={handlePlayAudio} 
-                disabled={isGeneratingAudio}
+                disabled={isPlaying}
                 className="h-9 w-9 text-muted-foreground hover:text-accent"
                 aria-label="Play pronunciation"
               >
-                {isGeneratingAudio ? (
+                {isPlaying ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
                   <Volume2 className="h-5 w-5" />
