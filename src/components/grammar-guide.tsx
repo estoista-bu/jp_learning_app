@@ -66,11 +66,14 @@ export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animat
   return (
     <div className="flex flex-col h-full">
         {!isMainView && (
-            <div className="flex items-center p-4 border-b sticky top-0 bg-background/95 backdrop-blur-sm z-10">
+            <div className="flex items-center p-4 border-b">
                 <button onClick={onBack} className="flex items-center text-sm p-2 rounded-md hover:bg-muted -ml-2">
                     <ArrowLeft className="h-4 w-4 mr-1" />
                     Back
                 </button>
+                <h3 className="font-headline text-lg font-bold text-primary truncate pl-4">
+                  {getTitle()}
+                </h3>
             </div>
         )}
       <div className={cn(
@@ -78,10 +81,11 @@ export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animat
            animation === 'in' && 'animate-slide-in-from-right',
            animation === 'out' && 'animate-slide-out-to-left-fade'
       )}>
-        <div className="overflow-y-auto">
+        <div className="overflow-y-auto pt-2">
           {renderContent()}
         </div>
       </div>
     </div>
   );
 }
+
