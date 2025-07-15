@@ -22,8 +22,12 @@ export function ClickableReading({ japanese, reading, isBlock = true }: Clickabl
   
   const Wrapper = isBlock ? 'div' : 'span';
 
+  const stopPropagation = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
-     <Wrapper className="inline">
+     <Wrapper className="inline" onClick={stopPropagation}>
         <Popover>
             <PopoverTrigger asChild>
                 <span className="cursor-pointer border-b border-dashed border-primary/50 hover:border-primary">
