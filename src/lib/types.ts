@@ -33,4 +33,5 @@ export type Quiz = {
   id: string;
   title: string;
   questions: QuizQuestion[];
+  score?: number | null;
 };

@@ -30,11 +30,25 @@ export function QuizView({ quiz }: QuizViewProps) {
     setSelectedAnswers(newAnswers);
   };
 
+  const score = selectedAnswers.reduce((acc, answer, index) => {
+    return answer === quiz.questions[index].correctAnswer ? acc + 1 : acc;
+  }, 0);
+
+  const finishQuiz = () => {
+    // Save high score to localStorage
+    const storageKey = `quiz-highscore-${quiz.id}`;
+    const currentHighScore = parseInt(localStorage.getItem(storageKey) || "0", 10);
+    if (score > currentHighScore) {
+        localStorage.setItem(storageKey, score.toString());
+    }
+    setIsFinished(true);
+  };
+
   const goToNextQuestion = () => {
     if (currentQuestionIndex < quiz.questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
-      setIsFinished(true);
+      finishQuiz();
     }
   };
 
@@ -44,11 +58,8 @@ export function QuizView({ quiz }: QuizViewProps) {
     setIsFinished(false);
   };
 
-  const score = selectedAnswers.reduce((acc, answer, index) => {
-    return answer === quiz.questions[index].correctAnswer ? acc + 1 : acc;
-  }, 0);
 
-  const progress = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
+  const progress = isFinished ? 100 : ((currentQuestionIndex) / quiz.questions.length) * 100;
 
   if (isFinished) {
     const percentage = (score / quiz.questions.length) * 100;
