@@ -18,7 +18,7 @@ export const quizzes: Quiz[] = [
         explanation: "Japanese sentence structure is typically Subject-Object-Verb. '私は' (I) is the subject, '寿司を' (sushi) is the object, and '食べます' (eat) is the verb."
       },
       {
-        question: "Select the correct particle for possession in 'This is my book.' (これは___の本です)",
+        question: "Select the correct particle to fill in the blank for possession: 'これは私___本です' (Kore wa watashi ___ hon desu - This is my book).",
         options: ["は (wa)", "が (ga)", "を (o)", "の (no)"],
         correctAnswer: "の (no)",
         explanation: "The particle の (no) is used to show possession, like 's in English. '私の本' means 'my book'."
@@ -38,7 +38,7 @@ export const quizzes: Quiz[] = [
       {
         question: "How do you say 'I watched a movie yesterday' in polite form?",
         options: [
-            "昨日、映画を見ます (Kinou, eiga o mimasu)", 
+            "昨日、映画を見ます (Kinou, eiga o mimasu)",
             "昨日、映画を見ません (Kinou, eiga o mimasen)",
             "昨日、映画を見ました (Kinou, eiga o mimashita)",
             "昨日、映画を見ませんでした (Kinou, eiga o mimasen deshita)"
@@ -101,7 +101,7 @@ export const quizzes: Quiz[] = [
       {
         question: "How do you say 'I will not eat' in polite form?",
         options: [
-            "食べます (tabemasu)", 
+            "食べます (tabemasu)",
             "食べません (tabemasen)",
             "食べました (tabemashita)",
             "食べませんでした (tabemasen deshita)"
@@ -153,9 +153,9 @@ export const quizzes: Quiz[] = [
       },
        {
         question: "What is the opposite of '大きいです' (ookii desu - it is big)?",
-        options: ["大きくないです (ookikunai desu)", "大きいじゃないです (ookii janai desu)", "大きくありません (ookiku arimasen)", "Both A and C"],
-        correctAnswer: "Both A and C",
-        explanation: "To make an i-adjective negative, you change the final 'い' to 'くないです' (less formal) or 'くありません' (more formal)."
+        options: ["大きくないです (ookikunai desu)", "大きいじゃないです (ookii janai desu)", "大きではありません (ooki dewa arimasen)", "Both A and B"],
+        correctAnswer: "大きくないです (ookikunai desu)",
+        explanation: "To make an i-adjective negative, you change the final 'い' to 'くないです'. While 'くありません' is also correct and more formal, 'くないです' is the most direct counterpart. 'じゃないです' is used for nouns and na-adjectives."
       }
     ]
   },
@@ -381,7 +381,7 @@ export const quizzes: Quiz[] = [
         question: "What is the correct potential form for the irregular verb '来ます' (kimasu - to come)?",
         options: ["来れます (koremasu)", "来られます (koraremasu)", "来させます (kosasemasu)", "来ますことができます (kimasu koto ga dekimasu)"],
         correctAnswer: "来られます (koraremasu)",
-        explanation: "'来ます' is an irregular verb. Its potential form is '来られます' (koraremasu)."
+        explanation: "'来ます' (kimasu) is an irregular verb. Its potential form is '来られます' (koraremasu)."
       },
       {
         question: "Which is a casual way to say 'Let's eat'?",
