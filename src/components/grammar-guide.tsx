@@ -65,7 +65,7 @@ export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animat
           animation === 'in' && 'animate-slide-in-from-right',
           animation === 'out' && 'animate-slide-out-to-left-fade'
     )}>
-      <div className="overflow-y-auto px-4 pb-4">
+      <div className="overflow-y-auto pb-4">
         {renderContent()}
       </div>
     </div>

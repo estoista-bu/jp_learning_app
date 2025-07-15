@@ -30,14 +30,14 @@ export function GrammarLessonView({ lesson }: GrammarLessonViewProps) {
   };
   
   return (
-    <div className="p-4">
+    <div>
       <Card>
         <CardHeader className="pt-6">
           <CardDescription>
             {lesson.explanation}
           </CardDescription>
         </CardHeader>
-        <CardContent className="px-6 pb-6">
+        <CardContent className="pb-6">
           <div className="space-y-4">
             <div>
               <h3 className="font-semibold mb-3 text-md text-accent border-b pb-1">
