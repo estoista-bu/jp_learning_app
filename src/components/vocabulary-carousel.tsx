@@ -25,10 +25,10 @@ export function VocabularyCarousel({ words, onRemoveWord }: VocabularyCarouselPr
         loop: true,
       }}
     >
-      <CarouselContent>
+      <CarouselContent className="-ml-1">
         {words.map((word) => (
-          <CarouselItem key={word.id}>
-            <div className="p-1 h-full flex items-center justify-center">
+          <CarouselItem key={word.id} className="pl-1">
+            <div className="p-4 md:p-6 h-full flex items-center justify-center">
               <Flashcard
                 word={word}
                 onRemove={() => onRemoveWord(word.id)}
