@@ -1,7 +1,8 @@
 
 "use client";
 
-import { X, Pencil } from "lucide-react";
+import { useState } from "react";
+import { X, Pencil, Volume2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { VocabularyWord } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,6 +18,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { generateSpeech } from "@/ai/tts";
 
 
 interface FlashcardProps {
@@ -29,7 +31,9 @@ interface FlashcardProps {
 }
 
 export function Flashcard({ word, onRemove, onEdit, isKana = false, isFlipped, onFlip }: FlashcardProps) {
-  
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
     onEdit();
@@ -38,6 +42,29 @@ export function Flashcard({ word, onRemove, onEdit, isKana = false, isFlipped, o
   const stopPropagation = (e: React.MouseEvent) => {
     e.stopPropagation();
   }
+
+  const handlePlayAudio = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isGeneratingAudio) return;
+
+    if (audioUrl) {
+      new Audio(audioUrl).play();
+      return;
+    }
+
+    setIsGeneratingAudio(true);
+    try {
+      const newAudioUrl = await generateSpeech(word.reading || word.japanese);
+      setAudioUrl(newAudioUrl);
+      new Audio(newAudioUrl).play();
+    } catch (error) {
+      console.error("Failed to generate speech", error);
+      // You could add a toast notification here to inform the user
+    } finally {
+      setIsGeneratingAudio(false);
+    }
+  };
+
 
   const japaneseWordLength = word.japanese.length;
   const fontSizeClass =
@@ -96,6 +123,7 @@ export function Flashcard({ word, onRemove, onEdit, isKana = false, isFlipped, o
           isFlipped && "[transform:rotateY(180deg)]"
         )}
       >
+        {/* Front of the card */}
         <Card className="absolute w-full h-full [backface-visibility:hidden] flex items-center justify-center overflow-hidden">
           {editButtons}
           <CardContent className="p-4 flex items-center justify-center">
@@ -109,18 +137,33 @@ export function Flashcard({ word, onRemove, onEdit, isKana = false, isFlipped, o
           </CardContent>
         </Card>
 
-        <Card className="absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] flex items-center justify-center overflow-hidden">
+        {/* Back of the card */}
+        <Card className="absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col items-center justify-center overflow-hidden">
            {editButtons}
-           <CardContent className="p-4 text-center">
+           <CardContent className="p-4 text-center flex flex-col items-center justify-center flex-1">
              <p className="font-body text-3xl font-semibold text-accent">
                {word.reading}
              </p>
              <p className="text-muted-foreground mt-2 text-xl">{word.meaning}</p>
            </CardContent>
+           <div className="w-full p-2 flex justify-end">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handlePlayAudio} 
+                disabled={isGeneratingAudio}
+                className="h-9 w-9 text-muted-foreground hover:text-accent"
+                aria-label="Play pronunciation"
+              >
+                {isGeneratingAudio ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Volume2 className="h-5 w-5" />
+                )}
+              </Button>
+           </div>
         </Card>
       </div>
     </div>
   );
 }
-
-    
