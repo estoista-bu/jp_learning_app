@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import type { VocabularyWord } from "@/lib/types";
 import { VocabularyForm } from "@/components/vocabulary-form";
-import { VocabularyCarousel } from "@/components/vocabulary-carousel";
+import { Flashcard } from "@/components/flashcard";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const initialWords: VocabularyWord[] = [
   { id: "1", japanese: "日本語", reading: "にほんご", meaning: "Japanese language" },
@@ -28,7 +29,7 @@ export default function Home() {
 
   const addWord = (word: Omit<VocabularyWord, "id">) => {
     setWords((prev) => [...prev, { ...word, id: Date.now().toString() }]);
-    setIsFormOpen(false); // Close the dialog on successful submission
+    setIsFormOpen(false);
   };
 
   const removeWord = (id: string) => {
@@ -60,11 +61,21 @@ export default function Home() {
         </Dialog>
       </header>
 
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 overflow-y-auto">
         {words.length > 0 ? (
-          <VocabularyCarousel words={words} onRemoveWord={removeWord} />
+           <ScrollArea className="h-full">
+            <div className="p-4 grid grid-cols-1 gap-4">
+              {words.map((word) => (
+                <Flashcard
+                  key={word.id}
+                  word={word}
+                  onRemove={() => removeWord(word.id)}
+                />
+              ))}
+            </div>
+          </ScrollArea>
         ) : (
-          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground border-2 border-dashed border-border rounded-lg p-8 m-4">
+          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
             <p className="text-lg font-semibold">Your vocabulary is empty.</p>
             <p className="mt-2">
               Tap the <Plus className="inline h-4 w-4 mx-1" /> button to get started!
