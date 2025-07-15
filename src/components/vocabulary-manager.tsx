@@ -13,7 +13,7 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -92,7 +92,7 @@ export function VocabularyManager() {
             </DialogTrigger>
           </header>
 
-          <div className="flex-1 p-4">
+          <div className="flex-1 p-4 pt-2">
             <div className="grid gap-4">
               {decks.length > 0 ? (
                 decks.map((deck) => (
@@ -117,18 +117,13 @@ export function VocabularyManager() {
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
-                    <Link href={`/deck/${deck.id}`}>
-                      <CardHeader>
+                    <Link href={`/deck/${deck.id}`} className="block">
+                      <CardHeader className="p-4">
                         <CardTitle className="flex items-center gap-2 text-base">
                           <Book className="h-5 w-5 text-primary" />
                           <span>{deck.name}</span>
                         </CardTitle>
                       </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground">
-                          View and study this deck.
-                        </p>
-                      </CardContent>
                     </Link>
                   </Card>
                 ))

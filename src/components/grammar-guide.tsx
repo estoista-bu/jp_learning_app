@@ -37,7 +37,7 @@ export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animat
       case "main":
       default:
         return (
-          <div className="p-4">
+          <div className="p-4 pt-2">
             <ul className="space-y-2">
               <li>
                 <button
