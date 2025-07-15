@@ -1,7 +1,6 @@
 
 "use client";
 
-import { useState } from "react";
 import { X, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { VocabularyWord } from "@/lib/types";
@@ -25,10 +24,11 @@ interface FlashcardProps {
   onRemove: () => void;
   onEdit: () => void;
   isKana?: boolean;
+  isFlipped: boolean;
+  onFlip: () => void;
 }
 
-export function Flashcard({ word, onRemove, onEdit, isKana = false }: FlashcardProps) {
-  const [isFlipped, setIsFlipped] = useState(false);
+export function Flashcard({ word, onRemove, onEdit, isKana = false, isFlipped, onFlip }: FlashcardProps) {
   
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -86,7 +86,7 @@ export function Flashcard({ word, onRemove, onEdit, isKana = false }: FlashcardP
   return (
     <div
       className="group w-full h-full [perspective:1000px] cursor-pointer"
-      onClick={() => setIsFlipped(!isFlipped)}
+      onClick={onFlip}
       role="button"
       aria-label={`Flashcard for ${word.japanese}. Click to flip.`}
     >
@@ -122,3 +122,5 @@ export function Flashcard({ word, onRemove, onEdit, isKana = false }: FlashcardP
     </div>
   );
 }
+
+    

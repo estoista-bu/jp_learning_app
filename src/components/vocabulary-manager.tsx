@@ -13,12 +13,16 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import type { Deck } from "@/lib/types";
 import { DeckForm } from "@/components/deck-form";
@@ -39,11 +43,15 @@ const initialDecks: Deck[] = [
   { id: "3", name: "Travel", category: "user" },
 ];
 
+type KanaSelection = "hiragana" | "katakana";
+
 export function VocabularyManager() {
   const [decks, setDecks] = useState<Deck[]>(initialDecks);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingDeck, setEditingDeck] = useState<Deck | null>(null);
   const [deletingDeck, setDeletingDeck] = useState<Deck | null>(null);
+  const [selectedKana, setSelectedKana] = useState<KanaSelection>("hiragana");
+
 
   const handleOpenForm = (deck: Deck | null) => {
     setEditingDeck(deck);
@@ -57,7 +65,7 @@ export function VocabularyManager() {
     setIsFormOpen(open);
   }
 
-  const saveDeck = (deckData: Omit<Deck, "id">, id?: string) => {
+  const saveDeck = (deckData: Omit<Deck, "id", "category">, id?: string) => {
     if (id) {
       setDecks(prev => 
         prev.map(d => (d.id === id ? { ...d, ...deckData, category: "user" } : d))
@@ -79,7 +87,7 @@ export function VocabularyManager() {
     <div className="flex flex-col h-full">
       <Dialog open={isFormOpen} onOpenChange={handleFormOpenChange}>
         <div className="w-full flex flex-col">
-          <header className="flex items-center justify-between p-4 border-b">
+          <header className="flex items-center justify-between px-4 pt-4 pb-2">
             <h2 className="font-headline text-lg font-bold">
               My Decks
             </h2>
@@ -93,33 +101,29 @@ export function VocabularyManager() {
 
           <div className="flex-1 p-4 pt-2">
             <div className="grid gap-4">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between p-4">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <Book className="h-5 w-5 text-primary" />
-                    <span>Kana Practice</span>
-                  </CardTitle>
+               <Card>
+                <div className="flex items-center justify-between p-4">
+                  <Link href={`/deck/${selectedKana}`} className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <Book className="h-5 w-5 text-primary" />
+                      <p className="font-semibold">Kana Practice</p>
+                    </div>
+                  </Link>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        Select
+                      <Button variant="outline" size="sm" className="ml-4">
+                        {selectedKana === "hiragana" ? "Hiragana" : "Katakana"}
                         <ChevronDown className="h-4 w-4 ml-2" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <Link href="/deck/hiragana">
-                        <DropdownMenuItem>
-                          Hiragana
-                        </DropdownMenuItem>
-                      </Link>
-                      <Link href="/deck/katakana">
-                        <DropdownMenuItem>
-                          Katakana
-                        </DropdownMenuItem>
-                      </Link>
+                       <DropdownMenuRadioGroup value={selectedKana} onValueChange={(value) => setSelectedKana(value as KanaSelection)}>
+                          <DropdownMenuRadioItem value="hiragana">Hiragana</DropdownMenuRadioItem>
+                          <DropdownMenuRadioItem value="katakana">Katakana</DropdownMenuRadioItem>
+                        </DropdownMenuRadioGroup>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </CardHeader>
+                </div>
               </Card>
 
               {decks.length > 0 ? (
@@ -198,3 +202,5 @@ export function VocabularyManager() {
     </div>
   );
 }
+
+    

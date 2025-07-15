@@ -174,6 +174,7 @@ export default function DeckPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingWord, setEditingWord] = useState<VocabularyWord | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isFlipped, setIsFlipped] = useState(false);
   const [animationDirection, setAnimationDirection] = useState<AnimationDirection>("none");
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -186,6 +187,7 @@ export default function DeckPage() {
       setDeck(currentDeck);
       setWords(wordsInDeck);
       setCurrentIndex(0);
+      setIsFlipped(false);
     }
   }, [deckId]);
 
@@ -214,6 +216,7 @@ export default function DeckPage() {
       setWords((prev) => {
         const newWords = [...prev, newWord];
         setCurrentIndex(newWords.length - 1);
+        setIsFlipped(false);
         return newWords;
       });
     }
@@ -229,6 +232,7 @@ export default function DeckPage() {
       } else if (newWords.length === 0) {
         setCurrentIndex(0);
       }
+      setIsFlipped(false);
       return newWords;
     });
   };
@@ -246,6 +250,7 @@ export default function DeckPage() {
        } else {
          setCurrentIndex((prev) => (prev - 1 + words.length) % words.length);
        }
+       setIsFlipped(false);
        setAnimationDirection('none');
     }, 150);
   };
@@ -264,7 +269,35 @@ export default function DeckPage() {
       return shuffled;
     });
     setCurrentIndex(0);
+    setIsFlipped(false);
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isFormOpen) return;
+      
+      switch (e.key) {
+        case 'ArrowLeft':
+          goToPrevious();
+          break;
+        case 'ArrowRight':
+          goToNext();
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setIsFlipped(false);
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          setIsFlipped(true);
+          break;
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [words, currentIndex, isFormOpen]);
   
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
@@ -339,14 +372,18 @@ export default function DeckPage() {
                   onRemove={() => removeWord(currentWord.id)}
                   onEdit={() => handleOpenForm(currentWord)}
                   isKana={deck?.category === 'kana'}
+                  isFlipped={isFlipped}
+                  onFlip={() => setIsFlipped(!isFlipped)}
                 />
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
                 <p className="text-lg font-semibold">This deck is empty.</p>
-                <p className="mt-2">
-                  Tap the <Plus className="inline h-4 w-4 mx-1" /> button to add your first word!
-                </p>
+                {deck?.category !== 'kana' && (
+                    <p className="mt-2">
+                        Tap the <Plus className="inline h-4 w-4 mx-1" /> button to add your first word!
+                    </p>
+                )}
               </div>
             )}
           </main>
@@ -386,3 +423,5 @@ export default function DeckPage() {
     </div>
   );
 }
+
+    
