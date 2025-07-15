@@ -22,7 +22,7 @@ export function Flashcard({ word, onRemove }: FlashcardProps) {
 
   return (
     <div
-      className="group w-full h-48 [perspective:1000px] cursor-pointer"
+      className="group w-full h-[60vh] [perspective:1000px] cursor-pointer"
       onClick={() => setIsFlipped(!isFlipped)}
       role="button"
       aria-label={`Flashcard for ${word.japanese}. Click to flip.`}
@@ -44,7 +44,7 @@ export function Flashcard({ word, onRemove }: FlashcardProps) {
             <X className="h-4 w-4" />
           </Button>
           <CardContent className="p-4 flex items-center justify-center">
-            <p className="font-headline text-5xl text-center text-primary drop-shadow-sm">
+            <p className="font-headline text-6xl md:text-8xl text-center text-primary drop-shadow-sm">
               {word.japanese}
             </p>
           </CardContent>
@@ -61,10 +61,10 @@ export function Flashcard({ word, onRemove }: FlashcardProps) {
             <X className="h-4 w-4" />
           </Button>
           <CardContent className="p-4 text-center">
-            <p className="font-body text-3xl font-semibold text-accent">
+            <p className="font-body text-4xl md:text-5xl font-semibold text-accent">
               {word.reading}
             </p>
-            <p className="text-muted-foreground mt-2 text-lg">{word.meaning}</p>
+            <p className="text-muted-foreground mt-4 text-2xl">{word.meaning}</p>
           </CardContent>
         </Card>
       </div>

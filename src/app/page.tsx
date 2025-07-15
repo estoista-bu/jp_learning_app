@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import type { VocabularyWord } from "@/lib/types";
 import { VocabularyForm } from "@/components/vocabulary-form";
-import { VocabularyGrid } from "@/components/vocabulary-grid";
+import { VocabularyCarousel } from "@/components/vocabulary-carousel";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -60,11 +60,11 @@ export default function Home() {
         </Dialog>
       </header>
 
-      <main className="flex-1 overflow-y-auto p-4">
+      <main className="flex-1 overflow-hidden">
         {words.length > 0 ? (
-          <VocabularyGrid words={words} onRemoveWord={removeWord} />
+          <VocabularyCarousel words={words} onRemoveWord={removeWord} />
         ) : (
-          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground border-2 border-dashed border-border rounded-lg p-8">
+          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground border-2 border-dashed border-border rounded-lg p-8 m-4">
             <p className="text-lg font-semibold">Your vocabulary is empty.</p>
             <p className="mt-2">
               Tap the <Plus className="inline h-4 w-4 mx-1" /> button to get started!

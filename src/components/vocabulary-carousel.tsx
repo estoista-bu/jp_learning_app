@@ -14,12 +14,21 @@ interface VocabularyCarouselProps {
 }
 
 export function VocabularyCarousel({ words, onRemoveWord }: VocabularyCarouselProps) {
+  if (words.length === 0) {
+    return null;
+  }
+  
   return (
-    <Carousel className="w-full h-full flex items-center justify-center px-12">
+    <Carousel 
+      className="w-full h-full flex items-center justify-center"
+      opts={{
+        loop: true,
+      }}
+    >
       <CarouselContent>
         {words.map((word) => (
           <CarouselItem key={word.id}>
-            <div className="p-1 h-full">
+            <div className="p-1 h-full flex items-center justify-center">
               <Flashcard
                 word={word}
                 onRemove={() => onRemoveWord(word.id)}
@@ -28,8 +37,8 @@ export function VocabularyCarousel({ words, onRemoveWord }: VocabularyCarouselPr
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious />
-      <CarouselNext />
+      <CarouselPrevious className="hidden md:flex" />
+      <CarouselNext className="hidden md:flex" />
     </Carousel>
   );
 }
