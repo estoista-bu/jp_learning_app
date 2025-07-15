@@ -30,7 +30,7 @@ export function ClickableReading({ japanese, reading, isBlock = true }: Clickabl
      <Wrapper className="inline" onClick={stopPropagation}>
         <Popover>
             <PopoverTrigger asChild>
-                <span className="cursor-pointer border-b border-dashed border-primary/50 hover:border-primary">
+                <span className="cursor-pointer hover:text-primary">
                     {japanese}
                 </span>
             </PopoverTrigger>
