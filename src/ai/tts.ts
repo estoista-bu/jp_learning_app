@@ -7,17 +7,9 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { googleAI } from 'genkit/plugins/googleai';
+import { googleAI } from '@genkit-ai/googleai';
 import { z } from 'zod';
 import wav from 'wav';
-
-if (process.env.NODE_ENV !== 'production') {
-  const { genkitDev } = await import('genkit/dev');
-  genkitDev({
-    // To disable the Genkit dev UI, set this to false
-    enabled: true,
-  });
-}
 
 ai.use(googleAI({ apiVersion: 'v1' }));
 
