@@ -1,0 +1,128 @@
+
+"use client";
+
+import { useState } from "react";
+import type { Quiz, QuizQuestion } from "@/lib/types";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
+import { CheckCircle, XCircle, RefreshCw } from "lucide-react";
+
+interface QuizViewProps {
+  quiz: Quiz;
+}
+
+export function QuizView({ quiz }: QuizViewProps) {
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedAnswers, setSelectedAnswers] = useState<(string | null)[]>(
+    Array(quiz.questions.length).fill(null)
+  );
+  const [isFinished, setIsFinished] = useState(false);
+
+  const currentQuestion = quiz.questions[currentQuestionIndex];
+  const selectedAnswer = selectedAnswers[currentQuestionIndex];
+
+  const handleSelectAnswer = (answer: string) => {
+    if (selectedAnswer) return; // Prevent changing answer
+    const newAnswers = [...selectedAnswers];
+    newAnswers[currentQuestionIndex] = answer;
+    setSelectedAnswers(newAnswers);
+  };
+
+  const goToNextQuestion = () => {
+    if (currentQuestionIndex < quiz.questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      setIsFinished(true);
+    }
+  };
+
+  const restartQuiz = () => {
+    setCurrentQuestionIndex(0);
+    setSelectedAnswers(Array(quiz.questions.length).fill(null));
+    setIsFinished(false);
+  };
+
+  const score = selectedAnswers.reduce((acc, answer, index) => {
+    return answer === quiz.questions[index].correctAnswer ? acc + 1 : acc;
+  }, 0);
+
+  const progress = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
+
+  if (isFinished) {
+    const percentage = (score / quiz.questions.length) * 100;
+    return (
+      <div className="p-4 flex flex-col items-center justify-center text-center h-full">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Quiz Complete!</CardTitle>
+            <CardDescription>You scored</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center gap-4">
+            <p className="text-4xl font-bold text-primary">{score} / {quiz.questions.length}</p>
+            <p className="text-2xl font-semibold text-muted-foreground">({percentage.toFixed(0)}%)</p>
+            <Button onClick={restartQuiz} className="mt-4">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 space-y-6">
+      <div className="space-y-2">
+        <p className="text-sm text-muted-foreground">
+          Question {currentQuestionIndex + 1} of {quiz.questions.length}
+        </p>
+        <Progress value={progress} />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg leading-relaxed">{currentQuestion.question}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {currentQuestion.options.map((option, index) => {
+              const isSelected = selectedAnswer === option;
+              const isCorrect = currentQuestion.correctAnswer === option;
+              const hasAnswered = selectedAnswer !== null;
+
+              return (
+                <Button
+                  key={index}
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start h-auto py-3 text-left",
+                    hasAnswered && isCorrect && "bg-green-100 border-green-400 text-green-800 hover:bg-green-100 dark:bg-green-900/50 dark:border-green-700 dark:text-green-300",
+                    hasAnswered && !isCorrect && isSelected && "bg-red-100 border-red-400 text-red-800 hover:bg-red-100 dark:bg-red-900/50 dark:border-red-700 dark:text-red-300",
+                    !hasAnswered && "hover:bg-accent/50"
+                  )}
+                  onClick={() => handleSelectAnswer(option)}
+                  disabled={hasAnswered}
+                >
+                  {option}
+                  {hasAnswered && isCorrect && <CheckCircle className="ml-auto h-5 w-5 text-green-600 dark:text-green-400"/>}
+                  {hasAnswered && !isCorrect && isSelected && <XCircle className="ml-auto h-5 w-5 text-red-600 dark:text-red-400"/>}
+                </Button>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+      
+      {selectedAnswer && (
+        <div className="p-4 bg-muted/50 rounded-lg animate-in fade-in space-y-4">
+            <p className="text-sm text-muted-foreground">{currentQuestion.explanation}</p>
+            <Button onClick={goToNextQuestion} className="w-full">
+            {currentQuestionIndex < quiz.questions.length - 1 ? "Next Question" : "Finish Quiz"}
+            </Button>
+        </div>
+      )}
+    </div>
+  );
+}

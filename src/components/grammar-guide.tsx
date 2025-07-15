@@ -4,21 +4,23 @@
 import { ChevronRight, ArrowLeft } from "lucide-react";
 import { GrammarLessonsList } from "./grammar-lessons-list";
 import { GrammarLessonView } from "./grammar-lesson-view";
-import type { GrammarLesson } from "@/lib/types";
+import { QuizList } from "./quiz-list";
+import { QuizView } from "./quiz-view";
+import type { GrammarLesson, Quiz } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-type GrammarView = "main" | "lessons" | "lesson" | "quizzes";
 
 interface GrammarGuideProps {
-    currentView: GrammarView;
+    currentView: "main" | "lessons" | "lesson" | "quizzes" | "quiz";
     selectedLesson: GrammarLesson | null;
+    selectedQuiz: Quiz | null;
     animation: 'in' | 'out' | null;
-    onNavigate: (view: GrammarView, lesson?: GrammarLesson) => void;
+    onNavigate: (view: "main" | "lessons" | "lesson" | "quizzes" | "quiz", data?: GrammarLesson | Quiz) => void;
     onBack: () => void;
     getTitle: () => string;
 }
 
-export function GrammarGuide({ currentView, selectedLesson, animation, onNavigate, onBack, getTitle }: GrammarGuideProps) {
+export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animation, onNavigate, onBack, getTitle }: GrammarGuideProps) {
 
   const isMainView = currentView === 'main';
 
@@ -29,12 +31,9 @@ export function GrammarGuide({ currentView, selectedLesson, animation, onNavigat
       case "lesson":
         return selectedLesson ? <GrammarLessonView lesson={selectedLesson} /> : null;
       case "quizzes":
-         return (
-          <div className="flex flex-col h-full items-center justify-center text-center text-muted-foreground p-8">
-            <p className="text-lg font-semibold">Quizzes are coming soon!</p>
-            <p className="mt-2">Check back later for updates.</p>
-          </div>
-        );
+         return <QuizList onSelectQuiz={(quiz) => onNavigate("quiz", quiz)} />;
+      case "quiz":
+        return selectedQuiz ? <QuizView quiz={selectedQuiz} /> : null;
       case "main":
       default:
         return (
@@ -79,7 +78,7 @@ export function GrammarGuide({ currentView, selectedLesson, animation, onNavigat
             </div>
         )}
       <div className={cn(
-          "flex-1",
+          "flex-1 overflow-y-auto",
            animation === 'in' && 'animate-slide-in-from-right',
            animation === 'out' && 'animate-slide-out-to-left-fade'
       )}>
