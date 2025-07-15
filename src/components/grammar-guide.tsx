@@ -142,6 +142,22 @@ const grammarLessons = [
       }
     ]
   },
+    {
+    title: "Making Invitations (〜ませんか vs 〜ましょう)",
+    explanation: "To invite someone to do something, you can use 〜ませんか (masen ka?) for a polite suggestion ('Won't you...?') or 〜ましょう (mashou) for a more direct proposal ('Let's...').",
+    exampleSentences: [
+      {
+        japanese: "一緒に映画を見ませんか？",
+        reading: "Issho ni eiga o mimasen ka?",
+        meaning: "Won't you watch a movie with me?"
+      },
+      {
+        japanese: "喫茶店で話しましょう。",
+        reading: "Kissaten de hanashimashou.",
+        meaning: "Let's talk at the coffee shop."
+      }
+    ]
+  },
   {
     title: "Plain Form (Dictionary Form)",
     explanation: "The plain form, or dictionary form, is the base form of a verb. It's used in casual conversation and in various grammatical structures. For example, the plain form of 食べます (tabemasu) is 食べる (taberu).",
@@ -174,6 +190,22 @@ const grammarLessons = [
       }
     ]
   },
+   {
+    title: "Quoting (〜と思います / 〜と言っていました)",
+    explanation: "Use 〜と思います (to omoimasu) to express your opinion ('I think...'). Use 〜と言っていました (to itte imashita) to report what someone else said ('...said that...'). Both use the plain form of the verb or adjective before the quote.",
+    exampleSentences: [
+      {
+        japanese: "明日は雨が降ると思います。",
+        reading: "Ashita wa ame ga furu to omoimasu.",
+        meaning: "I think it will rain tomorrow."
+      },
+      {
+        japanese: "田中さんはパーティーに来ないと言っていました。",
+        reading: "Tanaka-san wa paatii ni konai to itte imashita.",
+        meaning: "Ms. Tanaka said she isn't coming to the party."
+      }
+    ]
+  },
   {
     title: "Potential Form (Can do)",
     explanation: "The potential form expresses the ability to do something ('can do'). Ru-verbs change the final -ru to -rareru. U-verbs change the final 'u' sound to the 'e' sound and add -ru.",
@@ -192,6 +224,22 @@ const grammarLessons = [
         japanese: "寿司が食べられますか？",
         reading: "Sushi ga taberaremasu ka?",
         meaning: "Can you eat sushi?"
+      }
+    ]
+  },
+    {
+    title: "Comparison (AよりBのほうが...)",
+    explanation: "To compare two items, use the structure 'A yori B no hou ga...' which means 'B is more ... than A'. The adjective comes after 'hou ga'.",
+    exampleSentences: [
+      {
+        japanese: "バスより電車の方が速いです。",
+        reading: "Basu yori densha no hou ga hayai desu.",
+        meaning: "The train is faster than the bus."
+      },
+      {
+        japanese: "犬と猫とどちらの方が好きですか？",
+        reading: "Inu to neko to dochira no hou ga suki desu ka?",
+        meaning: "Which do you like more, dogs or cats?"
       }
     ]
   },
@@ -242,13 +290,29 @@ const grammarLessons = [
         meaning: "I have to get up early tomorrow. (Casual form)"
       }
     ]
+  },
+  {
+    title: "Volitional Form (しよう / しましょう)",
+    explanation: "The volitional form expresses intention ('Let's do...' or 'I'll do...'). The plain form (e.g., 行こう - ikou, 'let's go') is casual, while the polite form ends in 〜ましょう (mashou), which we've seen in invitations.",
+    exampleSentences: [
+      {
+        japanese: "週末、何をしようか？",
+        reading: "Shuumatsu, nani o shiyou ka?",
+        meaning: "What should we do this weekend? (Casual)"
+      },
+      {
+        japanese: "日本に行こうと思っています。",
+        reading: "Nihon ni ikou to omotte imasu.",
+        meaning: "I am thinking of going to Japan."
+      }
+    ]
   }
 ];
 
 
 export function GrammarGuide() {
   return (
-    <div className="p-4 pt-0">
+    <div className="p-4 pt-0 pb-8">
       <Card>
         <CardHeader>
           <CardTitle>Grammar Guide</CardTitle>
