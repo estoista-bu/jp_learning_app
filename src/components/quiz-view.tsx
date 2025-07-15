@@ -98,6 +98,7 @@ export function QuizView({ quiz }: QuizViewProps) {
              <ClickableReading
                 japanese={currentQuestion.question}
                 reading={currentQuestion.questionReading}
+                isBlock
               />
           </CardTitle>
         </CardHeader>
@@ -115,6 +116,7 @@ export function QuizView({ quiz }: QuizViewProps) {
                   variant="outline"
                   className={cn(
                     "w-full justify-start h-auto py-3 text-left whitespace-normal text-foreground",
+                    "hover:text-foreground",
                     hasAnswered && isCorrect && "bg-green-100 border-green-400 text-green-800 hover:bg-green-100 dark:bg-green-900/50 dark:border-green-700 dark:text-green-300",
                     hasAnswered && !isCorrect && isSelected && "bg-red-100 border-red-400 text-red-800 hover:bg-red-100 dark:bg-red-900/50 dark:border-red-700 dark:text-red-300",
                     !hasAnswered && "hover:bg-accent/10"
@@ -145,12 +147,13 @@ export function QuizView({ quiz }: QuizViewProps) {
       
       {selectedAnswer && (
         <div className="p-4 bg-muted/50 rounded-lg animate-in fade-in space-y-4">
-            <p className="text-sm text-muted-foreground">
+            <div className="text-sm text-muted-foreground">
                  <ClickableReading
                     japanese={currentQuestion.explanation}
                     reading={currentQuestion.explanationReading}
+                    isBlock
                   />
-            </p>
+            </div>
             <Button onClick={goToNextQuestion} className="w-full">
             {currentQuestionIndex < quiz.questions.length - 1 ? "Next Question" : "Finish Quiz"}
             </Button>

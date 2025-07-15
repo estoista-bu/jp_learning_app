@@ -13,7 +13,7 @@ interface ClickableReadingProps {
   isBlock?: boolean;
 }
 
-export function ClickableReading({ japanese, reading, isBlock = true }: ClickableReadingProps) {
+export function ClickableReading({ japanese, reading, isBlock = false }: ClickableReadingProps) {
   // If no specific reading is provided, use the Japanese text itself.
   // This makes pure Hiragana and Katakana phrases clickable for consistency.
   const readingText = reading || japanese;
