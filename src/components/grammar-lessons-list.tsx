@@ -308,15 +308,15 @@ const grammarLessons: GrammarLesson[] = [
 
 export function GrammarLessonsList({ onSelectLesson }: GrammarLessonsListProps) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 p-4">
       {grammarLessons.map((lesson, index) => (
         <button
           key={index}
           onClick={() => onSelectLesson(lesson)}
           className="flex items-center justify-between w-full p-4 rounded-lg bg-card hover:bg-muted transition-colors text-left"
         >
-          <span className="flex-1">{lesson.title}</span>
-          <ChevronRight className="h-5 w-5 text-muted-foreground ml-4" />
+          <span className="flex-1 pr-4">{lesson.title}</span>
+          <ChevronRight className="h-5 w-5 text-muted-foreground ml-auto" />
         </button>
       ))}
     </div>

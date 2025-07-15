@@ -21,7 +21,7 @@ export function GrammarGuide() {
         setCurrentView(view);
         setSelectedLesson(lesson);
         setAnimation('in');
-    }, 300); // Match animation duration
+    }, 300);
   };
 
   const handleBack = () => {
@@ -35,6 +35,20 @@ export function GrammarGuide() {
         }
         setAnimation('in');
     }, 300);
+  }
+
+  const getTitle = () => {
+    switch (currentView) {
+      case "lessons":
+        return "Lessons";
+      case "lesson":
+        return selectedLesson?.title || "Lesson";
+      case "quizzes":
+        return "Quizzes";
+      case "main":
+      default:
+        return "Grammar Guide";
+    }
   }
 
   const renderContent = () => {
@@ -53,46 +67,54 @@ export function GrammarGuide() {
       case "main":
       default:
         return (
-          <ul className="space-y-2">
-            <li>
-              <button
-                onClick={() => handleNavigate("lessons")}
-                className="flex items-center justify-between w-full p-4 rounded-lg bg-card hover:bg-muted transition-colors"
-              >
-                <span>Lessons</span>
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />
-              </button>
-            </li>
-            <li>
-              <button
-                 onClick={() => handleNavigate("quizzes")}
-                 className="flex items-center justify-between w-full p-4 rounded-lg bg-card hover:bg-muted transition-colors"
-              >
-                <span>Quizzes</span>
-                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
-              </button>
-            </li>
-          </ul>
+          <div className="p-4">
+            <ul className="space-y-2">
+              <li>
+                <button
+                  onClick={() => handleNavigate("lessons")}
+                  className="flex items-center justify-between w-full p-4 rounded-lg bg-card hover:bg-muted transition-colors"
+                >
+                  <span>Lessons</span>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                </button>
+              </li>
+              <li>
+                <button
+                   onClick={() => handleNavigate("quizzes")}
+                   className="flex items-center justify-between w-full p-4 rounded-lg bg-card hover:bg-muted transition-colors"
+                >
+                  <span>Quizzes</span>
+                   <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                </button>
+              </li>
+            </ul>
+          </div>
         );
     }
   };
 
   return (
-    <div className="p-4 pt-0 pb-8 flex flex-col h-full">
-      <div className="flex items-center mb-4 min-h-[40px]">
+    <div className="flex flex-col h-full">
+      <div className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 flex items-center p-2 border-b min-h-[57px]">
         {currentView !== 'main' && (
-             <button onClick={handleBack} className="flex items-center text-sm p-2 -ml-2 rounded-md hover:bg-muted">
+             <button onClick={handleBack} className="flex items-center text-sm p-2 rounded-md hover:bg-muted">
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 Back
             </button>
         )}
+         <h3 className="font-semibold text-center flex-1 px-4 truncate">
+           {getTitle()}
+         </h3>
+         {currentView !== 'main' && <div className="w-[68px]"></div>}
       </div>
       <div className={cn(
           "flex-1",
            animation === 'in' && 'animate-slide-in-from-right',
            animation === 'out' && 'animate-slide-out-to-left-fade'
       )}>
-        {renderContent()}
+        <div className="overflow-y-auto">
+          {renderContent()}
+        </div>
       </div>
     </div>
   );

@@ -8,7 +8,7 @@ interface GrammarLessonViewProps {
 
 export function GrammarLessonView({ lesson }: GrammarLessonViewProps) {
   return (
-    <div className="pb-8">
+    <div className="p-4">
       <Card>
         <CardHeader>
           <CardTitle>{lesson.title}</CardTitle>

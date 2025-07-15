@@ -18,13 +18,13 @@ export default function Home() {
 
           <main className="flex-1 flex flex-col">
              <Tabs defaultValue="vocabulary" className="w-full flex-1 flex flex-col">
-                <div className="p-4">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="vocabulary">
+                <div className="px-4 border-b">
+                  <TabsList className="grid w-full grid-cols-2 bg-transparent p-0">
+                    <TabsTrigger value="vocabulary" className="data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
                       <BookOpen className="mr-2 h-4 w-4"/>
                       Vocabulary
                       </TabsTrigger>
-                    <TabsTrigger value="grammar">
+                    <TabsTrigger value="grammar" className="data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
                       <Milestone className="mr-2 h-4 w-4"/>
                       Grammar
                     </TabsTrigger>
