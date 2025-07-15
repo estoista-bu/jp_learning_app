@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Plus, ChevronLeft, ChevronRight, Shuffle } from "lucide-react";
 import type { VocabularyWord } from "@/lib/types";
 import { VocabularyForm } from "@/components/vocabulary-form";
@@ -15,6 +15,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Flashcard } from "@/components/flashcard";
+import { cn } from "@/lib/utils";
 
 const initialWords: VocabularyWord[] = [
   { id: "1", japanese: "日本語", reading: "にほんご", meaning: "Japanese language" },
@@ -24,10 +25,14 @@ const initialWords: VocabularyWord[] = [
   { id: "5", japanese: "アプリケーション", reading: "あぷりけーしょん", meaning: "Application" },
 ];
 
+type AnimationDirection = "left" | "right" | "none";
+
 export default function Home() {
   const [words, setWords] = useState<VocabularyWord[]>(initialWords);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [animationDirection, setAnimationDirection] = useState<AnimationDirection>("none");
+  const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const addWord = (word: Omit<VocabularyWord, "id">) => {
     const newWord = { ...word, id: Date.now().toString() };
@@ -51,13 +56,24 @@ export default function Home() {
     });
   };
 
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % words.length);
+  const handleNavigation = (direction: 'next' | 'prev') => {
+    if (animationTimeoutRef.current) {
+      clearTimeout(animationTimeoutRef.current);
+    }
+    setAnimationDirection(direction === 'next' ? 'right' : 'left');
+    
+    animationTimeoutRef.current = setTimeout(() => {
+       if (direction === 'next') {
+         setCurrentIndex((prev) => (prev + 1) % words.length);
+       } else {
+         setCurrentIndex((prev) => (prev - 1 + words.length) % words.length);
+       }
+       setAnimationDirection('none');
+    }, 150); // half of the animation duration
   };
 
-  const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + words.length) % words.length);
-  };
+  const goToNext = () => handleNavigation('next');
+  const goToPrevious = () => handleNavigation('prev');
 
   const shuffleWords = () => {
     setWords((currentWords) => {
@@ -99,9 +115,17 @@ export default function Home() {
           </Dialog>
         </header>
 
-        <main className="flex-1 flex flex-col items-center justify-center p-4">
+        <main className="flex-1 flex flex-col items-center justify-center p-4 overflow-hidden">
           {currentWord ? (
-            <div className="w-full h-72">
+            <div
+              key={currentWord.id}
+              className={cn(
+                "w-full h-72",
+                animationDirection === 'right' && 'animate-slide-out-to-left',
+                animationDirection === 'left' && 'animate-slide-out-to-right',
+                animationDirection === 'none' && 'animate-slide-in'
+              )}
+            >
               <Flashcard
                 word={currentWord}
                 onRemove={() => removeWord(currentWord.id)}
