@@ -24,9 +24,12 @@ export type GrammarLesson = {
 
 export type QuizQuestion = {
   question: string;
+  questionReading?: string;
   options: string[];
+  optionsReading?: string[];
   correctAnswer: string;
   explanation: string;
+  explanationReading?: string;
 };
 
 export type Quiz = {
@@ -35,5 +38,3 @@ export type Quiz = {
   questions: QuizQuestion[];
   score?: number | null;
 };
-
-    

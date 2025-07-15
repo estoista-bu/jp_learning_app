@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { CheckCircle, XCircle, RefreshCw } from "lucide-react";
+import { ClickableReading } from "./clickable-reading";
 
 interface QuizViewProps {
   quiz: Quiz;
@@ -93,7 +94,12 @@ export function QuizView({ quiz }: QuizViewProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">{currentQuestion.question}</CardTitle>
+          <CardTitle className="text-lg">
+             <ClickableReading
+                japanese={currentQuestion.question}
+                reading={currentQuestion.questionReading}
+              />
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -101,6 +107,7 @@ export function QuizView({ quiz }: QuizViewProps) {
               const isSelected = selectedAnswer === option;
               const isCorrect = currentQuestion.correctAnswer === option;
               const hasAnswered = selectedAnswer !== null;
+              const optionReading = currentQuestion.optionsReading?.[index]
 
               return (
                 <Button
@@ -115,7 +122,13 @@ export function QuizView({ quiz }: QuizViewProps) {
                   onClick={() => handleSelectAnswer(option)}
                   disabled={hasAnswered}
                 >
-                  <span className="flex-1">{option}</span>
+                  <span className="flex-1">
+                     <ClickableReading
+                        japanese={option}
+                        reading={optionReading}
+                        isBlock={false}
+                      />
+                  </span>
                   {hasAnswered && isCorrect && <CheckCircle className="ml-4 h-5 w-5 text-green-600 dark:text-green-400"/>}
                   {hasAnswered && !isCorrect && isSelected && <XCircle className="ml-4 h-5 w-5 text-red-600 dark:text-red-400"/>}
                 </Button>
@@ -127,7 +140,12 @@ export function QuizView({ quiz }: QuizViewProps) {
       
       {selectedAnswer && (
         <div className="p-4 bg-muted/50 rounded-lg animate-in fade-in space-y-4">
-            <p className="text-sm text-muted-foreground">{currentQuestion.explanation}</p>
+            <p className="text-sm text-muted-foreground">
+                 <ClickableReading
+                    japanese={currentQuestion.explanation}
+                    reading={currentQuestion.explanationReading}
+                  />
+            </p>
             <Button onClick={goToNextQuestion} className="w-full">
             {currentQuestionIndex < quiz.questions.length - 1 ? "Next Question" : "Finish Quiz"}
             </Button>
@@ -136,5 +154,3 @@ export function QuizView({ quiz }: QuizViewProps) {
     </div>
   );
 }
-
-    
