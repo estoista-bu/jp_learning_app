@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import type { VocabularyWord } from "@/lib/types";
 import { VocabularyForm } from "@/components/vocabulary-form";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,6 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Flashcard } from "@/components/flashcard";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 const initialWords: VocabularyWord[] = [
   { id: "1", japanese: "日本語", reading: "にほんご", meaning: "Japanese language" },
@@ -27,15 +26,39 @@ const initialWords: VocabularyWord[] = [
 export default function Home() {
   const [words, setWords] = useState<VocabularyWord[]>(initialWords);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const addWord = (word: Omit<VocabularyWord, "id">) => {
-    setWords((prev) => [...prev, { ...word, id: Date.now().toString() }]);
+    const newWord = { ...word, id: Date.now().toString() };
+    setWords((prev) => {
+      const newWords = [...prev, newWord];
+      setCurrentIndex(newWords.length - 1);
+      return newWords;
+    });
     setIsFormOpen(false);
   };
 
   const removeWord = (id: string) => {
-    setWords((prev) => prev.filter((word) => word.id !== id));
+    setWords((prev) => {
+      const newWords = prev.filter((word) => word.id !== id);
+      if (currentIndex >= newWords.length && newWords.length > 0) {
+        setCurrentIndex(newWords.length - 1);
+      } else if (newWords.length === 0) {
+        setCurrentIndex(0);
+      }
+      return newWords;
+    });
   };
+
+  const goToNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % words.length);
+  };
+
+  const goToPrevious = () => {
+    setCurrentIndex((prev) => (prev - 1 + words.length) % words.length);
+  };
+
+  const currentWord = words.length > 0 ? words[currentIndex] : null;
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-800">
@@ -63,20 +86,14 @@ export default function Home() {
           </Dialog>
         </header>
 
-        <main className="flex-1 overflow-y-auto">
-          {words.length > 0 ? (
-            <ScrollArea className="h-full">
-              <div className="space-y-4 p-4">
-                {words.map((word) => (
-                  <div key={word.id} className="h-48">
-                    <Flashcard
-                      word={word}
-                      onRemove={() => removeWord(word.id)}
-                    />
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
+        <main className="flex-1 flex flex-col items-center justify-center p-4">
+          {currentWord ? (
+            <div className="w-full h-72">
+              <Flashcard
+                word={currentWord}
+                onRemove={() => removeWord(currentWord.id)}
+              />
+            </div>
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
               <p className="text-lg font-semibold">Your vocabulary is empty.</p>
@@ -86,6 +103,22 @@ export default function Home() {
             </div>
           )}
         </main>
+        
+        {words.length > 1 && (
+          <footer className="flex items-center justify-between p-4 border-t">
+            <Button variant="outline" size="icon" onClick={goToPrevious}>
+              <ChevronLeft className="h-4 w-4" />
+              <span className="sr-only">Previous word</span>
+            </Button>
+            <p className="text-sm text-muted-foreground">
+              {currentIndex + 1} / {words.length}
+            </p>
+            <Button variant="outline" size="icon" onClick={goToNext}>
+              <ChevronRight className="h-4 w-4" />
+              <span className="sr-only">Next word</span>
+            </Button>
+          </footer>
+        )}
       </div>
     </div>
   );
