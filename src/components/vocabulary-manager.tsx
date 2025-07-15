@@ -80,7 +80,7 @@ export function VocabularyManager() {
     <div className="flex flex-col h-full">
       <Dialog open={isFormOpen} onOpenChange={handleFormOpenChange}>
         <div className="w-full flex flex-col">
-          <header className="flex items-center justify-between p-4 border-b">
+          <header className="flex items-center justify-between p-4 border-b sticky top-0 bg-background/95 backdrop-blur-sm z-10">
             <h2 className="font-headline text-lg font-bold">
               My Decks
             </h2>
