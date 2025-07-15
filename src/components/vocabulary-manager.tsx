@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Plus, Book, MoreHorizontal } from "lucide-react";
+import { Plus, Book, MoreHorizontal, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,7 +13,7 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,9 +34,9 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const initialDecks: Deck[] = [
-  { id: "1", name: "Greetings" },
-  { id: "2", name: "Food" },
-  { id: "3", name: "Travel" },
+  { id: "1", name: "Greetings", category: "user" },
+  { id: "2", name: "Food", category: "user" },
+  { id: "3", name: "Travel", category: "user" },
 ];
 
 export function VocabularyManager() {
@@ -60,10 +60,10 @@ export function VocabularyManager() {
   const saveDeck = (deckData: Omit<Deck, "id">, id?: string) => {
     if (id) {
       setDecks(prev => 
-        prev.map(d => (d.id === id ? { ...d, ...deckData } : d))
+        prev.map(d => (d.id === id ? { ...d, ...deckData, category: "user" } : d))
       );
     } else {
-      const newDeck = { ...deckData, id: Date.now().toString() };
+      const newDeck = { ...deckData, id: Date.now().toString(), category: "user" as const };
       setDecks(prev => [...prev, newDeck]);
     }
     setIsFormOpen(false);
@@ -71,7 +71,6 @@ export function VocabularyManager() {
   };
   
   const removeDeck = (id: string) => {
-    // In a real app, you'd also delete associated words.
     setDecks((prev) => prev.filter((deck) => deck.id !== id));
     setDeletingDeck(null);
   };
@@ -94,6 +93,35 @@ export function VocabularyManager() {
 
           <div className="flex-1 p-4 pt-2">
             <div className="grid gap-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between p-4">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Book className="h-5 w-5 text-primary" />
+                    <span>Kana Practice</span>
+                  </CardTitle>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        Select
+                        <ChevronDown className="h-4 w-4 ml-2" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <Link href="/deck/hiragana">
+                        <DropdownMenuItem>
+                          Hiragana
+                        </DropdownMenuItem>
+                      </Link>
+                      <Link href="/deck/katakana">
+                        <DropdownMenuItem>
+                          Katakana
+                        </DropdownMenuItem>
+                      </Link>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </CardHeader>
+              </Card>
+
               {decks.length > 0 ? (
                 decks.map((deck) => (
                   <Card key={deck.id} className="relative group">

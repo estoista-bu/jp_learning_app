@@ -10,6 +10,7 @@ export type VocabularyWord = {
 export type Deck = {
   id: string;
   name: string;
+  category?: 'user' | 'kana';
 };
 
 export type GrammarLesson = {
