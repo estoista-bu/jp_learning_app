@@ -5,7 +5,6 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import type { VocabularyWord } from "@/lib/types";
 import { VocabularyForm } from "@/components/vocabulary-form";
-import { VocabularyCarousel } from "@/components/vocabulary-carousel";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,6 +14,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Flashcard } from "@/components/flashcard";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const initialWords: VocabularyWord[] = [
   { id: "1", japanese: "日本語", reading: "にほんご", meaning: "Japanese language" },
@@ -37,12 +38,9 @@ export default function Home() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-800 p-4">
-      <div className="relative w-full max-w-sm h-[80vh] max-h-[900px] bg-background border-8 border-gray-800 dark:border-gray-200 rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden">
-        {/* Notch */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-36 h-6 bg-gray-800 dark:bg-gray-200 rounded-b-xl z-20"></div>
-        
-        <header className="flex items-center justify-between p-4 border-b sticky top-0 bg-background/95 backdrop-blur-sm z-10 pt-8">
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-800">
+      <div className="w-full max-w-sm h-screen bg-background flex flex-col">
+        <header className="flex items-center justify-between p-4 border-b sticky top-0 bg-background/95 backdrop-blur-sm z-10">
           <h1 className="font-headline text-xl font-bold text-primary">
             Nihongo Mastery
           </h1>
@@ -65,9 +63,20 @@ export default function Home() {
           </Dialog>
         </header>
 
-        <main className="flex-1 flex flex-col overflow-y-auto">
+        <main className="flex-1 overflow-y-auto">
           {words.length > 0 ? (
-            <VocabularyCarousel words={words} onRemoveWord={removeWord} />
+            <ScrollArea className="h-full">
+              <div className="space-y-4 p-4">
+                {words.map((word) => (
+                  <div key={word.id} className="h-48">
+                    <Flashcard
+                      word={word}
+                      onRemove={() => removeWord(word.id)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
               <p className="text-lg font-semibold">Your vocabulary is empty.</p>

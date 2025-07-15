@@ -45,7 +45,7 @@ export function Flashcard({ word, onRemove }: FlashcardProps) {
             <X className="h-4 w-4" />
           </Button>
           <CardContent className="p-4 flex items-center justify-center">
-            <p className="font-headline text-6xl text-center text-primary drop-shadow-sm break-words">
+            <p className="font-headline text-5xl text-center text-primary drop-shadow-sm break-words">
               {word.japanese}
             </p>
           </CardContent>
@@ -62,10 +62,10 @@ export function Flashcard({ word, onRemove }: FlashcardProps) {
             <X className="h-4 w-4" />
           </Button>
           <CardContent className="p-4 text-center">
-            <p className="font-body text-4xl font-semibold text-accent">
+            <p className="font-body text-3xl font-semibold text-accent">
               {word.reading}
             </p>
-            <p className="text-muted-foreground mt-4 text-2xl">{word.meaning}</p>
+            <p className="text-muted-foreground mt-2 text-xl">{word.meaning}</p>
           </CardContent>
         </Card>
       </div>
