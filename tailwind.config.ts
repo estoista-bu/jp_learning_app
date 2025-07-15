@@ -17,13 +17,6 @@ export default {
       },
     },
     extend: {
-      height: {
-        'header': 'var(--header-height)',
-        'subheader': 'var(--subheader-height)',
-      },
-      spacing: {
-        'header': 'var(--header-height)',
-      },
       fontFamily: {
         headline: ['Poppins', 'sans-serif'],
         body: ['"PT Sans"', 'sans-serif'],
