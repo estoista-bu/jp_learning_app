@@ -1,7 +1,7 @@
 
 "use client";
 
-import { ChevronRight, ArrowLeft } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { GrammarLessonsList } from "./grammar-lessons-list";
 import { GrammarLessonView } from "./grammar-lesson-view";
 import { QuizList } from "./quiz-list";
@@ -16,13 +16,9 @@ interface GrammarGuideProps {
     selectedQuiz: Quiz | null;
     animation: 'in' | 'out' | null;
     onNavigate: (view: "main" | "lessons" | "lesson" | "quizzes" | "quiz", data?: GrammarLesson | Quiz) => void;
-    onBack: () => void;
-    getTitle: () => string;
 }
 
-export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animation, onNavigate, onBack, getTitle }: GrammarGuideProps) {
-
-  const isMainView = currentView === 'main';
+export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animation, onNavigate }: GrammarGuideProps) {
 
   const renderContent = () => {
     switch (currentView) {
@@ -64,28 +60,13 @@ export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animat
   };
 
   return (
-    <div className="flex flex-col h-full">
-        {!isMainView && (
-            <div className="flex items-center p-4 border-b sticky top-0 bg-background/95 backdrop-blur-sm z-10">
-                <button onClick={onBack} className="flex-shrink-0 flex items-center text-sm p-2 rounded-md hover:bg-muted -ml-2">
-                    <ArrowLeft className="h-4 w-4 mr-1" />
-                    Back
-                </button>
-                <div className="flex-grow min-w-0 pl-4">
-                  <h3 className="font-headline text-lg font-bold text-primary">
-                    {getTitle()}
-                  </h3>
-                </div>
-            </div>
-        )}
-      <div className={cn(
-          "flex-1 overflow-y-auto",
-           animation === 'in' && 'animate-slide-in-from-right',
-           animation === 'out' && 'animate-slide-out-to-left-fade'
-      )}>
-        <div className="overflow-y-auto p-4 pt-2">
-          {renderContent()}
-        </div>
+    <div className={cn(
+        "flex-1 overflow-y-auto",
+          animation === 'in' && 'animate-slide-in-from-right',
+          animation === 'out' && 'animate-slide-out-to-left-fade'
+    )}>
+      <div className="overflow-y-auto p-4 pt-2">
+        {renderContent()}
       </div>
     </div>
   );

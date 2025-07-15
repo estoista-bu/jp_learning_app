@@ -24,6 +24,9 @@
     --input: 220 13% 91%;
     --ring: 14 90% 55%;
     --radius: 0.5rem;
+
+    --header-height: 97px;
+    --subheader-height: 69px;
   }
  
   .dark {

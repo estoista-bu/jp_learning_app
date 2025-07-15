@@ -8,6 +8,7 @@ import { GrammarGuide } from "@/components/grammar-guide";
 import { BookOpen, Milestone, ArrowLeft } from "lucide-react";
 import type { GrammarLesson, Quiz } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { GrammarContainer } from "@/components/grammar-container";
 
 type AppView = "vocabulary" | "grammar";
 type GrammarView = "main" | "lessons" | "lesson" | "quizzes" | "quiz";
@@ -71,17 +72,15 @@ export default function Home() {
     }
   };
 
-  const isGrammarHome = grammarView === 'main';
-
   return (
     <div className="flex justify-center items-start min-h-screen bg-gray-100 dark:bg-gray-800">
       <div className="w-full max-w-sm h-screen bg-background flex flex-col">
-        <Tabs value={currentView} onValueChange={(v) => setCurrentView(v as AppView)} className="w-full flex-1 flex flex-col">
-          <header className="flex flex-col p-4 border-b sticky top-0 bg-background/95 backdrop-blur-sm z-20">
-            <h1 className="font-headline text-xl font-bold text-primary text-center">
-              Nihongo Mastery
-            </h1>
-            <div className="mt-4">
+        <header className="flex flex-col p-4 border-b sticky top-0 bg-background/95 backdrop-blur-sm z-20 h-header">
+          <h1 className="font-headline text-xl font-bold text-primary text-center">
+            Nihongo Mastery
+          </h1>
+          <div className="mt-4">
+            <Tabs value={currentView} onValueChange={(v) => setCurrentView(v as AppView)}>
               <TabsList className="grid w-full grid-cols-2 bg-transparent p-0">
                 <TabsTrigger value="vocabulary" className="data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
                   <BookOpen className="mr-2 h-4 w-4" />
@@ -92,25 +91,30 @@ export default function Home() {
                   Grammar
                 </TabsTrigger>
               </TabsList>
-            </div>
-          </header>
-          <main className="flex-1 flex flex-col overflow-y-auto">
-            <TabsContent value="vocabulary" className="flex-1 overflow-y-auto mt-0">
-              <VocabularyManager />
-            </TabsContent>
-            <TabsContent value="grammar" className="flex-1 overflow-y-auto mt-0">
+            </Tabs>
+          </div>
+        </header>
+
+        <main className="flex-1 flex flex-col overflow-y-auto">
+          {currentView === 'vocabulary' && (
+            <VocabularyManager />
+          )}
+          {currentView === 'grammar' && (
+            <GrammarContainer
+                isMainView={grammarView === 'main'}
+                onBack={handleBackGrammar}
+                title={getGrammarTitle()}
+            >
               <GrammarGuide
                 currentView={grammarView}
                 selectedLesson={selectedLesson}
                 selectedQuiz={selectedQuiz}
                 animation={animation}
                 onNavigate={handleNavigateGrammar}
-                onBack={handleBackGrammar}
-                getTitle={getGrammarTitle}
               />
-            </TabsContent>
-          </main>
-        </Tabs>
+            </GrammarContainer>
+          )}
+        </main>
       </div>
     </div>
   );
