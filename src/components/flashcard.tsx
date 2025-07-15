@@ -45,7 +45,7 @@ export function Flashcard({ word, onRemove }: FlashcardProps) {
             <X className="h-4 w-4" />
           </Button>
           <CardContent className="p-4 flex items-center justify-center">
-            <p className="font-headline text-5xl text-center text-primary drop-shadow-sm break-words">
+            <p className="font-headline text-5xl text-center text-primary drop-shadow-sm break-keep">
               {word.japanese}
             </p>
           </CardContent>
