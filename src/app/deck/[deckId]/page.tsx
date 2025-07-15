@@ -253,5 +253,3 @@ export default function DeckPage({ params }: { params: { deckId: string } }) {
     </div>
   );
 }
-
-    
