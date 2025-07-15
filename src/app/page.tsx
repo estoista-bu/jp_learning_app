@@ -73,7 +73,7 @@ export default function Home() {
 
   return (
     <div className="flex justify-center items-start min-h-screen bg-gray-100 dark:bg-gray-800">
-      <div className="w-full max-w-sm h-screen bg-background flex flex-col">
+      <div className="w-full max-w-sm h-screen bg-background flex flex-col pt-[env(safe-area-inset-top)]">
         <header className="flex flex-col p-4 border-b">
           <h1 className="font-headline text-xl font-bold text-primary text-center">
             Nihongo Mastery
@@ -102,13 +102,13 @@ export default function Home() {
              <div className="flex flex-col h-full">
               {grammarView !== 'main' && (
                  <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm">
-                    <div className="flex items-center p-4 border-b">
+                    <div className="flex items-center px-4 py-2 border-b">
                         <button onClick={handleBackGrammar} className="flex-shrink-0 flex items-center text-sm p-2 rounded-md hover:bg-muted -ml-2">
                             <ArrowLeft className="h-4 w-4 mr-1" />
                             Back
                         </button>
                         <div className="flex-grow min-w-0 pl-4">
-                            <h3 className="font-headline text-lg font-bold text-primary whitespace-nowrap overflow-hidden text-ellipsis">
+                            <h3 className="font-headline text-lg font-bold text-primary">
                                 {getGrammarTitle()}
                             </h3>
                         </div>
