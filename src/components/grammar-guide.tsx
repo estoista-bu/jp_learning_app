@@ -106,22 +106,6 @@ const grammarLessons = [
     ]
   },
   {
-    title: "Particle に (ni) for Time and Location",
-    explanation: "The particle に (ni) is used to mark a specific point in time (e.g., on Sunday, at 3 o'clock) or the location of existence for inanimate objects (used with verbs like あります - arimasu).",
-    exampleSentences: [
-      {
-        japanese: "３時に会いましょう。",
-        reading: "San-ji ni aimashou.",
-        meaning: "Let's meet at 3 o'clock. (Time)"
-      },
-      {
-        japanese: "机の上に本があります。",
-        reading: "Tsukue no ue ni hon ga arimasu.",
-        meaning: "There is a book on the desk. (Location of existence)"
-      }
-    ]
-  },
-  {
     title: "The Te-form (て形)",
     explanation: "The te-form is a versatile verb conjugation that doesn't indicate tense. It's used for making requests (〜てください), connecting successive actions (action 1, and then action 2), and much more.",
     exampleSentences: [
@@ -134,6 +118,128 @@ const grammarLessons = [
         japanese: "ちょっと待ってください。",
         reading: "Chotto matte kudasai.",
         meaning: "Please wait a moment."
+      }
+    ]
+  },
+  {
+    title: "Te-form + います (Present Progressive)",
+    explanation: "The te-form of a verb followed by います (imasu) describes an action currently in progress, similar to '-ing' in English. It can also describe a continuous state.",
+    exampleSentences: [
+      {
+        japanese: "何をしていますか？",
+        reading: "Nani o shite imasu ka?",
+        meaning: "What are you doing?"
+      },
+      {
+        japanese: "音楽を聞いています。",
+        reading: "Ongaku o kiite imasu.",
+        meaning: "I am listening to music."
+      },
+      {
+        japanese: "佐藤さんは結婚しています。",
+        reading: "Satou-san wa kekkon shite imasu.",
+        meaning: "Mr. Sato is married. (A continuous state)"
+      }
+    ]
+  },
+  {
+    title: "Plain Form (Dictionary Form)",
+    explanation: "The plain form, or dictionary form, is the base form of a verb. It's used in casual conversation and in various grammatical structures. For example, the plain form of 食べます (tabemasu) is 食べる (taberu).",
+    exampleSentences: [
+      {
+        japanese: "友達と話すのが好きだ。",
+        reading: "Tomodachi to hanasu no ga suki da.",
+        meaning: "I like talking with my friends. (Casual speech)"
+      },
+      {
+        japanese: "本を読む時間がない。",
+        reading: "Hon o yomu jikan ga nai.",
+        meaning: "I don't have time to read books. (Grammatical structure)"
+      }
+    ]
+  },
+  {
+    title: "Plain Past Tense (Ta-form)",
+    explanation: "The ta-form is the plain past tense of verbs, equivalent to the polite -mashita form. It's formed by changing the 'e' in the te-form to 'a'. For example, 食べて (tabete) becomes 食べた (tabeta).",
+    exampleSentences: [
+      {
+        japanese: "昨日、何を食べた？",
+        reading: "Kinou, nani o tabeta?",
+        meaning: "What did you eat yesterday? (Casual)"
+      },
+      {
+        japanese: "日本に行ったことがある。",
+        reading: "Nihon ni itta koto ga aru.",
+        meaning: "I have been to Japan. (Expressing experience)"
+      }
+    ]
+  },
+  {
+    title: "Potential Form (Can do)",
+    explanation: "The potential form expresses the ability to do something ('can do'). Ru-verbs change the final -ru to -rareru. U-verbs change the final 'u' sound to the 'e' sound and add -ru.",
+    exampleSentences: [
+      {
+        japanese: "私は漢字が読めます。",
+        reading: "Watashi wa kanji ga yomemasu.",
+        meaning: "I can read kanji. (Polite form)"
+      },
+      {
+        japanese: "彼は日本語を話せる。",
+        reading: "Kare wa nihongo o hanaseru.",
+        meaning: "He can speak Japanese. (Plain form)"
+      },
+      {
+        japanese: "寿司が食べられますか？",
+        reading: "Sushi ga taberaremasu ka?",
+        meaning: "Can you eat sushi?"
+      }
+    ]
+  },
+  {
+    title: "Giving Reasons (から and ので)",
+    explanation: "から (kara) and ので (node) are both used to mean 'because' or 'so'. から is more common and can be used in a wide range of situations. ので is slightly more formal and implies a softer, more logical cause-and-effect relationship.",
+    exampleSentences: [
+      {
+        japanese: "時間がないから、急ぎましょう。",
+        reading: "Jikan ga nai kara, isogimashou.",
+        meaning: "Because there's no time, let's hurry."
+      },
+      {
+        japanese: "雨が降っているので、傘を持っていきます。",
+        reading: "Ame ga futte iru node, kasa o motte ikimasu.",
+        meaning: "Since it's raining, I will take an umbrella."
+      }
+    ]
+  },
+  {
+    title: "Giving Advice (方がいいです)",
+    explanation: "The structure (Verb, ta-form) + 方がいいです (hou ga ii desu) is used to give advice, meaning 'it would be better to...'. For negative advice ('it would be better not to...'), use (Verb, plain negative) + 方がいいです.",
+    exampleSentences: [
+      {
+        japanese: "もっと野菜を食べた方がいいですよ。",
+        reading: "Motto yasai o tabeta hou ga ii desu yo.",
+        meaning: "You should eat more vegetables."
+      },
+      {
+        japanese: "夜遅くまで起きない方がいいです。",
+        reading: "Yoru osoku made okinai hou ga ii desu.",
+        meaning: "It's better not to stay up late at night."
+      }
+    ]
+  },
+  {
+    title: "Expressing Obligation (なければなりません)",
+    explanation: "To express that you must do something, use the negative plain form of a verb, drop the final 'i', and add -kereba narimasen. For example, iku -> ikanai -> ikanakereba narimasen (must go).",
+    exampleSentences: [
+      {
+        japanese: "宿題をしなければなりません。",
+        reading: "Shukudai o shinakereba narimasen.",
+        meaning: "I must do my homework."
+      },
+      {
+        japanese: "明日、早く起きなければならない。",
+        reading: "Ashita, hayaku okinakereba naranai.",
+        meaning: "I have to get up early tomorrow. (Casual form)"
       }
     ]
   }
@@ -181,3 +287,5 @@ export function GrammarGuide() {
     </div>
   );
 }
+
+    
