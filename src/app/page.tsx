@@ -1,223 +1,179 @@
 
 "use client";
 
-import { useState, useRef } from "react";
-import { Plus, ChevronLeft, ChevronRight, Shuffle, Pencil } from "lucide-react";
-import type { VocabularyWord } from "@/lib/types";
-import { VocabularyForm } from "@/components/vocabulary-form";
+import { useState } from "react";
+import Link from "next/link";
+import { Plus, Book, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogTrigger,
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Flashcard } from "@/components/flashcard";
-import { cn } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import type { Deck } from "@/lib/types";
+import { DeckForm } from "@/components/deck-form";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
-const initialWords: VocabularyWord[] = [
-  { id: "1", japanese: "日本語", reading: "にほんご", meaning: "Japanese language" },
-  { id: "2", japanese: "食べる", reading: "たべる", meaning: "To eat" },
-  { id: "3", japanese: "大きい", reading: "おおきい", meaning: "Big" },
-  { id: "4", japanese: "コンピューター", reading: "こんぴゅーたー", meaning: "Computer" },
-  { id: "5", japanese: "アプリケーション", reading: "あぷりけーしょん", meaning: "Application" },
+const initialDecks: Deck[] = [
+  { id: "1", name: "Greetings" },
+  { id: "2", name: "Food" },
+  { id: "3", name: "Travel" },
 ];
 
-type AnimationDirection = "left" | "right" | "none";
-
 export default function Home() {
-  const [words, setWords] = useState<VocabularyWord[]>(initialWords);
+  const [decks, setDecks] = useState<Deck[]>(initialDecks);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingWord, setEditingWord] = useState<VocabularyWord | null>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [animationDirection, setAnimationDirection] = useState<AnimationDirection>("none");
-  const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [editingDeck, setEditingDeck] = useState<Deck | null>(null);
+  const [deletingDeck, setDeletingDeck] = useState<Deck | null>(null);
 
-  const minSwipeDistance = 50;
-
-  const handleOpenForm = (word: VocabularyWord | null) => {
-    setEditingWord(word);
+  const handleOpenForm = (deck: Deck | null) => {
+    setEditingDeck(deck);
     setIsFormOpen(true);
   };
   
   const handleFormOpenChange = (open: boolean) => {
     if (!open) {
-      setEditingWord(null);
+      setEditingDeck(null);
     }
     setIsFormOpen(open);
   }
 
-  const saveWord = (wordData: Omit<VocabularyWord, "id">, id?: string) => {
+  const saveDeck = (deckData: Omit<Deck, "id">, id?: string) => {
     if (id) {
-      // Update existing word
-      setWords(prev => 
-        prev.map(w => (w.id === id ? { ...w, ...wordData } : w))
+      setDecks(prev => 
+        prev.map(d => (d.id === id ? { ...d, ...deckData } : d))
       );
     } else {
-      // Add new word
-      const newWord = { ...wordData, id: Date.now().toString() };
-      setWords((prev) => {
-        const newWords = [...prev, newWord];
-        setCurrentIndex(newWords.length - 1);
-        return newWords;
-      });
+      const newDeck = { ...deckData, id: Date.now().toString() };
+      setDecks(prev => [...prev, newDeck]);
     }
     setIsFormOpen(false);
-    setEditingWord(null);
-  };
-
-  const removeWord = (id: string) => {
-    setWords((prev) => {
-      const newWords = prev.filter((word) => word.id !== id);
-      if (currentIndex >= newWords.length && newWords.length > 0) {
-        setCurrentIndex(newWords.length - 1);
-      } else if (newWords.length === 0) {
-        setCurrentIndex(0);
-      }
-      return newWords;
-    });
-  };
-
-  const handleNavigation = (direction: 'next' | 'prev') => {
-    if (animationTimeoutRef.current) {
-      clearTimeout(animationTimeoutRef.current);
-    }
-    setAnimationDirection(direction === 'next' ? 'right' : 'left');
-    
-    animationTimeoutRef.current = setTimeout(() => {
-       if (direction === 'next') {
-         setCurrentIndex((prev) => (prev + 1) % words.length);
-       } else {
-         setCurrentIndex((prev) => (prev - 1 + words.length) % words.length);
-       }
-       setAnimationDirection('none');
-    }, 150);
-  };
-
-  const goToNext = () => handleNavigation('next');
-  const goToPrevious = () => handleNavigation('prev');
-
-  const shuffleWords = () => {
-    setWords((currentWords) => {
-      const shuffled = [...currentWords];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      return shuffled;
-    });
-    setCurrentIndex(0);
+    setEditingDeck(null);
   };
   
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
+  const removeDeck = (id: string) => {
+    // In a real app, you'd also delete associated words.
+    setDecks((prev) => prev.filter((deck) => deck.id !== id));
+    setDeletingDeck(null);
   };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-    if (isLeftSwipe) {
-      goToNext();
-    } else if (isRightSwipe) {
-      goToPrevious();
-    }
-    setTouchStart(null);
-    setTouchEnd(null);
-  };
-
-  const currentWord = words.length > 0 ? words[currentIndex] : null;
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-800">
+    <div className="flex justify-center items-start min-h-screen bg-gray-100 dark:bg-gray-800">
       <Dialog open={isFormOpen} onOpenChange={handleFormOpenChange}>
         <div className="w-full max-w-sm h-screen bg-background flex flex-col">
           <header className="flex items-center justify-between p-4 border-b sticky top-0 bg-background/95 backdrop-blur-sm z-10">
             <h1 className="font-headline text-xl font-bold text-primary">
-              Nihongo Mastery
+              My Decks
             </h1>
             <DialogTrigger asChild>
               <Button size="icon" className="w-8 h-8" onClick={() => handleOpenForm(null)}>
                 <Plus className="h-4 w-4" />
-                <span className="sr-only">Add New Word</span>
+                <span className="sr-only">Add New Deck</span>
               </Button>
             </DialogTrigger>
           </header>
 
-          <main 
-            className="flex-1 flex flex-col items-center justify-center p-4 overflow-hidden"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-          >
-            {currentWord ? (
-              <div
-                key={currentWord.id}
-                className={cn(
-                  "w-full h-72",
-                  animationDirection === 'right' && 'animate-slide-out-to-left',
-                  animationDirection === 'left' && 'animate-slide-out-to-right',
-                  animationDirection === 'none' && 'animate-slide-in'
-                )}
-              >
-                <Flashcard
-                  word={currentWord}
-                  onRemove={() => removeWord(currentWord.id)}
-                  onEdit={() => handleOpenForm(currentWord)}
-                />
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
-                <p className="text-lg font-semibold">Your vocabulary is empty.</p>
-                <p className="mt-2">
-                  Tap the <Plus className="inline h-4 w-4 mx-1" /> button to get started!
-                </p>
-              </div>
-            )}
+          <main className="flex-1 p-4 overflow-y-auto">
+            <div className="grid gap-4">
+              {decks.length > 0 ? (
+                decks.map((deck) => (
+                  <Card key={deck.id} className="relative group">
+                    <div className="absolute top-2 right-2">
+                       <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleOpenForm(deck)}>
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={() => setDeletingDeck(deck)}
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                    <Link href={`/deck/${deck.id}`}>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Book className="h-5 w-5 text-primary" />
+                          <span>{deck.name}</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground">
+                          View and study this deck.
+                        </p>
+                      </CardContent>
+                    </Link>
+                  </Card>
+                ))
+              ) : (
+                <div className="text-center text-muted-foreground py-16">
+                  <p>No decks found.</p>
+                  <p className="mt-2">
+                    Click the <Plus className="inline h-4 w-4 mx-1" /> button to create one.
+                  </p>
+                </div>
+              )}
+            </div>
           </main>
-          
-          {words.length > 1 && (
-            <footer className="flex items-center justify-between p-4 border-t">
-              <Button variant="outline" size="icon" onClick={goToPrevious}>
-                <ChevronLeft className="h-4 w-4" />
-                <span className="sr-only">Previous word</span>
-              </Button>
-              <div className="flex items-center gap-4">
-                <Button variant="outline" size="icon" onClick={shuffleWords}>
-                  <Shuffle className="h-4 w-4" />
-                  <span className="sr-only">Shuffle words</span>
-                </Button>
-                <p className="text-sm text-muted-foreground">
-                  {currentIndex + 1} / {words.length}
-                </p>
-              </div>
-              <Button variant="outline" size="icon" onClick={goToNext}>
-                <ChevronRight className="h-4 w-4" />
-                <span className="sr-only">Next word</span>
-              </Button>
-            </footer>
-          )}
         </div>
+
+        {/* Form Dialog */}
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle className="font-headline">{editingWord ? "Edit Word" : "Add New Word"}</DialogTitle>
+            <DialogTitle className="font-headline">{editingDeck ? "Edit Deck" : "Create New Deck"}</DialogTitle>
             <DialogDescription>
-              {editingWord ? "Update the details of your word." : "Register a new Japanese word to your vocabulary list."}
+              {editingDeck ? "Update the name of your deck." : "Create a new deck to organize your vocabulary."}
             </DialogDescription>
           </DialogHeader>
-          <VocabularyForm onSaveWord={saveWord} wordToEdit={editingWord} />
+          <DeckForm onSaveDeck={saveDeck} deckToEdit={editingDeck} />
         </DialogContent>
       </Dialog>
+      
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deletingDeck} onOpenChange={() => setDeletingDeck(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              <span className="font-semibold text-foreground"> {deletingDeck?.name}</span> deck and all the words within it.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => removeDeck(deletingDeck!.id)}>Continue</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
+    

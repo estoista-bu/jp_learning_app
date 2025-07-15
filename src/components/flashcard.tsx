@@ -38,7 +38,6 @@ export function Flashcard({ word, onRemove, onEdit }: FlashcardProps) {
     e.stopPropagation();
   }
 
-  // Adjust font size based on word length
   const japaneseWordLength = word.japanese.length;
   const fontSizeClass =
     japaneseWordLength > 6 ? "text-4xl" : "text-5xl";
@@ -97,7 +96,7 @@ export function Flashcard({ word, onRemove, onEdit }: FlashcardProps) {
           <CardContent className="p-4 flex items-center justify-center">
             <p className={cn(
               "font-headline text-center text-primary drop-shadow-sm",
-              "break-words", // allow breaking
+              "break-words",
               fontSizeClass
             )}>
               {word.japanese}
@@ -154,3 +153,5 @@ export function Flashcard({ word, onRemove, onEdit }: FlashcardProps) {
     </div>
   );
 }
+
+    

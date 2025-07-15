@@ -24,14 +24,15 @@ const formSchema = z.object({
   meaning: z.string().min(1, "Meaning is required."),
 });
 
-type VocabularyFormData = Omit<VocabularyWord, "id">;
+type VocabularyFormData = Omit<VocabularyWord, "id" | "deckId">;
 
 interface VocabularyFormProps {
   onSaveWord: (data: VocabularyFormData, id?: string) => void;
   wordToEdit: VocabularyWord | null;
+  deckId: string;
 }
 
-export function VocabularyForm({ onSaveWord, wordToEdit }: VocabularyFormProps) {
+export function VocabularyForm({ onSaveWord, wordToEdit, deckId }: VocabularyFormProps) {
   const { toast } = useToast();
   const form = useForm<VocabularyFormData>({
     resolver: zodResolver(formSchema),
@@ -116,3 +117,5 @@ export function VocabularyForm({ onSaveWord, wordToEdit }: VocabularyFormProps) 
     </Form>
   );
 }
+
+    
