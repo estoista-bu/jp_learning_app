@@ -66,15 +66,11 @@ export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animat
   return (
     <div className="flex flex-col h-full">
         {!isMainView && (
-            <div className="flex items-center p-4 border-b">
+            <div className="flex items-center p-4 border-b sticky top-0 bg-background/95 backdrop-blur-sm z-10">
                 <button onClick={onBack} className="flex items-center text-sm p-2 rounded-md hover:bg-muted -ml-2">
                     <ArrowLeft className="h-4 w-4 mr-1" />
                     Back
                 </button>
-                <h3 className="font-semibold text-center flex-1 px-4 truncate">
-                    {getTitle()}
-                </h3>
-                 <div className="w-[68px]"></div>
             </div>
         )}
       <div className={cn(
