@@ -108,7 +108,7 @@ export default function Home() {
                             Back
                         </button>
                         <div className="flex-grow min-w-0 pl-4">
-                            <h3 className="font-headline text-lg font-bold text-primary">
+                            <h3 className="font-headline text-base font-bold text-primary truncate">
                                 {getGrammarTitle()}
                             </h3>
                         </div>
