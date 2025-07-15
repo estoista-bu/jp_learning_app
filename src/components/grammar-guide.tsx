@@ -248,7 +248,7 @@ const grammarLessons = [
 
 export function GrammarGuide() {
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-4 pt-0 space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Grammar Guide</CardTitle>
@@ -287,5 +287,3 @@ export function GrammarGuide() {
     </div>
   );
 }
-
-    

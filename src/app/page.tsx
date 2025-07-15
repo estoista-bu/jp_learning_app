@@ -18,20 +18,22 @@ export default function Home() {
 
           <main className="flex-1 flex flex-col">
              <Tabs defaultValue="vocabulary" className="w-full flex-1 flex flex-col">
-                <TabsList className="grid w-full grid-cols-2 m-4">
-                  <TabsTrigger value="vocabulary">
-                    <BookOpen className="mr-2 h-4 w-4"/>
-                    Vocabulary
+                <div className="p-4">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="vocabulary">
+                      <BookOpen className="mr-2 h-4 w-4"/>
+                      Vocabulary
+                      </TabsTrigger>
+                    <TabsTrigger value="grammar">
+                      <Milestone className="mr-2 h-4 w-4"/>
+                      Grammar
                     </TabsTrigger>
-                  <TabsTrigger value="grammar">
-                    <Milestone className="mr-2 h-4 w-4"/>
-                    Grammar
-                  </TabsTrigger>
-                </TabsList>
-                <TabsContent value="vocabulary" className="flex-1 overflow-y-auto">
+                  </TabsList>
+                </div>
+                <TabsContent value="vocabulary" className="flex-1 overflow-y-auto mt-0">
                     <VocabularyManager />
                 </TabsContent>
-                <TabsContent value="grammar" className="flex-1 overflow-y-auto">
+                <TabsContent value="grammar" className="flex-1 overflow-y-auto mt-0">
                     <GrammarGuide />
                 </TabsContent>
             </Tabs>
