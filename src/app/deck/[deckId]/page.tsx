@@ -3,6 +3,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { Plus, ChevronLeft, ChevronRight, Shuffle, ArrowLeft } from "lucide-react";
 import type { VocabularyWord, Deck } from "@/lib/types";
 import { VocabularyForm } from "@/components/vocabulary-form";
@@ -41,8 +42,9 @@ const allDecks: Deck[] = [
 
 type AnimationDirection = "left" | "right" | "none";
 
-export default function DeckPage({ params }: { params: { deckId: string } }) {
-  const { deckId } = params;
+export default function DeckPage() {
+  const params = useParams();
+  const deckId = params.deckId as string;
   
   const [deck, setDeck] = useState<Deck | null>(null);
   const [words, setWords] = useState<VocabularyWord[]>([]);
@@ -55,11 +57,13 @@ export default function DeckPage({ params }: { params: { deckId: string } }) {
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   useEffect(() => {
-    const currentDeck = allDecks.find(d => d.id === deckId) || null;
-    const wordsInDeck = allWords.filter(w => w.deckId === deckId);
-    setDeck(currentDeck);
-    setWords(wordsInDeck);
-    setCurrentIndex(0);
+    if (deckId) {
+      const currentDeck = allDecks.find(d => d.id === deckId) || null;
+      const wordsInDeck = allWords.filter(w => w.deckId === deckId);
+      setDeck(currentDeck);
+      setWords(wordsInDeck);
+      setCurrentIndex(0);
+    }
   }, [deckId]);
 
 
@@ -253,5 +257,3 @@ export default function DeckPage({ params }: { params: { deckId: string } }) {
     </div>
   );
 }
-
-    
