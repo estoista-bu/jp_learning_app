@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { X } from "lucide-react";
+import { X, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { VocabularyWord } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,14 +11,20 @@ import { Button } from "@/components/ui/button";
 interface FlashcardProps {
   word: VocabularyWord;
   onRemove: () => void;
+  onEdit: () => void;
 }
 
-export function Flashcard({ word, onRemove }: FlashcardProps) {
+export function Flashcard({ word, onRemove, onEdit }: FlashcardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
 
   const handleRemove = (e: React.MouseEvent) => {
     e.stopPropagation();
     onRemove();
+  };
+  
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEdit();
   };
 
   // Adjust font size based on word length
@@ -40,15 +46,26 @@ export function Flashcard({ word, onRemove }: FlashcardProps) {
         )}
       >
         <Card className="absolute w-full h-full [backface-visibility:hidden] flex items-center justify-center overflow-hidden">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-2 right-2 z-20 h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={handleRemove}
-            aria-label={`Remove ${word.japanese}`}
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          <div className="absolute top-2 right-2 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              onClick={handleEdit}
+              aria-label={`Edit ${word.japanese}`}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+              onClick={handleRemove}
+              aria-label={`Remove ${word.japanese}`}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
           <CardContent className="p-4 flex items-center justify-center">
             <p className={cn(
               "font-headline text-center text-primary drop-shadow-sm",
@@ -61,15 +78,26 @@ export function Flashcard({ word, onRemove }: FlashcardProps) {
         </Card>
 
         <Card className="absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] flex items-center justify-center overflow-hidden">
-           <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-2 right-2 z-20 h-8 w-8 text-muted-foreground hover:text-destructive"
-            onClick={handleRemove}
-            aria-label={`Remove ${word.japanese}`}
-          >
-            <X className="h-4 w-4" />
-          </Button>
+           <div className="absolute top-2 right-2 z-20 flex gap-1">
+             <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                onClick={handleEdit}
+                aria-label={`Edit ${word.japanese}`}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                onClick={handleRemove}
+                aria-label={`Remove ${word.japanese}`}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+           </div>
           <CardContent className="p-4 text-center">
             <p className="font-body text-3xl font-semibold text-accent">
               {word.reading}

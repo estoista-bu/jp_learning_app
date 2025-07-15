@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Plus, ChevronLeft, ChevronRight, Shuffle } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Shuffle, Pencil } from "lucide-react";
 import type { VocabularyWord } from "@/lib/types";
 import { VocabularyForm } from "@/components/vocabulary-form";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,7 @@ type AnimationDirection = "left" | "right" | "none";
 export default function Home() {
   const [words, setWords] = useState<VocabularyWord[]>(initialWords);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingWord, setEditingWord] = useState<VocabularyWord | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [animationDirection, setAnimationDirection] = useState<AnimationDirection>("none");
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -38,14 +39,35 @@ export default function Home() {
 
   const minSwipeDistance = 50;
 
-  const addWord = (word: Omit<VocabularyWord, "id">) => {
-    const newWord = { ...word, id: Date.now().toString() };
-    setWords((prev) => {
-      const newWords = [...prev, newWord];
-      setCurrentIndex(newWords.length - 1);
-      return newWords;
-    });
+  const handleOpenForm = (word: VocabularyWord | null) => {
+    setEditingWord(word);
+    setIsFormOpen(true);
+  };
+  
+  const handleFormOpenChange = (open: boolean) => {
+    if (!open) {
+      setEditingWord(null);
+    }
+    setIsFormOpen(open);
+  }
+
+  const saveWord = (wordData: Omit<VocabularyWord, "id">, id?: string) => {
+    if (id) {
+      // Update existing word
+      setWords(prev => 
+        prev.map(w => (w.id === id ? { ...w, ...wordData } : w))
+      );
+    } else {
+      // Add new word
+      const newWord = { ...wordData, id: Date.now().toString() };
+      setWords((prev) => {
+        const newWords = [...prev, newWord];
+        setCurrentIndex(newWords.length - 1);
+        return newWords;
+      });
+    }
     setIsFormOpen(false);
+    setEditingWord(null);
   };
 
   const removeWord = (id: string) => {
@@ -118,83 +140,84 @@ export default function Home() {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-800">
-      <div className="w-full max-w-sm h-screen bg-background flex flex-col">
-        <header className="flex items-center justify-between p-4 border-b sticky top-0 bg-background/95 backdrop-blur-sm z-10">
-          <h1 className="font-headline text-xl font-bold text-primary">
-            Nihongo Mastery
-          </h1>
-          <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+      <Dialog open={isFormOpen} onOpenChange={handleFormOpenChange}>
+        <div className="w-full max-w-sm h-screen bg-background flex flex-col">
+          <header className="flex items-center justify-between p-4 border-b sticky top-0 bg-background/95 backdrop-blur-sm z-10">
+            <h1 className="font-headline text-xl font-bold text-primary">
+              Nihongo Mastery
+            </h1>
             <DialogTrigger asChild>
-              <Button size="icon" className="w-8 h-8">
+              <Button size="icon" className="w-8 h-8" onClick={() => handleOpenForm(null)}>
                 <Plus className="h-4 w-4" />
                 <span className="sr-only">Add New Word</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle className="font-headline">Add New Word</DialogTitle>
-                <DialogDescription>
-                  Register a new Japanese word to your vocabulary list.
-                </DialogDescription>
-              </DialogHeader>
-              <VocabularyForm onAddWord={addWord} />
-            </DialogContent>
-          </Dialog>
-        </header>
+          </header>
 
-        <main 
-          className="flex-1 flex flex-col items-center justify-center p-4 overflow-hidden"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
-          {currentWord ? (
-            <div
-              key={currentWord.id}
-              className={cn(
-                "w-full h-72",
-                animationDirection === 'right' && 'animate-slide-out-to-left',
-                animationDirection === 'left' && 'animate-slide-out-to-right',
-                animationDirection === 'none' && 'animate-slide-in'
-              )}
-            >
-              <Flashcard
-                word={currentWord}
-                onRemove={() => removeWord(currentWord.id)}
-              />
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
-              <p className="text-lg font-semibold">Your vocabulary is empty.</p>
-              <p className="mt-2">
-                Tap the <Plus className="inline h-4 w-4 mx-1" /> button to get started!
-              </p>
-            </div>
-          )}
-        </main>
-        
-        {words.length > 1 && (
-          <footer className="flex items-center justify-between p-4 border-t">
-            <Button variant="outline" size="icon" onClick={goToPrevious}>
-              <ChevronLeft className="h-4 w-4" />
-              <span className="sr-only">Previous word</span>
-            </Button>
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="icon" onClick={shuffleWords}>
-                <Shuffle className="h-4 w-4" />
-                <span className="sr-only">Shuffle words</span>
+          <main 
+            className="flex-1 flex flex-col items-center justify-center p-4 overflow-hidden"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            {currentWord ? (
+              <div
+                key={currentWord.id}
+                className={cn(
+                  "w-full h-72",
+                  animationDirection === 'right' && 'animate-slide-out-to-left',
+                  animationDirection === 'left' && 'animate-slide-out-to-right',
+                  animationDirection === 'none' && 'animate-slide-in'
+                )}
+              >
+                <Flashcard
+                  word={currentWord}
+                  onRemove={() => removeWord(currentWord.id)}
+                  onEdit={() => handleOpenForm(currentWord)}
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
+                <p className="text-lg font-semibold">Your vocabulary is empty.</p>
+                <p className="mt-2">
+                  Tap the <Plus className="inline h-4 w-4 mx-1" /> button to get started!
+                </p>
+              </div>
+            )}
+          </main>
+          
+          {words.length > 1 && (
+            <footer className="flex items-center justify-between p-4 border-t">
+              <Button variant="outline" size="icon" onClick={goToPrevious}>
+                <ChevronLeft className="h-4 w-4" />
+                <span className="sr-only">Previous word</span>
               </Button>
-              <p className="text-sm text-muted-foreground">
-                {currentIndex + 1} / {words.length}
-              </p>
-            </div>
-            <Button variant="outline" size="icon" onClick={goToNext}>
-              <ChevronRight className="h-4 w-4" />
-              <span className="sr-only">Next word</span>
-            </Button>
-          </footer>
-        )}
-      </div>
+              <div className="flex items-center gap-4">
+                <Button variant="outline" size="icon" onClick={shuffleWords}>
+                  <Shuffle className="h-4 w-4" />
+                  <span className="sr-only">Shuffle words</span>
+                </Button>
+                <p className="text-sm text-muted-foreground">
+                  {currentIndex + 1} / {words.length}
+                </p>
+              </div>
+              <Button variant="outline" size="icon" onClick={goToNext}>
+                <ChevronRight className="h-4 w-4" />
+                <span className="sr-only">Next word</span>
+              </Button>
+            </footer>
+          )}
+        </div>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="font-headline">{editingWord ? "Edit Word" : "Add New Word"}</DialogTitle>
+            <DialogDescription>
+              {editingWord ? "Update the details of your word." : "Register a new Japanese word to your vocabulary list."}
+            </DialogDescription>
+          </DialogHeader>
+          <VocabularyForm onSaveWord={saveWord} wordToEdit={editingWord} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

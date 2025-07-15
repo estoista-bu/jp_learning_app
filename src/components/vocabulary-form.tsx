@@ -1,5 +1,7 @@
+
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -14,6 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import type { VocabularyWord } from "@/lib/types";
 
 const formSchema = z.object({
   japanese: z.string().min(1, "Japanese word is required."),
@@ -21,13 +24,14 @@ const formSchema = z.object({
   meaning: z.string().min(1, "Meaning is required."),
 });
 
-type VocabularyFormData = z.infer<typeof formSchema>;
+type VocabularyFormData = Omit<VocabularyWord, "id">;
 
 interface VocabularyFormProps {
-  onAddWord: (data: VocabularyFormData) => void;
+  onSaveWord: (data: VocabularyFormData, id?: string) => void;
+  wordToEdit: VocabularyWord | null;
 }
 
-export function VocabularyForm({ onAddWord }: VocabularyFormProps) {
+export function VocabularyForm({ onSaveWord, wordToEdit }: VocabularyFormProps) {
   const { toast } = useToast();
   const form = useForm<VocabularyFormData>({
     resolver: zodResolver(formSchema),
@@ -38,11 +42,23 @@ export function VocabularyForm({ onAddWord }: VocabularyFormProps) {
     },
   });
 
+  useEffect(() => {
+    if (wordToEdit) {
+      form.reset(wordToEdit);
+    } else {
+      form.reset({
+        japanese: "",
+        reading: "",
+        meaning: "",
+      });
+    }
+  }, [wordToEdit, form]);
+
   function onSubmit(values: VocabularyFormData) {
-    onAddWord(values);
+    onSaveWord(values, wordToEdit?.id);
     toast({
       title: "Success!",
-      description: `The word "${values.japanese}" has been added.`,
+      description: `The word "${values.japanese}" has been ${wordToEdit ? 'updated' : 'added'}.`,
     });
     form.reset();
   }
@@ -94,7 +110,7 @@ export function VocabularyForm({ onAddWord }: VocabularyFormProps) {
           className="w-full font-bold bg-primary hover:bg-primary/90 text-primary-foreground"
           disabled={form.formState.isSubmitting}
         >
-          {form.formState.isSubmitting ? "Adding..." : "Add Word"}
+          {form.formState.isSubmitting ? "Saving..." : "Save Word"}
         </Button>
       </form>
     </Form>
