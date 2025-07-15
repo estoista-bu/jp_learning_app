@@ -14,12 +14,10 @@ interface ClickableReadingProps {
 }
 
 export function ClickableReading({ japanese, reading, isBlock = true }: ClickableReadingProps) {
-  // Don't make it clickable if there's no reading or if it's identical to the Japanese text
-  // (which happens for Katakana or pure Hiragana phrases)
-  if (!reading || japanese === reading) {
-    return <span>{japanese}</span>;
-  }
-  
+  // If no specific reading is provided, use the Japanese text itself.
+  // This makes pure Hiragana and Katakana phrases clickable for consistency.
+  const readingText = reading || japanese;
+
   const Wrapper = isBlock ? 'div' : 'span';
 
   const stopPropagation = (e: React.MouseEvent) => {
@@ -35,7 +33,7 @@ export function ClickableReading({ japanese, reading, isBlock = true }: Clickabl
                 </span>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-2">
-                <p className="text-sm font-semibold text-accent">{reading}</p>
+                <p className="text-sm font-semibold text-accent">{readingText}</p>
             </PopoverContent>
         </Popover>
      </Wrapper>
