@@ -1,4 +1,5 @@
 
+
 export type VocabularyWord = {
   id: string;
   japanese: string;
@@ -40,4 +41,10 @@ export type Quiz = {
   score?: number | null;
 };
 
+export type JapaneseTextSegment = {
+  text: string;
+  furigana?: string;
+};
+
+export type JapaneseText = JapaneseTextSegment[];
     
