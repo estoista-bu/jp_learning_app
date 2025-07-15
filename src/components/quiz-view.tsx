@@ -7,8 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { CheckCircle, XCircle, RefreshCw, BookText } from "lucide-react";
-import { JapaneseText } from "./japanese-text";
+import { CheckCircle, XCircle, RefreshCw } from "lucide-react";
 
 interface QuizViewProps {
   quiz: Quiz;
@@ -20,7 +19,6 @@ export function QuizView({ quiz }: QuizViewProps) {
     Array(quiz.questions.length).fill(null)
   );
   const [isFinished, setIsFinished] = useState(false);
-  const [showFurigana, setShowFurigana] = useState(false);
 
   const currentQuestion = quiz.questions[currentQuestionIndex];
   const selectedAnswer = selectedAnswers[currentQuestionIndex];
@@ -47,7 +45,6 @@ export function QuizView({ quiz }: QuizViewProps) {
   };
 
   const goToNextQuestion = () => {
-    setShowFurigana(false);
     if (currentQuestionIndex < quiz.questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
@@ -59,9 +56,7 @@ export function QuizView({ quiz }: QuizViewProps) {
     setCurrentQuestionIndex(0);
     setSelectedAnswers(Array(quiz.questions.length).fill(null));
     setIsFinished(false);
-    setShowFurigana(false);
   };
-
 
   const progress = isFinished ? 100 : ((currentQuestionIndex) / quiz.questions.length) * 100;
 
@@ -90,27 +85,19 @@ export function QuizView({ quiz }: QuizViewProps) {
   return (
     <div className="p-4 space-y-6">
       <div className="space-y-2">
-        <div className="flex justify-between items-center">
-            <p className="text-sm text-muted-foreground">
-            Question {currentQuestionIndex + 1} of {quiz.questions.length}
-            </p>
-            {(currentQuestion.questionJapanese || currentQuestion.explanationJapanese) && (
-                <Button variant="ghost" size="sm" onClick={() => setShowFurigana(!showFurigana)}>
-                    <BookText className="mr-2 h-4 w-4"/>
-                    {showFurigana ? "Hide Reading" : "Show Reading"}
-                </Button>
-            )}
-        </div>
+        <p className="text-sm text-muted-foreground">
+          Question {currentQuestionIndex + 1} of {quiz.questions.length}
+        </p>
         <Progress value={progress} />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg leading-relaxed">{currentQuestion.question}</CardTitle>
+          <CardTitle className="text-lg">{currentQuestion.question}</CardTitle>
           {currentQuestion.questionJapanese && (
-            <div className="text-xl font-semibold pt-2">
-              <JapaneseText text={currentQuestion.questionJapanese} showFurigana={showFurigana} />
-            </div>
+            <p className="text-xl font-semibold pt-2">
+              {currentQuestion.questionJapanese}
+            </p>
           )}
         </CardHeader>
         <CardContent>
@@ -148,7 +135,7 @@ export function QuizView({ quiz }: QuizViewProps) {
             <p className="text-sm text-muted-foreground">{currentQuestion.explanation}</p>
              {currentQuestion.explanationJapanese && (
                 <p className="text-md font-semibold">
-                  <JapaneseText text={currentQuestion.explanationJapanese} showFurigana={true} />
+                  {currentQuestion.explanationJapanese}
                 </p>
               )}
             <Button onClick={goToNextQuestion} className="w-full">

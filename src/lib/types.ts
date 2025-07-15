@@ -1,11 +1,4 @@
 
-export type JapaneseTextSegment = {
-  text: string;
-  furigana?: string;
-};
-
-export type JapaneseText = JapaneseTextSegment[];
-
 export type VocabularyWord = {
   id: string;
   japanese: string;
@@ -23,7 +16,7 @@ export type GrammarLesson = {
   title: string;
   explanation: string;
   exampleSentences: {
-    japanese: JapaneseText;
+    japanese: string;
     reading: string;
     meaning: string;
   }[];
@@ -31,11 +24,11 @@ export type GrammarLesson = {
 
 export type QuizQuestion = {
   question: string;
-  questionJapanese?: JapaneseText;
+  questionJapanese?: string;
   options: string[];
   correctAnswer: string;
   explanation: string;
-  explanationJapanese?: JapaneseText;
+  explanationJapanese?: string;
 };
 
 export type Quiz = {
