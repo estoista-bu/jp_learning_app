@@ -12,4 +12,13 @@ export type Deck = {
   name: string;
 };
 
+export type GrammarLesson = {
+  title: string;
+  explanation: string;
+  exampleSentences: {
+    japanese: string;
+    reading: string;
+    meaning: string;
+  }[];
+};
     
