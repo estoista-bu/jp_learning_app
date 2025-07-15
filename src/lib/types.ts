@@ -38,3 +38,5 @@ export type Quiz = {
   questions: QuizQuestion[];
   score?: number | null;
 };
+
+    
