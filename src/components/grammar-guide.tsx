@@ -1,7 +1,7 @@
 
 "use client";
 
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ArrowLeft } from "lucide-react";
 import { GrammarLessonsList } from "./grammar-lessons-list";
 import { GrammarLessonView } from "./grammar-lesson-view";
 import type { GrammarLesson } from "@/lib/types";
@@ -14,9 +14,13 @@ interface GrammarGuideProps {
     selectedLesson: GrammarLesson | null;
     animation: 'in' | 'out' | null;
     onNavigate: (view: GrammarView, lesson?: GrammarLesson) => void;
+    onBack: () => void;
+    getTitle: () => string;
 }
 
-export function GrammarGuide({ currentView, selectedLesson, animation, onNavigate }: GrammarGuideProps) {
+export function GrammarGuide({ currentView, selectedLesson, animation, onNavigate, onBack, getTitle }: GrammarGuideProps) {
+
+  const isMainView = currentView === 'main';
 
   const renderContent = () => {
     switch (currentView) {
@@ -62,6 +66,18 @@ export function GrammarGuide({ currentView, selectedLesson, animation, onNavigat
 
   return (
     <div className="flex flex-col h-full">
+        {!isMainView && (
+            <div className="flex items-center p-4 border-b">
+                <button onClick={onBack} className="flex items-center text-sm p-2 rounded-md hover:bg-muted -ml-2">
+                    <ArrowLeft className="h-4 w-4 mr-1" />
+                    Back
+                </button>
+                <h3 className="font-semibold text-center flex-1 px-4 truncate">
+                    {getTitle()}
+                </h3>
+                 <div className="w-[68px]"></div>
+            </div>
+        )}
       <div className={cn(
           "flex-1",
            animation === 'in' && 'animate-slide-in-from-right',
