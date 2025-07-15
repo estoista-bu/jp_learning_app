@@ -5,14 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Form,
   FormControl,
   FormField,
@@ -50,72 +42,61 @@ export function VocabularyForm({ onAddWord }: VocabularyFormProps) {
     onAddWord(values);
     toast({
       title: "Success!",
-      description: `The word "${values.japanese}" has been added to your vocabulary.`,
+      description: `The word "${values.japanese}" has been added.`,
     });
     form.reset();
   }
 
   return (
-    <Card className="w-full max-w-lg mx-auto shadow-lg">
-      <CardHeader>
-        <CardTitle className="font-headline text-2xl">Add New Word</CardTitle>
-        <CardDescription>
-          Register a new Japanese word to your vocabulary list.
-        </CardDescription>
-      </CardHeader>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
-            <FormField
-              control={form.control}
-              name="japanese"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Japanese Word (Kanji, etc.)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="例えば: 日本語" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="reading"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Reading (Hiragana/Katakana)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="例えば: にほんご" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="meaning"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Meaning</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. Japanese language" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-          <CardFooter>
-            <Button
-              type="submit"
-              className="w-full font-bold bg-primary hover:bg-primary/90 text-primary-foreground"
-            >
-              Add Word
-            </Button>
-          </CardFooter>
-        </form>
-      </Form>
-    </Card>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
+        <FormField
+          control={form.control}
+          name="japanese"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Japanese Word (Kanji, etc.)</FormLabel>
+              <FormControl>
+                <Input placeholder="例えば: 日本語" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="reading"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Reading (Hiragana/Katakana)</FormLabel>
+              <FormControl>
+                <Input placeholder="例えば: にほんご" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="meaning"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Meaning</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g. Japanese language" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button
+          type="submit"
+          className="w-full font-bold bg-primary hover:bg-primary/90 text-primary-foreground"
+          disabled={form.formState.isSubmitting}
+        >
+          {form.formState.isSubmitting ? "Adding..." : "Add Word"}
+        </Button>
+      </form>
+    </Form>
   );
 }

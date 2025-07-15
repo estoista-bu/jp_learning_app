@@ -22,7 +22,7 @@ export function Flashcard({ word, onRemove }: FlashcardProps) {
 
   return (
     <div
-      className="group w-full h-56 [perspective:1000px] cursor-pointer"
+      className="group w-full h-48 [perspective:1000px] cursor-pointer"
       onClick={() => setIsFlipped(!isFlipped)}
       role="button"
       aria-label={`Flashcard for ${word.japanese}. Click to flip.`}
@@ -37,7 +37,7 @@ export function Flashcard({ word, onRemove }: FlashcardProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-2 right-2 z-20 h-8 w-8 text-muted-foreground hover:text-destructive"
+            className="absolute top-2 right-2 z-20 h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={handleRemove}
             aria-label={`Remove ${word.japanese}`}
           >
@@ -64,7 +64,7 @@ export function Flashcard({ word, onRemove }: FlashcardProps) {
             <p className="font-body text-3xl font-semibold text-accent">
               {word.reading}
             </p>
-            <p className="text-muted-foreground mt-4 text-lg">{word.meaning}</p>
+            <p className="text-muted-foreground mt-2 text-lg">{word.meaning}</p>
           </CardContent>
         </Card>
       </div>

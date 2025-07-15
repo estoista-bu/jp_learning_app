@@ -1,10 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { Plus } from "lucide-react";
 import type { VocabularyWord } from "@/lib/types";
 import { VocabularyForm } from "@/components/vocabulary-form";
 import { VocabularyGrid } from "@/components/vocabulary-grid";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 const initialWords: VocabularyWord[] = [
   { id: "1", japanese: "日本語", reading: "にほんご", meaning: "Japanese language" },
@@ -15,9 +24,11 @@ const initialWords: VocabularyWord[] = [
 
 export default function Home() {
   const [words, setWords] = useState<VocabularyWord[]>(initialWords);
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   const addWord = (word: Omit<VocabularyWord, "id">) => {
     setWords((prev) => [...prev, { ...word, id: Date.now().toString() }]);
+    setIsFormOpen(false); // Close the dialog on successful submission
   };
 
   const removeWord = (id: string) => {
@@ -25,35 +36,42 @@ export default function Home() {
   };
 
   return (
-    <main className="container mx-auto px-4 py-8 md:py-12">
-      <header className="text-center mb-12">
-        <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">
+    <div className="flex flex-col h-screen bg-background">
+      <header className="flex items-center justify-between p-4 border-b sticky top-0 bg-background/95 backdrop-blur-sm z-10">
+        <h1 className="font-headline text-2xl font-bold text-primary">
           Nihongo Mastery
         </h1>
-        <p className="text-muted-foreground mt-2 text-lg">
-          Your master path to Japanese proficiency.
-        </p>
+        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+          <DialogTrigger asChild>
+            <Button size="icon">
+              <Plus className="h-5 w-5" />
+              <span className="sr-only">Add New Word</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle className="font-headline">Add New Word</DialogTitle>
+              <DialogDescription>
+                Register a new Japanese word to your vocabulary list.
+              </DialogDescription>
+            </DialogHeader>
+            <VocabularyForm onAddWord={addWord} />
+          </DialogContent>
+        </Dialog>
       </header>
 
-      <section className="mb-12">
-        <VocabularyForm onAddWord={addWord} />
-      </section>
-
-      <Separator className="my-12" />
-
-      <section>
-        <h2 className="font-headline text-3xl font-semibold mb-8 text-center md:text-left">
-          My Vocabulary
-        </h2>
+      <main className="flex-1 overflow-y-auto p-4">
         {words.length > 0 ? (
           <VocabularyGrid words={words} onRemoveWord={removeWord} />
         ) : (
-          <div className="text-center text-muted-foreground border-2 border-dashed border-border rounded-lg p-12">
-            <p className="text-lg">Your vocabulary is empty.</p>
-            <p>Add a new word using the form above to get started!</p>
+          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground border-2 border-dashed border-border rounded-lg p-8">
+            <p className="text-lg font-semibold">Your vocabulary is empty.</p>
+            <p className="mt-2">
+              Tap the <Plus className="inline h-4 w-4 mx-1" /> button to get started!
+            </p>
           </div>
         )}
-      </section>
-    </main>
+      </main>
+    </div>
   );
 }
