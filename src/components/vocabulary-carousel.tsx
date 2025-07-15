@@ -1,3 +1,4 @@
+
 import type { VocabularyWord } from "@/lib/types";
 import {
   Carousel,
@@ -25,10 +26,10 @@ export function VocabularyCarousel({ words, onRemoveWord }: VocabularyCarouselPr
         loop: true,
       }}
     >
-      <CarouselContent className="-ml-1">
+      <CarouselContent className="-ml-1 h-full">
         {words.map((word) => (
-          <CarouselItem key={word.id} className="pl-1">
-            <div className="p-4 md:p-6 h-full flex items-center justify-center">
+          <CarouselItem key={word.id} className="pl-1 h-full">
+            <div className="p-6 h-full flex items-center justify-center">
               <Flashcard
                 word={word}
                 onRemove={() => onRemoveWord(word.id)}
@@ -37,8 +38,8 @@ export function VocabularyCarousel({ words, onRemoveWord }: VocabularyCarouselPr
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious className="hidden md:flex" />
-      <CarouselNext className="hidden md:flex" />
+      <CarouselPrevious />
+      <CarouselNext />
     </Carousel>
   );
 }

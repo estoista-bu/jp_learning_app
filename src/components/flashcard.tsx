@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -22,7 +23,7 @@ export function Flashcard({ word, onRemove }: FlashcardProps) {
 
   return (
     <div
-      className="group w-full h-64 [perspective:1000px] cursor-pointer"
+      className="group w-full h-full [perspective:1000px] cursor-pointer"
       onClick={() => setIsFlipped(!isFlipped)}
       role="button"
       aria-label={`Flashcard for ${word.japanese}. Click to flip.`}
@@ -44,7 +45,7 @@ export function Flashcard({ word, onRemove }: FlashcardProps) {
             <X className="h-4 w-4" />
           </Button>
           <CardContent className="p-4 flex items-center justify-center">
-            <p className="font-headline text-5xl text-center text-primary drop-shadow-sm break-words">
+            <p className="font-headline text-6xl text-center text-primary drop-shadow-sm break-words">
               {word.japanese}
             </p>
           </CardContent>
