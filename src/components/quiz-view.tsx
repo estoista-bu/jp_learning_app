@@ -64,7 +64,7 @@ export function QuizView({ quiz }: QuizViewProps) {
   if (isFinished) {
     const percentage = (score / quiz.questions.length) * 100;
     return (
-      <div className="p-4 flex flex-col items-center justify-center text-center h-full">
+      <div className="px-4 pb-4 flex flex-col items-center justify-center text-center h-full">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Quiz Complete!</CardTitle>
@@ -84,7 +84,7 @@ export function QuizView({ quiz }: QuizViewProps) {
   }
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="px-4 pb-4 space-y-6">
       <div className="space-y-2">
         <p className="text-sm text-muted-foreground">
           Question {currentQuestionIndex + 1} of {quiz.questions.length}

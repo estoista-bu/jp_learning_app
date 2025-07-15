@@ -1,11 +1,10 @@
 
 "use client"
 import type { GrammarLesson } from "@/lib/types";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Volume2, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { JapaneseText } from "./japanese-text";
 import { ClickableReading } from "./clickable-reading";
 
 interface GrammarLessonViewProps {
@@ -33,12 +32,12 @@ export function GrammarLessonView({ lesson }: GrammarLessonViewProps) {
   return (
     <div className="p-4">
       <Card>
-        <CardHeader>
+        <CardHeader className="pt-6">
           <CardDescription>
             {lesson.explanation}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-6 pb-6">
           <div className="space-y-4">
             <div>
               <h3 className="font-semibold mb-3 text-md text-accent border-b pb-1">
