@@ -33,6 +33,10 @@ export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [animationDirection, setAnimationDirection] = useState<AnimationDirection>("none");
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const minSwipeDistance = 50;
 
   const addWord = (word: Omit<VocabularyWord, "id">) => {
     const newWord = { ...word, id: Date.now().toString() };
@@ -69,7 +73,7 @@ export default function Home() {
          setCurrentIndex((prev) => (prev - 1 + words.length) % words.length);
        }
        setAnimationDirection('none');
-    }, 150); // half of the animation duration
+    }, 150);
   };
 
   const goToNext = () => handleNavigation('next');
@@ -85,6 +89,29 @@ export default function Home() {
       return shuffled;
     });
     setCurrentIndex(0);
+  };
+  
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    if (isLeftSwipe) {
+      goToNext();
+    } else if (isRightSwipe) {
+      goToPrevious();
+    }
+    setTouchStart(null);
+    setTouchEnd(null);
   };
 
   const currentWord = words.length > 0 ? words[currentIndex] : null;
@@ -115,7 +142,12 @@ export default function Home() {
           </Dialog>
         </header>
 
-        <main className="flex-1 flex flex-col items-center justify-center p-4 overflow-hidden">
+        <main 
+          className="flex-1 flex flex-col items-center justify-center p-4 overflow-hidden"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           {currentWord ? (
             <div
               key={currentWord.id}
