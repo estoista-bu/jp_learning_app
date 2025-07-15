@@ -67,7 +67,7 @@ export function Flashcard({ word, onRemove, onEdit }: FlashcardProps) {
             >
               <Pencil className="h-4 w-4" />
             </Button>
-            <AlertDialog onOpenChange={(e) => e.stopPropagation()}>
+            <AlertDialog>
                 <AlertDialogTrigger asChild>
                     <Button
                     variant="ghost"
@@ -116,7 +116,7 @@ export function Flashcard({ word, onRemove, onEdit }: FlashcardProps) {
               >
                 <Pencil className="h-4 w-4" />
               </Button>
-               <AlertDialog onOpenChange={(e) => e.stopPropagation()}>
+               <AlertDialog>
                 <AlertDialogTrigger asChild>
                     <Button
                     variant="ghost"
