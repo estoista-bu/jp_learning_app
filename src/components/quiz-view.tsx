@@ -97,7 +97,7 @@ export function QuizView({ quiz }: QuizViewProps) {
                   key={index}
                   variant="outline"
                   className={cn(
-                    "w-full justify-start h-auto py-3 text-left",
+                    "w-full justify-start h-auto py-3 text-left whitespace-normal",
                     hasAnswered && isCorrect && "bg-green-100 border-green-400 text-green-800 hover:bg-green-100 dark:bg-green-900/50 dark:border-green-700 dark:text-green-300",
                     hasAnswered && !isCorrect && isSelected && "bg-red-100 border-red-400 text-red-800 hover:bg-red-100 dark:bg-red-900/50 dark:border-red-700 dark:text-red-300",
                     !hasAnswered && "hover:bg-accent/50"
@@ -105,9 +105,9 @@ export function QuizView({ quiz }: QuizViewProps) {
                   onClick={() => handleSelectAnswer(option)}
                   disabled={hasAnswered}
                 >
-                  {option}
-                  {hasAnswered && isCorrect && <CheckCircle className="ml-auto h-5 w-5 text-green-600 dark:text-green-400"/>}
-                  {hasAnswered && !isCorrect && isSelected && <XCircle className="ml-auto h-5 w-5 text-red-600 dark:text-red-400"/>}
+                  <span className="flex-1">{option}</span>
+                  {hasAnswered && isCorrect && <CheckCircle className="ml-4 h-5 w-5 text-green-600 dark:text-green-400"/>}
+                  {hasAnswered && !isCorrect && isSelected && <XCircle className="ml-4 h-5 w-5 text-red-600 dark:text-red-400"/>}
                 </Button>
               );
             })}
