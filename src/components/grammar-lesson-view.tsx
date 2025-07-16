@@ -53,9 +53,9 @@ export function GrammarLessonView({ lesson }: GrammarLessonViewProps) {
                 {lesson.exampleSentences.map((ex, exIndex) => (
                   <li key={exIndex} className="border-l-2 border-primary pl-4">
                     <div className="flex items-start gap-2">
-                        <p className="font-bold text-xl leading-tight flex-1">
+                        <div className="font-bold text-xl leading-tight flex-1">
                             <ClickableReading japanese={ex.japanese} reading={ex.reading} isBlock/>
-                        </p>
+                        </div>
                         <Button 
                             variant="ghost" 
                             size="icon" 
