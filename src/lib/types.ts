@@ -22,6 +22,7 @@ export type GrammarLesson = {
     reading: string;
     meaning: string;
   }[];
+  isRead?: boolean;
 };
 
 export type QuizQuestion = {

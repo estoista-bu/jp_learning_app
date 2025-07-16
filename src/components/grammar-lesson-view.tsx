@@ -1,10 +1,10 @@
 
 "use client"
 import type { GrammarLesson } from "@/lib/types";
-import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Volume2, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ClickableReading } from "./clickable-reading";
 
 interface GrammarLessonViewProps {
@@ -13,6 +13,12 @@ interface GrammarLessonViewProps {
 
 export function GrammarLessonView({ lesson }: GrammarLessonViewProps) {
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    // Mark lesson as read in localStorage when the component mounts
+    localStorage.setItem(`lesson-read-${lesson.title}`, "true");
+  }, [lesson.title]);
+
 
   const handlePlayAudio = (e: React.MouseEvent, text: string, index: number) => {
     e.stopPropagation();

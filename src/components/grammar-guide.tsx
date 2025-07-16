@@ -8,6 +8,9 @@ import { QuizList } from "./quiz-list";
 import { QuizView } from "./quiz-view";
 import type { GrammarLesson, Quiz } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { Badge } from "./ui/badge";
+import { useState, useEffect } from "react";
+import { grammarLessons } from "@/data/lessons";
 
 
 interface GrammarGuideProps {
@@ -19,6 +22,17 @@ interface GrammarGuideProps {
 }
 
 export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animation, onNavigate }: GrammarGuideProps) {
+  const [lessonProgress, setLessonProgress] = useState(0);
+
+  useEffect(() => {
+    // This effect runs on the client-side
+    const readLessons = grammarLessons.filter(lesson => {
+      return localStorage.getItem(`lesson-read-${lesson.title}`);
+    });
+    const progress = Math.round((readLessons.length / grammarLessons.length) * 100);
+    setLessonProgress(progress);
+  }, [currentView]); // Recalculate when view changes, e.g., coming back to main
+
 
   const renderContent = () => {
     switch (currentView) {
@@ -33,14 +47,19 @@ export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animat
       case "main":
       default:
         return (
-          <div className="p-4 pt-2">
+          <div className="p-4">
             <ul className="space-y-2">
               <li>
                 <button
                   onClick={() => onNavigate("lessons")}
                   className="flex items-center justify-between w-full p-4 rounded-lg bg-card hover:bg-muted transition-colors"
                 >
-                  <span>Lessons</span>
+                  <span className="flex items-center gap-2">
+                    Lessons
+                    {lessonProgress > 0 && (
+                        <Badge variant="secondary">{lessonProgress}%</Badge>
+                    )}
+                  </span>
                   <ChevronRight className="h-5 w-5 text-muted-foreground" />
                 </button>
               </li>
