@@ -118,12 +118,21 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't navigate with arrow keys while answer buttons are shown
       if (isFlipped) {
-        // Allow flipping back with up/down arrows
-        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-          e.preventDefault();
-          setIsFlipped(false);
+        switch (e.key) {
+          case 'ArrowUp':
+          case 'ArrowDown':
+            e.preventDefault();
+            setIsFlipped(false);
+            break;
+          case 'ArrowLeft':
+            e.preventDefault();
+            handleGuess(false); // Didn't Know
+            break;
+          case 'ArrowRight':
+            e.preventDefault();
+            handleGuess(true); // Knew It
+            break;
         }
         return;
       }
