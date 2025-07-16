@@ -1,7 +1,7 @@
 
 "use client";
 
-import { ChevronRight, ClipboardCheck, GraduationCap, ClipboardList } from "lucide-react";
+import { ChevronRight, GraduationCap, ClipboardList } from "lucide-react";
 import { GrammarLessonsList } from "./grammar-lessons-list";
 import { GrammarLessonView } from "./grammar-lesson-view";
 import { QuizList } from "./quiz-list";
@@ -11,15 +11,14 @@ import { cn } from "@/lib/utils";
 import { Badge } from "./ui/badge";
 import { useState, useEffect } from "react";
 import { grammarLessons } from "@/data/lessons";
-import { GrammarChecker } from "./grammar-checker";
 
 
 interface GrammarGuideProps {
-    currentView: "main" | "lessons" | "lesson" | "quizzes" | "quiz" | "checker";
+    currentView: "main" | "lessons" | "lesson" | "quizzes" | "quiz";
     selectedLesson: GrammarLesson | null;
     selectedQuiz: Quiz | null;
     animation: 'in' | 'out' | null;
-    onNavigate: (view: "main" | "lessons" | "lesson" | "quizzes" | "quiz" | "checker", data?: GrammarLesson | Quiz) => void;
+    onNavigate: (view: "main" | "lessons" | "lesson" | "quizzes" | "quiz", data?: GrammarLesson | Quiz) => void;
 }
 
 export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animation, onNavigate }: GrammarGuideProps) {
@@ -45,8 +44,6 @@ export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animat
          return <QuizList onSelectQuiz={(quiz) => onNavigate("quiz", quiz)} />;
       case "quiz":
         return selectedQuiz ? <QuizView quiz={selectedQuiz} /> : null;
-      case "checker":
-        return <GrammarChecker />;
       case "main":
       default:
         return (
@@ -75,18 +72,6 @@ export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animat
                   <span className="flex items-center gap-2">
                     <ClipboardList className="h-5 w-5 text-primary" />
                     Quizzes
-                  </span>
-                   <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                </button>
-              </li>
-               <li>
-                <button
-                   onClick={() => onNavigate("checker")}
-                   className="flex items-center justify-between w-full p-4 rounded-lg bg-card hover:bg-muted transition-colors"
-                >
-                  <span className="flex items-center gap-2">
-                    <ClipboardCheck className="h-5 w-5 text-primary" />
-                    Grammar Checker
                   </span>
                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
                 </button>

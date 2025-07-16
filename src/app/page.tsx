@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { allDecks as initialDecks } from "@/data/decks";
 
 type AppView = "vocabulary" | "grammar";
-type GrammarView = "main" | "lessons" | "lesson" | "quizzes" | "quiz" | "checker";
+type GrammarView = "main" | "lessons" | "lesson" | "quizzes" | "quiz";
 
 export default function Home() {
   const [currentView, setCurrentView] = useState<AppView>("vocabulary");
@@ -86,7 +86,7 @@ export default function Home() {
       } else if (grammarView === 'quiz') {
         setGrammarView('quizzes');
         setSelectedQuiz(null);
-      } else if (grammarView === 'lessons' || grammarView === 'quizzes' || grammarView === 'checker') {
+      } else if (grammarView === 'lessons' || grammarView === 'quizzes') {
         setGrammarView('main');
       }
       setAnimation('in');
@@ -103,8 +103,6 @@ export default function Home() {
         return "Quizzes";
       case "quiz":
         return selectedQuiz?.title || "Quiz";
-      case "checker":
-        return "Grammar Checker";
       case "main":
       default:
         return "Grammar Guide";
