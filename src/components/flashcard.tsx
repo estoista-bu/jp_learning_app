@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { X, Pencil, Volume2, Loader2,ThumbsUp, ThumbsDown } from "lucide-react";
+import * as wanakana from 'wanakana';
 import { cn } from "@/lib/utils";
 import type { VocabularyWord } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -170,7 +171,8 @@ export function Flashcard({
              <p className="font-body text-3xl font-semibold text-accent break-all">
                {word.reading}
              </p>
-             <p className="text-muted-foreground mt-2 text-xl">{word.meaning}</p>
+             <p className="text-muted-foreground mt-1 text-lg">{wanakana.toRomaji(word.reading)}</p>
+             <p className="text-muted-foreground mt-4 text-xl">{word.meaning}</p>
            </CardContent>
 
            {memoryTestControls}
