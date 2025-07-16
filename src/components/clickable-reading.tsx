@@ -6,6 +6,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import * as wanakana from 'wanakana';
 
 interface ClickableReadingProps {
   japanese: string;
@@ -23,6 +24,14 @@ export function ClickableReading({ japanese, reading, isBlock = false }: Clickab
   const stopPropagation = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
+  
+  // Only make the text clickable if it contains Kana.
+  const containsKana = wanakana.isHiragana(japanese) || wanakana.isKatakana(japanese) || wanakana.isKanji(wanakana.stripOkurigana(japanese, { leading: true }));
+  
+  if (!containsKana) {
+    return <Wrapper className="inline">{japanese}</Wrapper>;
+  }
+
 
   return (
      <Wrapper className="inline" onClick={stopPropagation}>
