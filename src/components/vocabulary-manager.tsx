@@ -51,7 +51,7 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
   const [selectedKana, setSelectedKana] = useState<KanaSelection>("hiragana");
   
   const allUserDecks = [
-    ...initialDecks.filter(d => d.category === 'user'), 
+    ...initialDecks.filter(d => d.category === 'user' && !d.id.match(/^\d+$/)), 
     ...decks
   ];
 
@@ -67,7 +67,7 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
     setIsFormOpen(open);
   }
 
-  const saveDeck = (deckData: Omit<Deck, "id", "category">, id?: string) => {
+  const saveDeck = (deckData: Omit<Deck, "id" | "category">, id?: string) => {
     onSaveDeck(deckData, id);
     setIsFormOpen(false);
     setEditingDeck(null);
@@ -94,7 +94,7 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
             </DialogTrigger>
           </header>
 
-          <div className="flex-1 p-4 pt-2">
+          <div className="flex-1 p-4 pt-2 overflow-y-auto">
             <div className="grid gap-4">
                <Card>
                 <div className="flex items-center justify-between p-4">
@@ -121,7 +121,7 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
                 </div>
               </Card>
 
-              {allUserDecks.map((deck) => (
+              {decks.map((deck) => (
                   <Card key={deck.id} className="relative group">
                     <div className="absolute top-2 right-2">
                        <DropdownMenu>
@@ -177,7 +177,7 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the
               <span className="font-semibold text-foreground"> {deletingDeck?.name}</span> deck and all the words within it.
-            </AlertDialogDescription>
+            </Description>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>

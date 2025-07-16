@@ -1,13 +1,14 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VocabularyManager } from "@/components/vocabulary-manager";
 import { GrammarGuide } from "@/components/grammar-guide";
 import { BookOpen, Milestone, ArrowLeft } from "lucide-react";
 import type { Deck, GrammarLesson, Quiz } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { allDecks as initialDecks } from "@/data/decks";
 
 type AppView = "vocabulary" | "grammar";
 type GrammarView = "main" | "lessons" | "lesson" | "quizzes" | "quiz";
@@ -15,6 +16,26 @@ type GrammarView = "main" | "lessons" | "lesson" | "quizzes" | "quiz";
 export default function Home() {
   const [currentView, setCurrentView] = useState<AppView>("vocabulary");
   const [decks, setDecks] = useState<Deck[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    try {
+      const storedDecks = localStorage.getItem("userDecks");
+      if (storedDecks) {
+        setDecks(JSON.parse(storedDecks));
+      }
+    } catch (error) {
+      console.error("Failed to parse decks from localStorage", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isMounted) {
+      localStorage.setItem("userDecks", JSON.stringify(decks));
+    }
+  }, [decks, isMounted]);
+
 
   // State for Grammar Guide
   const [grammarView, setGrammarView] = useState<GrammarView>("main");
@@ -22,7 +43,7 @@ export default function Home() {
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
   const [animation, setAnimation] = useState<'in' | 'out' | null>(null);
 
-  const saveDeck = (deckData: Omit<Deck, "id">, id?: string) => {
+  const saveDeck = (deckData: Omit<Deck, "id" | "category">, id?: string) => {
     if (id) {
       setDecks(prev => 
         prev.map(d => (d.id === id ? { ...d, ...deckData, category: "user" } : d))
@@ -87,6 +108,15 @@ export default function Home() {
         return "Grammar Guide";
     }
   };
+  
+  const allUserDecks = [
+    ...initialDecks.filter(d => d.category === 'user'),
+    ...decks
+  ];
+
+  if (!isMounted) {
+    return null; // or a loading spinner
+  }
 
   return (
     <div className="flex justify-center items-start min-h-screen bg-gray-100 dark:bg-gray-800">
