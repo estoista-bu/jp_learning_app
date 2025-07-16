@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Deck } from "@/lib/types";
 import { DeckForm } from "@/components/deck-form";
+import { allDecks as initialDecks } from "@/data/decks";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,6 +49,11 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
   const [editingDeck, setEditingDeck] = useState<Deck | null>(null);
   const [deletingDeck, setDeletingDeck] = useState<Deck | null>(null);
   const [selectedKana, setSelectedKana] = useState<KanaSelection>("hiragana");
+  
+  const allUserDecks = [
+    ...initialDecks.filter(d => d.category === 'user'), 
+    ...decks
+  ];
 
   const handleOpenForm = (deck: Deck | null) => {
     setEditingDeck(deck);
@@ -115,8 +121,7 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
                 </div>
               </Card>
 
-              {decks.length > 0 ? (
-                decks.map((deck) => (
+              {allUserDecks.map((deck) => (
                   <Card key={deck.id} className="relative group">
                     <div className="absolute top-2 right-2">
                        <DropdownMenu>
@@ -147,15 +152,7 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
                       </CardHeader>
                     </Link>
                   </Card>
-                ))
-              ) : (
-                <div className="text-center text-muted-foreground py-16">
-                  <p>No decks found.</p>
-                  <p className="mt-2">
-                    Click the <Plus className="inline h-4 w-4 mx-1" /> button to create one.
-                  </p>
-                </div>
-              )}
+                ))}
             </div>
           </div>
         </div>

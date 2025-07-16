@@ -1,53 +1,20 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VocabularyManager } from "@/components/vocabulary-manager";
 import { GrammarGuide } from "@/components/grammar-guide";
 import { BookOpen, Milestone, ArrowLeft } from "lucide-react";
 import type { Deck, GrammarLesson, Quiz } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { allDecks as initialDecks } from "@/data/decks";
 
 type AppView = "vocabulary" | "grammar";
 type GrammarView = "main" | "lessons" | "lesson" | "quizzes" | "quiz";
 
-const USER_DECKS_STORAGE_KEY = "nihongo-mastery-user-decks";
-
 export default function Home() {
   const [currentView, setCurrentView] = useState<AppView>("vocabulary");
   const [decks, setDecks] = useState<Deck[]>([]);
-
-  // Load decks from localStorage on initial render
-  useEffect(() => {
-    try {
-      const storedDecks = localStorage.getItem(USER_DECKS_STORAGE_KEY);
-      if (storedDecks) {
-        setDecks(JSON.parse(storedDecks));
-      } else {
-        // If nothing in storage, load the initial default decks
-        setDecks(initialDecks.filter(d => d.category === 'user'));
-      }
-    } catch (error) {
-      console.error("Failed to load decks from localStorage", error);
-      // Fallback to initial decks on error
-      setDecks(initialDecks.filter(d => d.category === 'user'));
-    }
-  }, []);
-
-  // Save decks to localStorage whenever they change
-  useEffect(() => {
-    // We don't save on the initial empty render, only after decks are loaded.
-    if (decks.length > 0) {
-        try {
-            localStorage.setItem(USER_DECKS_STORAGE_KEY, JSON.stringify(decks));
-        } catch (error) {
-            console.error("Failed to save decks to localStorage", error);
-        }
-    }
-  }, [decks]);
-
 
   // State for Grammar Guide
   const [grammarView, setGrammarView] = useState<GrammarView>("main");
@@ -55,7 +22,7 @@ export default function Home() {
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
   const [animation, setAnimation] = useState<'in' | 'out' | null>(null);
 
-  const saveDeck = (deckData: Omit<Deck, "id" | "category">, id?: string) => {
+  const saveDeck = (deckData: Omit<Deck, "id">, id?: string) => {
     if (id) {
       setDecks(prev => 
         prev.map(d => (d.id === id ? { ...d, ...deckData, category: "user" } : d))
