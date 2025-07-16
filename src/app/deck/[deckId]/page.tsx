@@ -18,10 +18,14 @@ import {
 } from "@/components/ui/dialog";
 import { Flashcard } from "@/components/flashcard";
 import { cn } from "@/lib/utils";
-import { allDecks } from "@/data/decks";
-import { allWords as allWordsData } from "@/data/words";
+import { allDecks as initialDecks } from "@/data/decks";
+import { allWords as initialWords } from "@/data/words";
 
 type AnimationDirection = "left" | "right" | "none";
+
+const USER_DECKS_STORAGE_KEY = "nihongo-mastery-user-decks";
+const USER_WORDS_STORAGE_KEY_PREFIX = "nihongo-mastery-words-";
+
 
 export default function DeckPage() {
   const params = useParams();
@@ -40,14 +44,51 @@ export default function DeckPage() {
 
   useEffect(() => {
     if (deckId) {
-      const currentDeck = allDecks.find(d => d.id === deckId) || null;
-      const wordsInDeck = allWordsData.filter(w => w.deckId === deckId);
+      // Find the deck from either localStorage for user decks or initial data for built-in decks
+      const storedUserDecks = localStorage.getItem(USER_DECKS_STORAGE_KEY);
+      const userDecks: Deck[] = storedUserDecks ? JSON.parse(storedUserDecks) : [];
+      const allAvailableDecks = [...initialDecks, ...userDecks];
+      const currentDeck = allAvailableDecks.find(d => d.id === deckId) || null;
       setDeck(currentDeck);
+      
+      // Load words for the deck
+      const userWordsStorageKey = `${USER_WORDS_STORAGE_KEY_PREFIX}${deckId}`;
+      let wordsInDeck: VocabularyWord[] = [];
+
+      if (currentDeck?.category === 'kana') {
+         wordsInDeck = initialWords.filter(w => w.deckId === deckId);
+      } else {
+        try {
+          const storedWords = localStorage.getItem(userWordsStorageKey);
+          if (storedWords) {
+            wordsInDeck = JSON.parse(storedWords);
+          } else {
+            // If no user words, check initial words (for default decks like Greetings, etc.)
+            wordsInDeck = initialWords.filter(w => w.deckId === deckId);
+          }
+        } catch (error) {
+          console.error("Failed to load words from localStorage", error);
+          wordsInDeck = initialWords.filter(w => w.deckId === deckId);
+        }
+      }
+      
       setWords(wordsInDeck);
       setCurrentIndex(0);
       setIsFlipped(false);
     }
   }, [deckId]);
+  
+  // Save words to localStorage whenever they change, but only for non-kana decks
+  useEffect(() => {
+    if (deck && deck.category !== 'kana' && words.length > 0) {
+      try {
+        const userWordsStorageKey = `${USER_WORDS_STORAGE_KEY_PREFIX}${deckId}`;
+        localStorage.setItem(userWordsStorageKey, JSON.stringify(words));
+      } catch (error) {
+        console.error("Failed to save words to localStorage", error);
+      }
+    }
+  }, [words, deck, deckId]);
 
 
   const minSwipeDistance = 50;
