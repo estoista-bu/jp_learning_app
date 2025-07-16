@@ -50,11 +50,6 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
   const [deletingDeck, setDeletingDeck] = useState<Deck | null>(null);
   const [selectedKana, setSelectedKana] = useState<KanaSelection>("hiragana");
 
-  const allUserDecks = [
-    ...initialDecks.filter(d => d.category === 'user' && !d.id.match(/^\d+$/)),
-    ...decks
-  ];
-
   const handleOpenForm = (deck: Deck | null) => {
     setEditingDeck(deck);
     setIsFormOpen(true);
@@ -66,7 +61,7 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
     }
     setIsFormOpen(open);
   };
-
+  
   const handleSaveDeck = (deckData: Omit<Deck, "id" | "category">, id?: string) => {
     onSaveDeck(deckData, id);
     setIsFormOpen(false);
@@ -77,6 +72,14 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
     onRemoveDeck(id);
     setDeletingDeck(null);
   };
+  
+  const combinedDecks = [
+    ...initialDecks.filter(d => d.category === 'user'),
+    ...decks
+  ];
+
+  const userDecks = combinedDecks.filter(deck => !decks.some(d => d.id === deck.id)).concat(decks);
+
 
   return (
     <div className="flex flex-col h-full">
@@ -121,7 +124,7 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
                 </div>
               </Card>
 
-              {decks.map((deck) => (
+              {userDecks.map((deck) => (
                   <Card key={deck.id} className="relative group">
                     <div className="absolute top-2 right-2">
                        <DropdownMenu>
