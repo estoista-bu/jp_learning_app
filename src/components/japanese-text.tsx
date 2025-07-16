@@ -1,27 +1,42 @@
 
-import type { JapaneseText as JapaneseTextType } from "@/lib/types";
+"use client";
+
+import { ClickableReading } from "./clickable-reading";
 import { cn } from "@/lib/utils";
 
 interface JapaneseTextProps {
-  text: JapaneseTextType;
-  showFurigana?: boolean;
-  className?: string;
+  text: string;
+  reading?: string;
+  isBlock?: boolean;
 }
 
-export function JapaneseText({ text, showFurigana = false, className }: JapaneseTextProps) {
+export function JapaneseText({ text, reading, isBlock = false }: JapaneseTextProps) {
+  // Regex to find Japanese parts of the text. This will match sequences of
+  // Japanese characters, or sequences of non-Japanese characters.
+  const regex = /([\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]+|[^\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]+)/g;
+  const segments = text.match(regex) || [text];
+  const japaneseRegex = /[\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/;
+
+  const Wrapper = isBlock ? "div" : "span";
+
   return (
-    <span className={cn("inline-flex flex-wrap items-end leading-loose", className)}>
-      {text.map((segment, index) => {
-        if (segment.furigana && showFurigana) {
+    <Wrapper className={cn(isBlock ? "block" : "inline")}>
+      {segments.map((segment, index) => {
+        if (japaneseRegex.test(segment)) {
+          // If the segment contains Japanese, wrap it with ClickableReading.
+          // The reading prop is passed for the entire phrase.
           return (
-            <ruby key={index} className="inline-flex flex-col-reverse text-center mx-[1px]">
-              <rt className="text-xs text-muted-foreground select-none opacity-80 leading-none -mt-1">{segment.furigana}</rt>
-              {segment.text}
-            </ruby>
+            <ClickableReading
+              key={index}
+              japanese={segment}
+              reading={reading}
+            />
           );
+        } else {
+          // If it's just English text, render it as a simple span.
+          return <span key={index}>{segment}</span>;
         }
-        return <span key={index}>{segment.text}</span>;
       })}
-    </span>
+    </Wrapper>
   );
 }

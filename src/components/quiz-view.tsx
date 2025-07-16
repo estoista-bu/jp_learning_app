@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { CheckCircle, XCircle, RefreshCw, Circle, CheckCircle2 } from "lucide-react";
 import { ClickableReading } from "./clickable-reading";
+import { JapaneseText } from "./japanese-text";
 
 interface QuizViewProps {
   quiz: Quiz;
@@ -95,8 +96,8 @@ export function QuizView({ quiz }: QuizViewProps) {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">
-             <ClickableReading
-                japanese={currentQuestion.question}
+             <JapaneseText 
+                text={currentQuestion.question}
                 reading={currentQuestion.questionReading}
                 isBlock
               />
@@ -130,10 +131,9 @@ export function QuizView({ quiz }: QuizViewProps) {
                      <Circle className="mr-3 h-5 w-5 text-muted-foreground/50"/>
                   )}
                   <span className="flex-1">
-                     <ClickableReading
-                        japanese={option}
+                     <JapaneseText
+                        text={option}
                         reading={optionReading}
-                        isBlock={false}
                       />
                   </span>
                   {hasAnswered && isCorrect && <CheckCircle className="ml-4 h-5 w-5 text-green-600 dark:text-green-400"/>}
@@ -148,8 +148,8 @@ export function QuizView({ quiz }: QuizViewProps) {
       {selectedAnswer && (
         <div className="p-4 bg-muted/50 rounded-lg animate-in fade-in space-y-4">
             <div className="text-sm text-muted-foreground">
-                 <ClickableReading
-                    japanese={currentQuestion.explanation}
+                 <JapaneseText
+                    text={currentQuestion.explanation}
                     reading={currentQuestion.explanationReading}
                     isBlock
                   />
