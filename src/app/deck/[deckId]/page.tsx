@@ -44,14 +44,19 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     setDeck(currentDeck);
 
     const deckIsCustom = userDecks.some(d => d.id === deckId);
-    setIsUserDeck(deckIsCustom);
-
+    
     if (currentDeck) {
-      if (deckIsCustom) {
-        const storedWords = localStorage.getItem(`words_${deckId}`);
-        setWords(storedWords ? JSON.parse(storedWords) : []);
-      } else {
+      const storedUserWords = JSON.parse(localStorage.getItem(`words_${deckId}`) || "[]");
+      if (storedUserWords.length > 0) {
+        setWords(storedUserWords);
+        setIsUserDeck(true);
+      } else if (deckIsCustom) {
+         setWords([]);
+         setIsUserDeck(true);
+      }
+      else {
         setWords(initialWords.filter((word) => word.deckId === deckId));
+        setIsUserDeck(false);
       }
     }
   }, [deckId]);
@@ -203,7 +208,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
                    {renderContent()}
                 </main>
 
-                <SheetContent>
+                <SheetContent side="bottom" className="rounded-t-lg">
                     <SheetHeader>
                         <SheetTitle className="font-headline">
                             {wordToEdit ? "Edit Word" : "Add New Word"}
