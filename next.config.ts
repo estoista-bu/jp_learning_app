@@ -18,6 +18,12 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+        config.externals.push('wanakana');
+    }
+    return config;
+  }
 };
 
 export default nextConfig;
