@@ -4,9 +4,9 @@ import { hiragana, katakana } from "@/data/kana";
 
 export const allWords: VocabularyWord[] = [
   // Deck 1: Greetings & Common Phrases
-  { id: "1-1", japanese: "こんにちは", reading: "こんにちは", meaning: "Hello / Good afternoon", deckId: "1" },
+  { id: "1-1", japanese: "こんにちは", reading: "こんにちわ", meaning: "Hello / Good afternoon", deckId: "1" },
   { id: "1-2", japanese: "おはようございます", reading: "おはようございます", meaning: "Good morning", deckId: "1" },
-  { id: "1-3", japanese: "こんばんは", reading: "こんばんは", meaning: "Good evening", deckId: "1" },
+  { id: "1-3", japanese: "こんばんは", reading: "こんばんわ", meaning: "Good evening", deckId: "1" },
   { id: "1-4", japanese: "ありがとう", reading: "ありがとう", meaning: "Thank you", deckId: "1" },
   { id: "1-5", japanese: "すみません", reading: "すみません", meaning: "Excuse me / I'm sorry", deckId: "1" },
   { id: "1-6", japanese: "さようなら", reading: "さようなら", meaning: "Goodbye", deckId: "1" },
