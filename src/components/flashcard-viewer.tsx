@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Shuffle, ArrowLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight, Shuffle } from "lucide-react";
 import type { VocabularyWord } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Flashcard } from "@/components/flashcard";
@@ -15,10 +15,9 @@ interface FlashcardViewerProps {
     isKana?: boolean;
     onEdit: (word: VocabularyWord) => void;
     onRemove: (id: string) => void;
-    onBack: () => void;
 }
 
-export function FlashcardViewer({ words, isKana, onEdit, onRemove, onBack }: FlashcardViewerProps) {
+export function FlashcardViewer({ words, isKana, onEdit, onRemove }: FlashcardViewerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [animationDirection, setAnimationDirection] = useState<AnimationDirection>("none");
@@ -156,10 +155,6 @@ export function FlashcardViewer({ words, isKana, onEdit, onRemove, onBack }: Fla
                 <span className="sr-only">Previous word</span>
             </Button>
             <div className="flex items-center gap-4">
-                 <Button variant="outline" size="icon" onClick={onBack}>
-                    <ArrowLeft className="h-4 w-4" />
-                    <span className="sr-only">Back to mode selection</span>
-                 </Button>
                 <Button variant="outline" size="icon" onClick={shuffle} disabled={shuffledWords.length < 2}>
                 <Shuffle className="h-4 w-4" />
                 <span className="sr-only">Shuffle words</span>

@@ -4,7 +4,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Plus, ArrowLeft, View, BrainCircuit } from "lucide-react";
+import { Plus, ArrowLeft } from "lucide-react";
 import type { VocabularyWord, Deck } from "@/lib/types";
 import { VocabularyForm } from "@/components/vocabulary-form";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,6 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { FlashcardViewer } from "@/components/flashcard-viewer";
-import { MemoryTest } from "@/components/memory-test";
 import { allDecks as initialDecks } from "@/data/decks";
 import { allWords as initialWords } from "@/data/words";
 
@@ -33,8 +32,6 @@ export default function DeckPage() {
   const [words, setWords] = useState<VocabularyWord[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingWord, setEditingWord] = useState<VocabularyWord | null>(null);
-  const [mode, setMode] = useState<"selection" | "view" | "test">("selection");
-
 
   useEffect(() => {
     if (deckId) {
@@ -68,7 +65,6 @@ export default function DeckPage() {
         }
       }
       setWords(wordsInDeck);
-      setMode("selection");
     }
   }, [deckId]);
   
@@ -113,55 +109,6 @@ export default function DeckPage() {
     setWords((prev) => prev.filter((word) => word.id !== id));
   };
 
-  const handleBackToSelection = () => {
-    setMode("selection");
-  }
-
-  const renderContent = () => {
-    if (words.length === 0 && deck?.category !== 'kana') {
-      return (
-        <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
-            <p className="text-lg font-semibold">This deck is empty.</p>
-            <p className="mt-2">
-                Tap the <Plus className="inline h-4 w-4 mx-1" /> button to add your first word!
-            </p>
-        </div>
-      );
-    }
-
-    switch (mode) {
-      case 'view':
-        return (
-          <FlashcardViewer 
-            words={words} 
-            isKana={deck?.category === 'kana'}
-            onEdit={handleOpenForm}
-            onRemove={removeWord}
-            onBack={handleBackToSelection}
-          />
-        );
-      case 'test':
-        return (
-          <MemoryTest 
-            words={words}
-            isKana={deck?.category === 'kana'}
-            onBack={handleBackToSelection}
-          />
-        );
-      case 'selection':
-      default:
-        return (
-          <div className="flex flex-col items-center justify-center h-full p-8 space-y-4">
-              <Button className="w-full h-20 text-lg" onClick={() => setMode('view')}>
-                  <View className="mr-4 h-6 w-6"/> View Each
-              </Button>
-              <Button className="w-full h-20 text-lg" onClick={() => setMode('test')} variant="secondary">
-                  <BrainCircuit className="mr-4 h-6 w-6" /> Memory Test
-              </Button>
-          </div>
-        );
-    }
-  };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-800">
@@ -191,7 +138,21 @@ export default function DeckPage() {
           </header>
 
           <main className="flex-1 flex flex-col items-center justify-center overflow-hidden">
-             {renderContent()}
+            {words.length > 0 ? (
+                <FlashcardViewer 
+                    words={words}
+                    isKana={deck?.category === 'kana'}
+                    onEdit={handleOpenForm}
+                    onRemove={removeWord}
+                />
+            ) : (
+                <div className="text-center text-muted-foreground p-8">
+                    <p className="text-lg font-semibold">This deck is empty.</p>
+                    <p className="mt-2">
+                        Tap the <Plus className="inline h-4 w-4 mx-1" /> button to add your first word!
+                    </p>
+                </div>
+            )}
           </main>
         </div>
         <DialogContent className="sm:max-w-[425px]">
