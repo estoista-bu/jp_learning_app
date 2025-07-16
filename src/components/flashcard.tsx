@@ -73,8 +73,13 @@ export function Flashcard({
 
 
   const japaneseWordLength = word.japanese.length;
-  const fontSizeClass =
-    japaneseWordLength > 6 ? "text-4xl" : "text-5xl";
+  let fontSizeClass = "text-5xl";
+  if (japaneseWordLength > 10) {
+    fontSizeClass = "text-3xl";
+  } else if (japaneseWordLength > 6) {
+    fontSizeClass = "text-4xl";
+  }
+
 
   const editButtons = !isKana && mode === "view" ? (
     <div className="absolute top-2 right-2 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -150,7 +155,7 @@ export function Flashcard({
           <CardContent className="p-4 flex items-center justify-center">
             <p className={cn(
               "font-headline text-center text-primary drop-shadow-sm",
-              "break-words",
+              "break-all",
               isKana ? "text-8xl" : fontSizeClass
             )}>
               {word.japanese}
@@ -162,7 +167,7 @@ export function Flashcard({
         <Card className="absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col items-center justify-center overflow-hidden">
            {editButtons}
            <CardContent className="p-4 text-center flex flex-col items-center justify-center flex-1">
-             <p className="font-body text-3xl font-semibold text-accent">
+             <p className="font-body text-3xl font-semibold text-accent break-all">
                {word.reading}
              </p>
              <p className="text-muted-foreground mt-2 text-xl">{word.meaning}</p>
