@@ -21,8 +21,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import type { Deck } from "@/lib/types";
 import { DeckForm } from "@/components/deck-form";
@@ -37,21 +35,19 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-const initialDecks: Deck[] = [
-  { id: "1", name: "Greetings", category: "user" },
-  { id: "2", name: "Food", category: "user" },
-  { id: "3", name: "Travel", category: "user" },
-];
-
 type KanaSelection = "hiragana" | "katakana";
 
-export function VocabularyManager() {
-  const [decks, setDecks] = useState<Deck[]>(initialDecks);
+interface VocabularyManagerProps {
+  decks: Deck[];
+  onSaveDeck: (deckData: Omit<Deck, "id" | "category">, id?: string) => void;
+  onRemoveDeck: (id: string) => void;
+}
+
+export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: VocabularyManagerProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingDeck, setEditingDeck] = useState<Deck | null>(null);
   const [deletingDeck, setDeletingDeck] = useState<Deck | null>(null);
   const [selectedKana, setSelectedKana] = useState<KanaSelection>("hiragana");
-
 
   const handleOpenForm = (deck: Deck | null) => {
     setEditingDeck(deck);
@@ -66,20 +62,13 @@ export function VocabularyManager() {
   }
 
   const saveDeck = (deckData: Omit<Deck, "id", "category">, id?: string) => {
-    if (id) {
-      setDecks(prev => 
-        prev.map(d => (d.id === id ? { ...d, ...deckData, category: "user" } : d))
-      );
-    } else {
-      const newDeck = { ...deckData, id: Date.now().toString(), category: "user" as const };
-      setDecks(prev => [...prev, newDeck]);
-    }
+    onSaveDeck(deckData, id);
     setIsFormOpen(false);
     setEditingDeck(null);
   };
   
   const removeDeck = (id: string) => {
-    setDecks((prev) => prev.filter((deck) => deck.id !== id));
+    onRemoveDeck(id);
     setDeletingDeck(null);
   };
 
@@ -202,5 +191,3 @@ export function VocabularyManager() {
     </div>
   );
 }
-
-    

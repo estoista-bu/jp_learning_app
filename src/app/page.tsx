@@ -6,20 +6,38 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VocabularyManager } from "@/components/vocabulary-manager";
 import { GrammarGuide } from "@/components/grammar-guide";
 import { BookOpen, Milestone, ArrowLeft } from "lucide-react";
-import type { GrammarLesson, Quiz } from "@/lib/types";
+import type { Deck, GrammarLesson, Quiz } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { allDecks as initialDecks } from "@/data/decks";
 
 type AppView = "vocabulary" | "grammar";
 type GrammarView = "main" | "lessons" | "lesson" | "quizzes" | "quiz";
 
 export default function Home() {
   const [currentView, setCurrentView] = useState<AppView>("vocabulary");
+  const [decks, setDecks] = useState<Deck[]>(initialDecks.filter(d => d.category === 'user'));
 
   // State for Grammar Guide
   const [grammarView, setGrammarView] = useState<GrammarView>("main");
   const [selectedLesson, setSelectedLesson] = useState<GrammarLesson | null>(null);
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
   const [animation, setAnimation] = useState<'in' | 'out' | null>(null);
+
+  const saveDeck = (deckData: Omit<Deck, "id" | "category">, id?: string) => {
+    if (id) {
+      setDecks(prev => 
+        prev.map(d => (d.id === id ? { ...d, ...deckData, category: "user" } : d))
+      );
+    } else {
+      const newDeck = { ...deckData, id: Date.now().toString(), category: "user" as const };
+      setDecks(prev => [...prev, newDeck]);
+    }
+  };
+  
+  const removeDeck = (id: string) => {
+    setDecks((prev) => prev.filter((deck) => deck.id !== id));
+  };
+
 
   const handleNavigateGrammar = (view: GrammarView, data: GrammarLesson | Quiz | null = null) => {
     setAnimation('out');
@@ -96,13 +114,17 @@ export default function Home() {
 
         <main className="flex-1 flex flex-col overflow-y-auto">
           {currentView === 'vocabulary' && (
-            <VocabularyManager />
+            <VocabularyManager 
+              decks={decks}
+              onSaveDeck={saveDeck}
+              onRemoveDeck={removeDeck}
+            />
           )}
           {currentView === 'grammar' && (
              <div className="flex flex-col h-full">
               {grammarView !== 'main' && (
                  <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm">
-                    <div className="flex items-center px-4 py-2 border-b">
+                    <div className="flex items-center px-4 py-1 border-b">
                         <button onClick={handleBackGrammar} className="flex-shrink-0 flex items-center text-sm p-2 rounded-md hover:bg-muted -ml-2">
                             <ArrowLeft className="h-4 w-4 mr-1" />
                             Back
