@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Pencil, Volume2, Loader2 } from "lucide-react";
+import { X, Pencil, Volume2, Loader2,ThumbsUp, ThumbsDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { VocabularyWord } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,23 +19,38 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-
 interface FlashcardProps {
   word: VocabularyWord;
-  onRemove: () => void;
-  onEdit: () => void;
+  onRemove?: () => void;
+  onEdit?: () => void;
   isKana?: boolean;
   isFlipped: boolean;
   onFlip: () => void;
+  mode?: "view" | "test";
+  onGuess?: (guessed: boolean) => void;
 }
 
-export function Flashcard({ word, onRemove, onEdit, isKana = false, isFlipped, onFlip }: FlashcardProps) {
+export function Flashcard({ 
+    word, 
+    onRemove, 
+    onEdit, 
+    isKana = false, 
+    isFlipped, 
+    onFlip,
+    mode = "view",
+    onGuess
+}: FlashcardProps) {
   const [isPlaying, setIsPlaying] = useState(false);
 
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onEdit();
+    onEdit?.();
   };
+
+  const handleGuess = (e: React.MouseEvent, guessed: boolean) => {
+    e.stopPropagation();
+    onGuess?.(guessed);
+  }
 
   const stopPropagation = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -61,7 +76,7 @@ export function Flashcard({ word, onRemove, onEdit, isKana = false, isFlipped, o
   const fontSizeClass =
     japaneseWordLength > 6 ? "text-4xl" : "text-5xl";
 
-  const editButtons = !isKana ? (
+  const editButtons = !isKana && mode === "view" ? (
     <div className="absolute top-2 right-2 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
       <Button
         variant="ghost"
@@ -101,6 +116,21 @@ export function Flashcard({ word, onRemove, onEdit, isKana = false, isFlipped, o
     </div>
   ) : null;
 
+  const memoryTestControls = mode === 'test' && isFlipped && (
+     <div className="absolute bottom-4 z-20 w-full px-4">
+        <div className="flex justify-center gap-4">
+            <Button size="lg" className="bg-red-600 hover:bg-red-700 text-white" onClick={(e) => handleGuess(e, false)}>
+                <ThumbsDown className="mr-2 h-5 w-5"/>
+                Didn't Know
+            </Button>
+            <Button size="lg" className="bg-green-600 hover:bg-green-700 text-white" onClick={(e) => handleGuess(e, true)}>
+                <ThumbsUp className="mr-2 h-5 w-5"/>
+                Knew It
+            </Button>
+        </div>
+     </div>
+  );
+
   return (
     <div
       className="group w-full h-full [perspective:1000px] cursor-pointer"
@@ -137,6 +167,9 @@ export function Flashcard({ word, onRemove, onEdit, isKana = false, isFlipped, o
              </p>
              <p className="text-muted-foreground mt-2 text-xl">{word.meaning}</p>
            </CardContent>
+
+           {memoryTestControls}
+
            <div className="w-full p-2 flex justify-end">
               <Button 
                 variant="ghost" 

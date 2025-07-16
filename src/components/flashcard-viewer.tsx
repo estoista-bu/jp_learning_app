@@ -137,12 +137,13 @@ export function FlashcardViewer({ words, isKana, onEdit, onRemove }: FlashcardVi
                 )}
             >
                 <Flashcard
-                word={currentWord}
-                onRemove={() => onRemove(currentWord.id)}
-                onEdit={() => onEdit(currentWord)}
-                isKana={isKana}
-                isFlipped={isFlipped}
-                onFlip={() => setIsFlipped(!isFlipped)}
+                    word={currentWord}
+                    onRemove={() => onRemove(currentWord.id)}
+                    onEdit={() => onEdit(currentWord)}
+                    isKana={isKana}
+                    isFlipped={isFlipped}
+                    onFlip={() => setIsFlipped(!isFlipped)}
+                    mode="view"
                 />
             </div>
             ) : null}

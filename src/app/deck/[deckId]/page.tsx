@@ -3,12 +3,14 @@
 
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, Eye, BrainCircuit } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { allDecks as initialDecks } from "@/data/decks";
 import { allWords as initialWords } from "@/data/words";
 import type { Deck, VocabularyWord } from "@/lib/types";
 import { FlashcardViewer } from "@/components/flashcard-viewer";
+import { MemoryTestViewer } from "@/components/memory-test-viewer";
 import {
   Sheet,
   SheetContent,
@@ -20,6 +22,7 @@ import {
 import { VocabularyForm } from "@/components/vocabulary-form";
 
 type VocabularyFormData = Omit<VocabularyWord, "id" | "deckId">;
+type DeckViewMode = "select" | "view" | "test";
 
 export default function DeckPage({ params: paramsProp }: { params: { deckId: string } }) {
   const params = use(paramsProp);
@@ -31,10 +34,10 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
   const [wordToEdit, setWordToEdit] = useState<VocabularyWord | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [isUserDeck, setIsUserDeck] = useState(false);
+  const [mode, setMode] = useState<DeckViewMode>("select");
 
   useEffect(() => {
     setIsMounted(true);
-    // Find the deck from either initial static decks or user-created decks in localStorage
     const userDecks: Deck[] = JSON.parse(localStorage.getItem("userDecks") || "[]");
     const combinedDecks = [...initialDecks, ...userDecks];
     const currentDeck = combinedDecks.find((d) => d.id === deckId) || null;
@@ -43,21 +46,17 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     const deckIsCustom = userDecks.some(d => d.id === deckId);
     setIsUserDeck(deckIsCustom);
 
-    // Load words
     if (currentDeck) {
       if (deckIsCustom) {
-        // This is a user-created deck. Load from localStorage.
         const storedWords = localStorage.getItem(`words_${deckId}`);
         setWords(storedWords ? JSON.parse(storedWords) : []);
       } else {
-        // This is a pre-written deck (Greetings, Kana, etc.). Load from initial data.
         setWords(initialWords.filter((word) => word.deckId === deckId));
       }
     }
   }, [deckId]);
   
   useEffect(() => {
-    // Only save to localStorage if it's a user deck and the component has mounted
     if (isMounted && isUserDeck) {
       localStorage.setItem(`words_${deckId}`, JSON.stringify(words));
     }
@@ -67,10 +66,8 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
   const handleSaveWord = (data: VocabularyFormData, id?: string) => {
     let newWords: VocabularyWord[];
     if (id) {
-      // Edit existing word
       newWords = words.map((w) => (w.id === id ? { ...w, ...data } : w));
     } else {
-      // Add new word
       const newWord: VocabularyWord = {
         ...data,
         id: Date.now().toString(),
@@ -80,8 +77,6 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     }
     setWords(newWords);
 
-    // If this is the first time adding a word to a pre-written deck,
-    // it becomes a "user deck" and we should start saving to localStorage.
     if (!isUserDeck) {
         setIsUserDeck(true);
         const userDecks: Deck[] = JSON.parse(localStorage.getItem("userDecks") || "[]");
@@ -117,20 +112,20 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
 
   const renderContent = () => {
     if (!isMounted) {
-        return (
-         <div className="p-4 text-center">
-             <p className="text-lg font-semibold text-muted-foreground">Loading...</p>
-         </div>
-       );
+      return (
+        <div className="p-4 text-center">
+            <p className="text-lg font-semibold text-muted-foreground">Loading...</p>
+        </div>
+      );
     }
     if (!deck) {
-       return (
-         <div className="p-4 text-center">
-             <p className="text-lg font-semibold text-muted-foreground">Deck not found.</p>
-         </div>
-       );
+      return (
+        <div className="p-4 text-center">
+            <p className="text-lg font-semibold text-muted-foreground">Deck not found.</p>
+        </div>
+      );
     }
-    if (words.length === 0) {
+    if (words.length === 0 && !isKanaDeck) {
       return (
         <div className="p-4 text-center flex flex-col items-center justify-center h-full">
             <p className="text-lg font-semibold text-muted-foreground mb-4">This deck is empty.</p>
@@ -140,14 +135,36 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
         </div>
       );
     }
-    return (
-       <FlashcardViewer 
-            words={words} 
-            isKana={isKanaDeck}
-            onEdit={handleEditWord}
-            onRemove={handleRemoveWord}
-        />
-    );
+
+    switch (mode) {
+      case "view":
+        return <FlashcardViewer words={words} isKana={isKanaDeck} onEdit={handleEditWord} onRemove={handleRemoveWord} />;
+      case "test":
+        return <MemoryTestViewer words={words} isKana={isKanaDeck} />;
+      case "select":
+      default:
+        return (
+          <div className="flex-1 flex flex-col items-center justify-center p-4 gap-4">
+            <Card onClick={() => setMode('view')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
+              <Eye className="h-10 w-10 mx-auto text-primary mb-2"/>
+              <h2 className="text-lg font-bold">View Each</h2>
+              <p className="text-sm text-muted-foreground">Review cards one by one.</p>
+            </Card>
+            <Card onClick={() => setMode('test')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
+               <BrainCircuit className="h-10 w-10 mx-auto text-accent mb-2"/>
+              <h2 className="text-lg font-bold">Memory Test</h2>
+              <p className="text-sm text-muted-foreground">Test your recall.</p>
+            </Card>
+          </div>
+        );
+    }
+  }
+
+  const getHeaderTitle = () => {
+    if (mode === "select") return deck?.name || "...";
+    if (mode === "view") return "View Each";
+    if (mode === "test") return "Memory Test";
+    return deck?.name || "...";
   }
 
   return (
@@ -155,14 +172,21 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
         <div className="w-full max-w-sm h-screen bg-background flex flex-col">
             <Sheet open={isFormOpen} onOpenChange={handleFormOpenChange}>
                 <header className="flex items-center justify-between p-4 border-b sticky top-0 bg-background/95 backdrop-blur-sm z-10">
-                    <Link href="/" passHref>
-                    <Button variant="ghost" size="icon" className="w-8 h-8">
-                        <ArrowLeft className="h-4 w-4" />
-                        <span className="sr-only">Back to Decks</span>
-                    </Button>
-                    </Link>
+                    {mode === 'select' ? (
+                       <Link href="/" passHref>
+                        <Button variant="ghost" size="icon" className="w-8 h-8">
+                            <ArrowLeft className="h-4 w-4" />
+                            <span className="sr-only">Back to Decks</span>
+                        </Button>
+                       </Link>
+                    ) : (
+                        <Button variant="ghost" size="icon" className="w-8 h-8" onClick={() => setMode('select')}>
+                            <ArrowLeft className="h-4 w-4" />
+                            <span className="sr-only">Back to Mode Select</span>
+                        </Button>
+                    )}
                     <h1 className="font-headline text-xl font-bold text-primary truncate px-2">
-                        {deck?.name || "..."}
+                        {getHeaderTitle()}
                     </h1>
                     
                     {!isKanaDeck ? (
