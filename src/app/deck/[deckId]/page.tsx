@@ -4,7 +4,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Plus, ChevronLeft, ChevronRight, Shuffle, ArrowLeft } from "lucide-react";
+import { Plus, ArrowLeft, View, BrainCircuit } from "lucide-react";
 import type { VocabularyWord, Deck } from "@/lib/types";
 import { VocabularyForm } from "@/components/vocabulary-form";
 import { Button } from "@/components/ui/button";
@@ -16,12 +16,10 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Flashcard } from "@/components/flashcard";
-import { cn } from "@/lib/utils";
+import { FlashcardViewer } from "@/components/flashcard-viewer";
+import { MemoryTest } from "@/components/memory-test";
 import { allDecks as initialDecks } from "@/data/decks";
 import { allWords as initialWords } from "@/data/words";
-
-type AnimationDirection = "left" | "right" | "none";
 
 const USER_DECKS_STORAGE_KEY = "nihongo-mastery-user-decks";
 const USER_WORDS_STORAGE_KEY_PREFIX = "nihongo-mastery-words-";
@@ -35,23 +33,17 @@ export default function DeckPage() {
   const [words, setWords] = useState<VocabularyWord[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingWord, setEditingWord] = useState<VocabularyWord | null>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isFlipped, setIsFlipped] = useState(false);
-  const [animationDirection, setAnimationDirection] = useState<AnimationDirection>("none");
-  const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [mode, setMode] = useState<"selection" | "view" | "test">("selection");
+
 
   useEffect(() => {
     if (deckId) {
-      // Find the deck from either localStorage for user decks or initial data for built-in decks
       const storedUserDecks = localStorage.getItem(USER_DECKS_STORAGE_KEY);
       const userDecks: Deck[] = storedUserDecks ? JSON.parse(storedUserDecks) : [];
       const allAvailableDecks = [...initialDecks, ...userDecks];
       const currentDeck = allAvailableDecks.find(d => d.id === deckId) || null;
       setDeck(currentDeck);
       
-      // Load words for the deck
       const userWordsStorageKey = `${USER_WORDS_STORAGE_KEY_PREFIX}${deckId}`;
       let wordsInDeck: VocabularyWord[] = [];
 
@@ -63,7 +55,6 @@ export default function DeckPage() {
           if (storedWords) {
             wordsInDeck = JSON.parse(storedWords);
           } else {
-            // If no user words, check initial words (for default decks like Greetings, etc.)
             wordsInDeck = initialWords.filter(w => w.deckId === deckId);
           }
         } catch (error) {
@@ -71,14 +62,11 @@ export default function DeckPage() {
           wordsInDeck = initialWords.filter(w => w.deckId === deckId);
         }
       }
-      
       setWords(wordsInDeck);
-      setCurrentIndex(0);
-      setIsFlipped(false);
+      setMode("selection");
     }
   }, [deckId]);
   
-  // Save words to localStorage whenever they change, but only for non-kana decks
   useEffect(() => {
     if (deck && deck.category !== 'kana' && words.length > 0) {
       try {
@@ -90,8 +78,6 @@ export default function DeckPage() {
     }
   }, [words, deck, deckId]);
 
-
-  const minSwipeDistance = 50;
 
   const handleOpenForm = (word: VocabularyWord | null) => {
     setEditingWord(word);
@@ -106,122 +92,71 @@ export default function DeckPage() {
   }
 
   const saveWord = (wordData: Omit<VocabularyWord, "id" | "deckId">, id?: string) => {
+    let newWordsList: VocabularyWord[] = [];
     if (id) {
-      setWords(prev => 
-        prev.map(w => (w.id === id ? { ...w, ...wordData } : w))
-      );
+      newWordsList = words.map(w => (w.id === id ? { ...w, ...wordData } : w));
     } else {
       const newWord = { ...wordData, id: Date.now().toString(), deckId };
-      setWords((prev) => {
-        const newWords = [...prev, newWord];
-        setCurrentIndex(newWords.length - 1);
-        setIsFlipped(false);
-        return newWords;
-      });
+      newWordsList = [...words, newWord];
     }
+    setWords(newWordsList);
     setIsFormOpen(false);
     setEditingWord(null);
   };
 
   const removeWord = (id: string) => {
-    setWords((prev) => {
-      const newWords = prev.filter((word) => word.id !== id);
-      if (currentIndex >= newWords.length && newWords.length > 0) {
-        setCurrentIndex(newWords.length - 1);
-      } else if (newWords.length === 0) {
-        setCurrentIndex(0);
-      }
-      setIsFlipped(false);
-      return newWords;
-    });
+    setWords((prev) => prev.filter((word) => word.id !== id));
   };
 
-  const handleNavigation = (direction: 'next' | 'prev') => {
-    if (!words.length) return;
-    if (animationTimeoutRef.current) {
-      clearTimeout(animationTimeoutRef.current);
+  const handleBackToSelection = () => {
+    setMode("selection");
+  }
+
+  const renderContent = () => {
+    if (words.length === 0 && deck?.category !== 'kana') {
+      return (
+        <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
+            <p className="text-lg font-semibold">This deck is empty.</p>
+            <p className="mt-2">
+                Tap the <Plus className="inline h-4 w-4 mx-1" /> button to add your first word!
+            </p>
+        </div>
+      );
     }
-    setAnimationDirection(direction === 'next' ? 'right' : 'left');
-    
-    animationTimeoutRef.current = setTimeout(() => {
-       if (direction === 'next') {
-         setCurrentIndex((prev) => (prev + 1) % words.length);
-       } else {
-         setCurrentIndex((prev) => (prev - 1 + words.length) % words.length);
-       }
-       setIsFlipped(false);
-       setAnimationDirection('none');
-    }, 150);
-  };
 
-  const goToNext = () => handleNavigation('next');
-  const goToPrevious = () => handleNavigation('prev');
-
-  const shuffleWords = () => {
-    if (words.length < 2) return;
-    setWords((currentWords) => {
-      const shuffled = [...currentWords];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      return shuffled;
-    });
-    setCurrentIndex(0);
-    setIsFlipped(false);
-  };
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (isFormOpen) return;
-      
-      switch (e.key) {
-        case 'ArrowLeft':
-          goToPrevious();
-          break;
-        case 'ArrowRight':
-          goToNext();
-          break;
-        case 'ArrowUp':
-          e.preventDefault();
-          setIsFlipped(false);
-          break;
-        case 'ArrowDown':
-          e.preventDefault();
-          setIsFlipped(true);
-          break;
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [words, currentIndex, isFormOpen]);
-  
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-    if (isLeftSwipe) {
-      goToNext();
-    } else if (isRightSwipe) {
-      goToPrevious();
+    switch (mode) {
+      case 'view':
+        return (
+          <FlashcardViewer 
+            words={words} 
+            isKana={deck?.category === 'kana'}
+            onEdit={handleOpenForm}
+            onRemove={removeWord}
+            onBack={handleBackToSelection}
+          />
+        );
+      case 'test':
+        return (
+          <MemoryTest 
+            words={words}
+            isKana={deck?.category === 'kana'}
+            onBack={handleBackToSelection}
+          />
+        );
+      case 'selection':
+      default:
+        return (
+          <div className="flex flex-col items-center justify-center h-full p-8 space-y-4">
+              <Button className="w-full h-20 text-lg" onClick={() => setMode('view')}>
+                  <View className="mr-4 h-6 w-6"/> View Each
+              </Button>
+              <Button className="w-full h-20 text-lg" onClick={() => setMode('test')} variant="secondary">
+                  <BrainCircuit className="mr-4 h-6 w-6" /> Memory Test
+              </Button>
+          </div>
+        );
     }
-    setTouchStart(null);
-    setTouchEnd(null);
   };
-
-  const currentWord = words.length > 0 ? words[currentIndex] : null;
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-800">
@@ -250,64 +185,9 @@ export default function DeckPage() {
             </DialogTrigger>
           </header>
 
-          <main 
-            className="flex-1 flex flex-col items-center justify-center p-4 overflow-hidden"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-          >
-            {currentWord ? (
-              <div
-                key={currentWord.id}
-                className={cn(
-                  "w-full h-72",
-                  animationDirection === 'right' && 'animate-slide-out-to-left',
-                  animationDirection === 'left' && 'animate-slide-out-to-right',
-                  animationDirection === 'none' && 'animate-slide-in'
-                )}
-              >
-                <Flashcard
-                  word={currentWord}
-                  onRemove={() => removeWord(currentWord.id)}
-                  onEdit={() => handleOpenForm(currentWord)}
-                  isKana={deck?.category === 'kana'}
-                  isFlipped={isFlipped}
-                  onFlip={() => setIsFlipped(!isFlipped)}
-                />
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
-                <p className="text-lg font-semibold">This deck is empty.</p>
-                {deck?.category !== 'kana' && (
-                    <p className="mt-2">
-                        Tap the <Plus className="inline h-4 w-4 mx-1" /> button to add your first word!
-                    </p>
-                )}
-              </div>
-            )}
+          <main className="flex-1 flex flex-col items-center justify-center overflow-hidden">
+             {renderContent()}
           </main>
-          
-          {words.length > 1 && (
-            <footer className="flex items-center justify-between p-4 border-t">
-              <Button variant="outline" size="icon" onClick={goToPrevious}>
-                <ChevronLeft className="h-4 w-4" />
-                <span className="sr-only">Previous word</span>
-              </Button>
-              <div className="flex items-center gap-4">
-                <Button variant="outline" size="icon" onClick={shuffleWords}>
-                  <Shuffle className="h-4 w-4" />
-                  <span className="sr-only">Shuffle words</span>
-                </Button>
-                <p className="text-sm text-muted-foreground">
-                  {currentIndex + 1} / {words.length}
-                </p>
-              </div>
-              <Button variant="outline" size="icon" onClick={goToNext}>
-                <ChevronRight className="h-4 w-4" />
-                <span className="sr-only">Next word</span>
-              </Button>
-            </footer>
-          )}
         </div>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>

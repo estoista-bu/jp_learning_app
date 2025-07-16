@@ -27,9 +27,10 @@ interface FlashcardProps {
   isKana?: boolean;
   isFlipped: boolean;
   onFlip: () => void;
+  hideControls?: boolean;
 }
 
-export function Flashcard({ word, onRemove, onEdit, isKana = false, isFlipped, onFlip }: FlashcardProps) {
+export function Flashcard({ word, onRemove, onEdit, isKana = false, isFlipped, onFlip, hideControls = false }: FlashcardProps) {
   const [isPlaying, setIsPlaying] = useState(false);
 
   const handleEdit = (e: React.MouseEvent) => {
@@ -61,7 +62,7 @@ export function Flashcard({ word, onRemove, onEdit, isKana = false, isFlipped, o
   const fontSizeClass =
     japaneseWordLength > 6 ? "text-4xl" : "text-5xl";
 
-  const editButtons = !isKana ? (
+  const editButtons = !isKana && !hideControls ? (
     <div className="absolute top-2 right-2 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
       <Button
         variant="ghost"
