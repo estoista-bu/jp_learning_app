@@ -7,6 +7,20 @@ import type { VocabularyWord } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Flashcard } from "@/components/flashcard";
 import { cn } from "@/lib/utils";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from "recharts";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltip as ChartTooltipPrimitive,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+
 
 type AnimationDirection = "left" | "right" | "none";
 
@@ -164,6 +178,13 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
 
   const currentWord = historyIndex >= 0 ? history[historyIndex] : null;
 
+  const totalWeight = weightedWords.reduce((sum, word) => sum + word.weight, 0);
+  const chartData = weightedWords.map(word => ({
+    name: word.japanese,
+    probability: totalWeight > 0 ? (word.weight / totalWeight) * 100 : 0,
+    weight: word.weight,
+  })).sort((a, b) => b.probability - a.probability);
+
   return (
     <div className="flex flex-col w-full h-full">
         <div className="flex-1 flex flex-col items-center justify-center p-4 overflow-hidden">
@@ -189,6 +210,57 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
             ) : (
                  <p className="text-muted-foreground">Loading test...</p>
             )}
+        </div>
+
+        <div className="px-4 pb-2">
+            <Card>
+                <CardHeader className="py-2 px-4">
+                    <CardTitle className="text-sm">Debug: Word Probability</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                   <div className="h-40 w-full">
+                     <ChartContainer config={{
+                        probability: {
+                            label: "Probability",
+                            color: "hsl(var(--primary))",
+                        },
+                     }}>
+                        <BarChart
+                            data={chartData}
+                            layout="vertical"
+                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                        >
+                            <XAxis type="number" hide />
+                            <YAxis
+                                dataKey="name"
+                                type="category"
+                                tickLine={false}
+                                axisLine={false}
+                                tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                                width={60}
+                            />
+                             <ChartTooltipPrimitive
+                                cursor={{ fill: "hsl(var(--muted))" }}
+                                content={<ChartTooltipContent
+                                    formatter={(value, name, props) => (
+                                        <>
+                                            <div className="font-medium">{props.payload.name}</div>
+                                            <div className="text-muted-foreground">
+                                                <p>Weight: {props.payload.weight}</p>
+                                                <p>Chance: {Number(value).toFixed(2)}%</p>
+                                            </div>
+                                        </>
+                                    )}
+                                />}
+                            />
+                            <Bar dataKey="probability" radius={4}>
+                               <LabelList dataKey="weight" position="right" offset={8} className="fill-foreground" fontSize={10} />
+                            </Bar>
+                        </BarChart>
+                     </ChartContainer>
+                   </div>
+                </CardContent>
+            </Card>
         </div>
         
         <footer className="flex items-center justify-between p-4 border-t">
