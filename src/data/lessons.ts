@@ -8,12 +8,12 @@ export const grammarLessons: GrammarLesson[] = [
     exampleSentences: [
       {
         japanese: "私は寿司を食べます。",
-        reading: "Watashi wa sushi o tabemasu.",
+        reading: "わたしはすしをたべます。",
         meaning: "I eat sushi."
       },
       {
         japanese: "猫は魚が好きです。",
-        reading: "Neko wa sakana ga suki desu.",
+        reading: "ねこはさかながすきです。",
         meaning: "The cat likes fish."
       }
     ]
@@ -24,12 +24,12 @@ export const grammarLessons: GrammarLesson[] = [
     exampleSentences: [
       {
         japanese: "今日はいい天気です。",
-        reading: "Kyou wa ii tenki desu.",
+        reading: "きょうはいいてんきです。",
         meaning: "Today, the weather is good. (Topic: Today)"
       },
       {
         japanese: "雨が降っています。",
-        reading: "Ame ga futte imasu.",
+        reading: "あめがふっています。",
         meaning: "It is raining. (Subject: Rain, new information)"
       }
     ]
@@ -40,17 +40,17 @@ export const grammarLessons: GrammarLesson[] = [
     exampleSentences: [
       {
         japanese: "毎日、勉強します。",
-        reading: "Mainichi, benkyou shimasu.",
+        reading: "まいにち、べんきょうします。",
         meaning: "I study every day. (Present)"
       },
       {
         japanese: "昨日、映画を見ました。",
-        reading: "Kinou, eiga o mimashita.",
+        reading: "きのう、えいがをみました。",
         meaning: "I watched a movie yesterday. (Past)"
       },
       {
         japanese: "お酒は飲みません。",
-        reading: "Osake wa nomimasen.",
+        reading: "おさけはのみません。",
         meaning: "I don't drink alcohol. (Negative)"
       }
     ]
@@ -61,17 +61,17 @@ export const grammarLessons: GrammarLesson[] = [
     exampleSentences: [
       {
         japanese: "これは私の本です。",
-        reading: "Kore wa watashi no hon desu.",
+        reading: "これはわたしのほんです。",
         meaning: "This is my book."
       },
       {
         japanese: "あれは山田さんの車です。",
-        reading: "Are wa Yamada-san no kuruma desu.",
+        reading: "あれはまださんのくるまです。",
         meaning: "That is Mr. Yamada's car."
       },
       {
         japanese: "日本語の先生",
-        reading: "Nihongo no sensei",
+        reading: "にほんごのせんせい",
         meaning: "A teacher of Japanese (Japanese teacher)."
       }
     ]
@@ -82,17 +82,17 @@ export const grammarLessons: GrammarLesson[] = [
     exampleSentences: [
       {
         japanese: "このカバンは大きいです。",
-        reading: "Kono kaban wa ookii desu.",
+        reading: "このかばんはおおきいです。",
         meaning: "This bag is big. (i-adjective)"
       },
       {
         japanese: "静かな図書館",
-        reading: "Shizuka na toshokan",
+        reading: "しずかなとしょかん",
         meaning: "A quiet library. (na-adjective before noun)"
       },
       {
         japanese: "この町は静かです。",
-        reading: "Kono machi wa shizuka desu.",
+        reading: "このまちはしずかです。",
         meaning: "This town is quiet. (na-adjective at end of sentence)"
       }
     ]
@@ -103,12 +103,12 @@ export const grammarLessons: GrammarLesson[] = [
     exampleSentences: [
       {
         japanese: "朝ごはんを食べて、学校に行きます。",
-        reading: "Asagohan o tabete, gakkou ni ikimasu.",
+        reading: "あさごはんをたべて、がっこうにいきます。",
         meaning: "I eat breakfast and then go to school."
       },
       {
         japanese: "ちょっと待ってください。",
-        reading: "Chotto matte kudasai.",
+        reading: "ちょっとまってください。",
         meaning: "Please wait a moment."
       }
     ]
@@ -119,17 +119,17 @@ export const grammarLessons: GrammarLesson[] = [
     exampleSentences: [
       {
         japanese: "何をしていますか？",
-        reading: "Nani o shite imasu ka?",
+        reading: "なにをしていますか？",
         meaning: "What are you doing?"
       },
       {
         japanese: "音楽を聞いています。",
-        reading: "Ongaku o kiite imasu.",
+        reading: "おんがくをきいています。",
         meaning: "I am listening to music."
       },
       {
         japanese: "佐藤さんは結婚しています。",
-        reading: "Satou-san wa kekkon shite imasu.",
+        reading: "さとうさんはけっこんしています。",
         meaning: "Mr. Sato is married. (A continuous state)"
       }
     ]
@@ -140,12 +140,12 @@ export const grammarLessons: GrammarLesson[] = [
     exampleSentences: [
       {
         japanese: "一緒に映画を見ませんか？",
-        reading: "Issho ni eiga o mimasen ka?",
+        reading: "いっしょにえいがをみませんか？",
         meaning: "Won't you watch a movie with me?"
       },
       {
         japanese: "喫茶店で話しましょう。",
-        reading: "Kissaten de hanashimashou.",
+        reading: "きっさてんで話しましょう。",
         meaning: "Let's talk at the coffee shop."
       }
     ]
@@ -156,12 +156,12 @@ export const grammarLessons: GrammarLesson[] = [
     exampleSentences: [
       {
         japanese: "友達と話すのが好きだ。",
-        reading: "Tomodachi to hanasu no ga suki da.",
+        reading: "ともだちと話すのがすきだ。",
         meaning: "I like talking with my friends. (Casual speech)"
       },
       {
         japanese: "本を読む時間がない。",
-        reading: "Hon o yomu jikan ga nai.",
+        reading: "ほんをよむじかんがない。",
         meaning: "I don't have time to read books. (Grammatical structure)"
       }
     ]
@@ -172,12 +172,12 @@ export const grammarLessons: GrammarLesson[] = [
     exampleSentences: [
       {
         japanese: "昨日、何を食べた？",
-        reading: "Kinou, nani o tabeta?",
+        reading: "きのう、なにをたべた？",
         meaning: "What did you eat yesterday? (Casual)"
       },
       {
         japanese: "日本に行ったことがある。",
-        reading: "Nihon ni itta koto ga aru.",
+        reading: "にほんにいったことがある。",
         meaning: "I have been to Japan. (Expressing experience)"
       }
     ]
@@ -188,12 +188,12 @@ export const grammarLessons: GrammarLesson[] = [
     exampleSentences: [
       {
         japanese: "明日は雨が降ると思います。",
-        reading: "Ashita wa ame ga furu to omoimasu.",
+        reading: "あしたはあめがふるとおもいます。",
         meaning: "I think it will rain tomorrow."
       },
       {
         japanese: "田中さんはパーティーに来ないと言っていました。",
-        reading: "Tanaka-san wa paatii ni konai to itte imashita.",
+        reading: "たなかさんはパーティーにこないといっていました。",
         meaning: "Ms. Tanaka said she isn't coming to the party."
       }
     ]
@@ -204,17 +204,17 @@ export const grammarLessons: GrammarLesson[] = [
     exampleSentences: [
       {
         japanese: "私は漢字が読めます。",
-        reading: "Watashi wa kanji ga yomemasu.",
+        reading: "わたしはかんじがよめます。",
         meaning: "I can read kanji. (Polite form)"
       },
       {
         japanese: "彼は日本語を話せる。",
-        reading: "Kare wa nihongo o hanaseru.",
+        reading: "かれはにほんごをはなせる。",
         meaning: "He can speak Japanese. (Plain form)"
       },
       {
         japanese: "寿司が食べられますか？",
-        reading: "Sushi ga taberaremasu ka?",
+        reading: "すしがたべられますか？",
         meaning: "Can you eat sushi?"
       }
     ]
@@ -225,12 +225,12 @@ export const grammarLessons: GrammarLesson[] = [
     exampleSentences: [
       {
         japanese: "バスより電車の方が速いです。",
-        reading: "Basu yori densha no hou ga hayai desu.",
+        reading: "ばすよりでんしゃのほうがはやいです。",
         meaning: "The train is faster than the bus."
       },
       {
         japanese: "犬と猫とどちらの方が好きですか？",
-        reading: "Inu to neko to dochira no hou ga suki desu ka?",
+        reading: "いぬとねことどちらのほうがすきですか？",
         meaning: "Which do you like more, dogs or cats?"
       }
     ]
@@ -241,12 +241,12 @@ export const grammarLessons: GrammarLesson[] = [
     exampleSentences: [
       {
         japanese: "時間がないから、急ぎましょう。",
-        reading: "Jikan ga nai kara, isogimashou.",
+        reading: "じかんがないから、いそぎましょう。",
         meaning: "Because there's no time, let's hurry."
       },
       {
         japanese: "雨が降っているので、傘を持っていきます。",
-        reading: "Ame ga futte iru node, kasa o motte ikimasu.",
+        reading: "あめがふっているので、かさをもっていきます。",
         meaning: "Since it's raining, I will take an umbrella."
       }
     ]
@@ -257,12 +257,12 @@ export const grammarLessons: GrammarLesson[] = [
     exampleSentences: [
       {
         japanese: "もっと野菜を食べた方がいいですよ。",
-        reading: "Motto yasai o tabeta hou ga ii desu yo.",
+        reading: "もっとやさいをたべたほうがいいですよ。",
         meaning: "You should eat more vegetables."
       },
       {
         japanese: "夜遅くまで起きない方がいいです。",
-        reading: "Yoru osoku made okinai hou ga ii desu.",
+        reading: "よるおそくまでおきないほうがいいです。",
         meaning: "It's better not to stay up late at night."
       }
     ]
@@ -273,12 +273,12 @@ export const grammarLessons: GrammarLesson[] = [
     exampleSentences: [
       {
         japanese: "宿題をしなければなりません。",
-        reading: "Shukudai o shinakereba narimasen.",
+        reading: "しゅくだいをしなければなりません。",
         meaning: "I must do my homework."
       },
       {
         japanese: "明日、早く起きなければならない。",
-        reading: "Ashita, hayaku okinakereba naranai.",
+        reading: "あした、はやくおきなければならない。",
         meaning: "I have to get up early tomorrow. (Casual form)"
       }
     ]
@@ -289,12 +289,12 @@ export const grammarLessons: GrammarLesson[] = [
     exampleSentences: [
       {
         japanese: "週末、何をしようか？",
-        reading: "Shuumatsu, nani o shiyou ka?",
+        reading: "しゅうまつ、なにをしようか？",
         meaning: "What should we do this weekend? (Casual)"
       },
       {
         japanese: "日本に行こうと思っています。",
-        reading: "Nihon ni ikou to omotte imasu.",
+        reading: "にほんにいこうとおもっています。",
         meaning: "I am thinking of going to Japan."
       }
     ]
