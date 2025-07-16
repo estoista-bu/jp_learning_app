@@ -114,20 +114,36 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
   const goToNext = () => handleNavigation('next');
   const goToPrevious = () => handleNavigation('prev');
   
+  const canGoForward = historyIndex < history.length - 1;
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isFlipped) return;
+      // Don't navigate with arrow keys while answer buttons are shown
+      if (isFlipped) {
+        // Allow flipping back with up/down arrows
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          setIsFlipped(false);
+        }
+        return;
+      }
+
       switch (e.key) {
         case 'ArrowLeft':
-          goToPrevious();
+          if (historyIndex > 0) {
+            goToPrevious();
+          }
           break;
         case 'ArrowRight':
-          // Disable right arrow key if card is not flipped
+          // Allow right arrow to navigate forward in history, but not past the end
+          if (canGoForward) {
+            goToNext();
+          }
           break;
         case 'ArrowUp':
         case 'ArrowDown':
            e.preventDefault();
-           setIsFlipped(f => !f);
+           setIsFlipped(true);
            break;
       }
     };
@@ -135,11 +151,9 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [historyIndex, history.length, isFlipped]);
+  }, [historyIndex, history.length, isFlipped, canGoForward]);
 
   const currentWord = historyIndex >= 0 ? history[historyIndex] : null;
-
-  const canGoForward = historyIndex < history.length -1;
 
   return (
     <div className="flex flex-col w-full h-full">
