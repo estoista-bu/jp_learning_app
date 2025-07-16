@@ -85,7 +85,7 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
         return prevWords.map(w => {
             if (w.id === currentWord.id) {
                 // If guessed correctly, decrease weight (min 1). If incorrect, increase weight.
-                const newWeight = guessed ? Math.max(1, w.weight - 2) : w.weight + 4;
+                const newWeight = guessed ? Math.max(1, w.weight / 10) : w.weight * 10;
                 return { ...w, weight: newWeight };
             }
             return w;
@@ -185,6 +185,13 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
     weight: word.weight,
   })).sort((a, b) => b.probability - a.probability);
 
+  const formatLabel = (value: number) => {
+    if (value >= 1) {
+      return value.toFixed(0);
+    }
+    return value.toFixed(2);
+  };
+
   return (
     <div className="flex flex-col w-full h-full">
         <div className="flex-1 flex flex-col items-center justify-center p-4 overflow-hidden">
@@ -246,7 +253,7 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
                                         <>
                                             <div className="font-medium">{props.payload.name}</div>
                                             <div className="text-muted-foreground">
-                                                <p>Weight: {props.payload.weight}</p>
+                                                <p>Weight: {Number(props.payload.weight).toPrecision(3)}</p>
                                                 <p>Chance: {Number(value).toFixed(2)}%</p>
                                             </div>
                                         </>
@@ -254,7 +261,7 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
                                 />}
                             />
                             <Bar dataKey="probability" radius={4}>
-                               <LabelList dataKey="weight" position="right" offset={8} className="fill-foreground" fontSize={10} />
+                               <LabelList dataKey="weight" position="right" offset={8} className="fill-foreground" fontSize={10} formatter={formatLabel} />
                             </Bar>
                         </BarChart>
                      </ChartContainer>
