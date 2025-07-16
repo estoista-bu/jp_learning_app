@@ -74,7 +74,7 @@ export function Flashcard({
   
   const getRomaji = (reading: string) => {
     if (reading === "こんにちは") return "konnichiwa";
-    if (reading === "こんばんは") return "kombanwa";
+    if (reading === "こんばんは") return "konbanwa";
     // The particle 'は' is pronounced 'wa'
     if (reading.endsWith("は") && reading.length > 1) {
         return wanakana.toRomaji(reading.slice(0, -1)) + "wa";
