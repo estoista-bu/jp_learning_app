@@ -49,9 +49,9 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
   const [editingDeck, setEditingDeck] = useState<Deck | null>(null);
   const [deletingDeck, setDeletingDeck] = useState<Deck | null>(null);
   const [selectedKana, setSelectedKana] = useState<KanaSelection>("hiragana");
-  
+
   const allUserDecks = [
-    ...initialDecks.filter(d => d.category === 'user' && !d.id.match(/^\d+$/)), 
+    ...initialDecks.filter(d => d.category === 'user' && !d.id.match(/^\d+$/)),
     ...decks
   ];
 
@@ -59,21 +59,21 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
     setEditingDeck(deck);
     setIsFormOpen(true);
   };
-  
+
   const handleFormOpenChange = (open: boolean) => {
     if (!open) {
       setEditingDeck(null);
     }
     setIsFormOpen(open);
-  }
+  };
 
-  const saveDeck = (deckData: Omit<Deck, "id" | "category">, id?: string) => {
+  const handleSaveDeck = (deckData: Omit<Deck, "id" | "category">, id?: string) => {
     onSaveDeck(deckData, id);
     setIsFormOpen(false);
     setEditingDeck(null);
   };
-  
-  const removeDeck = (id: string) => {
+
+  const handleRemoveDeck = (id: string) => {
     onRemoveDeck(id);
     setDeletingDeck(null);
   };
@@ -165,10 +165,10 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
               {editingDeck ? "Update the name of your deck." : "Create a new deck to organize your vocabulary."}
             </DialogDescription>
           </DialogHeader>
-          <DeckForm onSaveDeck={saveDeck} deckToEdit={editingDeck} />
+          <DeckForm onSaveDeck={handleSaveDeck} deckToEdit={editingDeck} />
         </DialogContent>
       </Dialog>
-      
+
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deletingDeck} onOpenChange={() => setDeletingDeck(null)}>
         <AlertDialogContent>
@@ -181,7 +181,7 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => removeDeck(deletingDeck!.id)}>Continue</AlertDialogAction>
+            <AlertDialogAction onClick={() => handleRemoveDeck(deletingDeck!.id)}>Continue</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
