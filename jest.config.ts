@@ -16,6 +16,7 @@ const config: Config = {
   preset: 'ts-jest',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^lucide-react$': require.resolve('lucide-react'),
   },
 };
 

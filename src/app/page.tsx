@@ -121,6 +121,7 @@ export default function Home() {
                 selectedQuiz={selectedQuiz}
                 animation={animation}
                 onNavigate={handleNavigateGrammar}
+                data-testid="grammar-guide"
               />
             </div>
           )}
