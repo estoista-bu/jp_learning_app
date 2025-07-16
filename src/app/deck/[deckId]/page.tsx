@@ -55,7 +55,12 @@ export default function DeckPage() {
           if (storedWords) {
             wordsInDeck = JSON.parse(storedWords);
           } else {
-            wordsInDeck = initialWords.filter(w => w.deckId === deckId);
+            // Pre-load initial decks from static data if no user data exists
+            if (['1','2','3'].includes(deckId)) {
+                wordsInDeck = initialWords.filter(w => w.deckId === deckId);
+            } else {
+                wordsInDeck = [];
+            }
           }
         } catch (error) {
           console.error("Failed to load words from localStorage", error);
