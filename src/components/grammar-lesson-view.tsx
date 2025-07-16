@@ -1,7 +1,7 @@
 
 "use client"
 import type { GrammarLesson } from "@/lib/types";
-import { Card, CardContent, CardDescription } from "@/components/ui/card";
+import { Card, CardHeader, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Volume2, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
