@@ -47,7 +47,7 @@ export async function checkGrammar(
 
 const prompt = ai.definePrompt({
   name: 'grammarCheckPrompt',
-  model: 'googleai/gemini-1.5-flash-latest',
+  model: 'googleai/gemini-pro',
   input: { schema: GrammarCheckInputSchema },
   output: { schema: GrammarCheckOutputSchema },
   prompt: `You are an expert Japanese language teacher specializing in grammar. Analyze the provided Japanese text for any grammatical errors.
