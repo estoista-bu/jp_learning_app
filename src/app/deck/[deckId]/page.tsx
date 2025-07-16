@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Plus, ArrowLeft } from "lucide-react";
@@ -24,15 +24,14 @@ export default function DeckPage() {
   const params = useParams();
   const deckId = params.deckId as string;
   
-  const [deck, setDeck] = useState<Deck | null>(null);
   const [words, setWords] = useState<VocabularyWord[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingWord, setEditingWord] = useState<VocabularyWord | null>(null);
 
+  const currentDeck = allDecks.find(d => d.id === deckId) || null;
+
   useEffect(() => {
     if (deckId) {
-      const currentDeck = allDecks.find(d => d.id === deckId) || null;
-      setDeck(currentDeck);
       const wordsInDeck = allWords.filter(w => w.deckId === deckId);
       setWords(wordsInDeck);
     }
@@ -60,12 +59,14 @@ export default function DeckPage() {
       newWordsList = [...words, newWord];
     }
     setWords(newWordsList);
+    // Note: This only saves to component state. We'll need to add persistence later.
     setIsFormOpen(false);
     setEditingWord(null);
   };
 
   const removeWord = (id: string) => {
     setWords((prev) => prev.filter((word) => word.id !== id));
+    // Note: This only saves to component state. We'll need to add persistence later.
   };
 
 
@@ -81,14 +82,14 @@ export default function DeckPage() {
               </Button>
             </Link>
             <h1 className="font-headline text-xl font-bold text-primary truncate px-2">
-              {deck?.name || "..."}
+              {currentDeck?.name || "..."}
             </h1>
             <DialogTrigger asChild>
               <Button 
                 size="icon" 
                 className="w-8 h-8" 
                 onClick={() => handleOpenForm(null)}
-                disabled={deck?.category === 'kana'}
+                disabled={currentDeck?.category === 'kana'}
               >
                 <Plus className="h-4 w-4" />
                 <span className="sr-only">Add New Word</span>
@@ -100,7 +101,7 @@ export default function DeckPage() {
             {words.length > 0 ? (
                 <FlashcardViewer 
                     words={words}
-                    isKana={deck?.category === 'kana'}
+                    isKana={currentDeck?.category === 'kana'}
                     onEdit={handleOpenForm}
                     onRemove={removeWord}
                 />
