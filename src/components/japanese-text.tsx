@@ -12,8 +12,8 @@ interface JapaneseTextProps {
 
 export function JapaneseText({ text, reading, isBlock = false }: JapaneseTextProps) {
   // Regex to find Japanese parts of the text. This will match sequences of
-  // Japanese characters, or sequences of non-Japanese characters.
-  const regex = /([\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]+|[^\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]+)/g;
+  // Japanese characters (including underscores), or sequences of non-Japanese characters.
+  const regex = /([\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf_]+|[^\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf_]+)/g;
   const segments = text.match(regex) || [text];
   const japaneseRegex = /[\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/;
 
