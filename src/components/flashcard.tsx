@@ -171,7 +171,7 @@ export function Flashcard({
              <p className="font-body text-3xl font-semibold text-accent break-all">
                {word.reading}
              </p>
-             <p className="text-muted-foreground mt-1 text-lg">{wanakana.toRomaji(word.reading)}</p>
+             <p className="text-muted-foreground mt-1 text-lg">{wanakana.toRomaji(word.reading, { upcaseKatakana: true })}</p>
              <p className="text-muted-foreground mt-4 text-xl">{word.meaning}</p>
            </CardContent>
 
