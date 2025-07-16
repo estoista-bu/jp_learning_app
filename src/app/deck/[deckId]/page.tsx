@@ -189,7 +189,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
                         {getHeaderTitle()}
                     </h1>
                     
-                    {!isKanaDeck ? (
+                    {!isKanaDeck && mode !== 'test' ? (
                         <SheetTrigger asChild>
                             <Button variant="outline" size="icon" className="w-8 h-8">
                                 <Plus className="h-4 w-4" />

@@ -122,7 +122,7 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
           goToPrevious();
           break;
         case 'ArrowRight':
-          goToNext();
+          // Disable right arrow key if card is not flipped
           break;
         case 'ArrowUp':
         case 'ArrowDown':
@@ -138,6 +138,8 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
   }, [historyIndex, history.length, isFlipped]);
 
   const currentWord = historyIndex >= 0 ? history[historyIndex] : null;
+
+  const canGoForward = historyIndex < history.length -1;
 
   return (
     <div className="flex flex-col w-full h-full">
@@ -176,7 +178,7 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
             {historyIndex + 1} / {history.length}
         </p>
 
-        <Button variant="outline" size="icon" onClick={goToNext} disabled={isFlipped}>
+        <Button variant="outline" size="icon" onClick={goToNext} disabled={!canGoForward}>
             <ChevronRight className="h-4 w-4" />
             <span className="sr-only">Next word</span>
         </Button>
