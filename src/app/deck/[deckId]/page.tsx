@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { ArrowLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -101,6 +101,13 @@ export default function DeckPage({ params }: { params: { deckId: string } }) {
   const isKanaDeck = deck?.category === 'kana';
 
   const renderContent = () => {
+    if (!isMounted) {
+        return (
+         <div className="p-4 text-center">
+             <p className="text-lg font-semibold text-muted-foreground">Loading...</p>
+         </div>
+       );
+    }
     if (!deck) {
        return (
          <div className="p-4 text-center">
