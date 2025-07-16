@@ -4,13 +4,14 @@
  */
 import { render, screen, fireEvent } from '@testing-library/react';
 import Home from './page';
+import { GrammarGuide } from '@/components/grammar-guide';
 
 // Mock the VocabularyManager and GrammarGuide components to isolate the test to the Home component's logic.
 jest.mock('@/components/vocabulary-manager', () => ({
   VocabularyManager: () => <div data-testid="vocabulary-manager">Vocabulary Content</div>,
 }));
 jest.mock('@/components/grammar-guide', () => ({
-  GrammarGuide: () => <div data-testid="grammar-guide">Grammar Content</div>,
+  GrammarGuide: (props: any) => <div {...props}>Grammar Content</div>,
 }));
 
 describe('Home Page', () => {

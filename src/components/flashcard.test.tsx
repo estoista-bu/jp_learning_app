@@ -48,9 +48,11 @@ describe('Flashcard Component', () => {
         onFlip={mockOnFlip}
       />
     );
-    expect(screen.getByText(mockWord.japanese)).toBeInTheDocument();
-    expect(screen.queryByText(mockWord.reading)).not.toBeInTheDocument();
-    expect(screen.queryByText(mockWord.meaning)).not.toBeInTheDocument();
+    expect(screen.getByText(mockWord.japanese)).toBeVisible();
+    // Use queryByText and check for not.toBeVisible() because the elements
+    // exist in the DOM but are hidden by the card flip animation.
+    expect(screen.queryByText(mockWord.reading)).not.toBeVisible();
+    expect(screen.queryByText(mockWord.meaning)).not.toBeVisible();
   });
 
   /**
@@ -85,8 +87,8 @@ describe('Flashcard Component', () => {
         onFlip={mockOnFlip}
       />
     );
-    expect(screen.getByText(mockWord.reading)).toBeInTheDocument();
-    expect(screen.getByText(mockWord.meaning)).toBeInTheDocument();
+    expect(screen.getByText(mockWord.reading)).toBeVisible();
+    expect(screen.getByText(mockWord.meaning)).toBeVisible();
   });
 
   /**
@@ -103,8 +105,10 @@ describe('Flashcard Component', () => {
         onFlip={mockOnFlip}
       />
     );
-    expect(screen.getByLabelText(`Edit ${mockWord.japanese}`)).toBeInTheDocument();
-    expect(screen.getByLabelText(`Remove ${mockWord.japanese}`)).toBeInTheDocument();
+    // There are two sets of buttons (one for front, one for back).
+    // We can use getAllByLabelText to confirm they exist.
+    expect(screen.getAllByLabelText(`Edit ${mockWord.japanese}`).length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText(`Remove ${mockWord.japanese}`).length).toBeGreaterThan(0);
   });
   
   /**
