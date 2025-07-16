@@ -71,7 +71,20 @@ export function Flashcard({
     
     window.speechSynthesis.speak(utterance);
   };
-
+  
+  const getRomaji = (reading: string) => {
+    if (reading === "こんにちは") return "konnichiwa";
+    if (reading === "こんばんは") return "kombanwa";
+    // The particle 'は' is pronounced 'wa'
+    if (reading.endsWith("は") && reading.length > 1) {
+        return wanakana.toRomaji(reading.slice(0, -1)) + "wa";
+    }
+    // The particle 'へ' is pronounced 'e'
+    if (reading.endsWith("へ") && reading.length > 1) {
+        return wanakana.toRomaji(reading.slice(0, -1)) + "e";
+    }
+    return wanakana.toRomaji(reading);
+  }
 
   const japaneseWordLength = word.japanese.length;
   let fontSizeClass = "text-5xl";
@@ -171,7 +184,7 @@ export function Flashcard({
              <p className="font-body text-3xl font-semibold text-accent break-all">
                {word.reading}
              </p>
-             <p className="text-muted-foreground mt-1 text-lg">{wanakana.toRomaji(word.reading)}</p>
+             <p className="text-muted-foreground mt-1 text-lg">{getRomaji(word.reading)}</p>
              <p className="text-muted-foreground mt-4 text-xl">{word.meaning}</p>
            </CardContent>
 
