@@ -7,19 +7,20 @@ import type { VocabularyWord } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Flashcard } from "@/components/flashcard";
 import { cn } from "@/lib/utils";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from "recharts";
+import { Bar, BarChart, XAxis, YAxis } from "recharts";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import {
   ChartContainer,
   ChartTooltip as ChartTooltipPrimitive,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 
 type AnimationDirection = "left" | "right" | "none";
@@ -37,6 +38,7 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [animationDirection, setAnimationDirection] = useState<AnimationDirection>("none");
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [showStats, setShowStats] = useState(false);
 
   const [weightedWords, setWeightedWords] = useState<WeightedWord[]>([]);
   const [history, setHistory] = useState<WeightedWord[]>([]);
@@ -174,7 +176,7 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [historyIndex, history.length, isFlipped, canGoForward]);
+  }, [historyIndex, history.length, isFlipped, canGoForward, goToPrevious, goToNext, handleGuess]);
 
   const currentWord = historyIndex >= 0 ? history[historyIndex] : null;
 
@@ -219,71 +221,80 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
             )}
         </div>
 
-        <div className="px-4 pb-2">
-            <Card>
-                <CardHeader className="py-2 px-4">
-                    <CardTitle className="text-sm">Debug: Word Probability</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                   <div className="h-40 w-full">
-                     <ChartContainer config={{
-                        probability: {
-                            label: "Probability",
-                            color: "hsl(var(--primary))",
-                        },
-                     }}>
-                        <BarChart
-                            data={chartData}
-                            layout="vertical"
-                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                        >
-                            <XAxis type="number" hide />
-                            <YAxis
-                                dataKey="name"
-                                type="category"
-                                tickLine={false}
-                                axisLine={false}
-                                tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                                width={60}
-                            />
-                             <ChartTooltipPrimitive
-                                cursor={{ fill: "hsl(var(--muted))" }}
-                                content={<ChartTooltipContent
-                                    formatter={(value, name, props) => (
-                                        <>
-                                            <div className="font-medium">{props.payload.name}</div>
-                                            <div className="text-muted-foreground">
-                                                <p>Weight: {Number(props.payload.weight).toPrecision(3)}</p>
-                                                <p>Chance: {Number(value).toFixed(2)}%</p>
-                                            </div>
-                                        </>
-                                    )}
-                                />}
-                            />
-                            <Bar dataKey="probability" radius={4}>
-                               <LabelList dataKey="weight" position="right" offset={8} className="fill-foreground" fontSize={10} formatter={formatLabel} />
-                            </Bar>
-                        </BarChart>
-                     </ChartContainer>
-                   </div>
-                </CardContent>
-            </Card>
-        </div>
+        {showStats && (
+            <div className="px-4 pb-2">
+                <Card>
+                    <CardHeader className="py-2 px-4">
+                        <CardTitle className="text-sm">Debug: Word Probability</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                    <div className="h-40 w-full">
+                        <ChartContainer config={{
+                            probability: {
+                                label: "Probability",
+                                color: "hsl(var(--primary))",
+                            },
+                        }}>
+                            <BarChart
+                                data={chartData}
+                                layout="vertical"
+                                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                            >
+                                <XAxis type="number" hide />
+                                <YAxis
+                                    dataKey="name"
+                                    type="category"
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                                    width={60}
+                                />
+                                <ChartTooltipPrimitive
+                                    cursor={{ fill: "hsl(var(--muted))" }}
+                                    content={<ChartTooltipContent
+                                        formatter={(value, name, props) => (
+                                            <>
+                                                <div className="font-medium">{props.payload.name}</div>
+                                                <div className="text-muted-foreground">
+                                                    <p>Weight: {Number(props.payload.weight).toPrecision(3)}</p>
+                                                    <p>Chance: {Number(value).toFixed(2)}%</p>
+                                                </div>
+                                            </>
+                                        )}
+                                    />}
+                                />
+                                <Bar dataKey="probability" radius={4}>
+                                </Bar>
+                            </BarChart>
+                        </ChartContainer>
+                    </div>
+                    </CardContent>
+                </Card>
+            </div>
+        )}
         
         <footer className="flex items-center justify-between p-4 border-t">
-        <Button variant="outline" size="icon" onClick={goToPrevious} disabled={historyIndex <= 0}>
-            <ChevronLeft className="h-4 w-4" />
-            <span className="sr-only">Previous word</span>
-        </Button>
+            <Button variant="outline" size="icon" onClick={goToPrevious} disabled={historyIndex <= 0}>
+                <ChevronLeft className="h-4 w-4" />
+                <span className="sr-only">Previous word</span>
+            </Button>
+            
+            <div className="flex items-center space-x-4">
+                <p className="text-sm text-muted-foreground">
+                    {historyIndex + 1} / {history.length}
+                </p>
+                <div className="flex items-center space-x-2">
+                    <Checkbox id="stats" checked={showStats} onCheckedChange={(checked) => setShowStats(!!checked)} />
+                    <Label htmlFor="stats" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                        stats
+                    </Label>
+                </div>
+            </div>
 
-        <p className="text-sm text-muted-foreground">
-            {historyIndex + 1} / {history.length}
-        </p>
-
-        <Button variant="outline" size="icon" onClick={goToNext} disabled={!canGoForward}>
-            <ChevronRight className="h-4 w-4" />
-            <span className="sr-only">Next word</span>
-        </Button>
+            <Button variant="outline" size="icon" onClick={goToNext} disabled={!canGoForward}>
+                <ChevronRight className="h-4 w-4" />
+                <span className="sr-only">Next word</span>
+            </Button>
         </footer>
     </div>
   );
