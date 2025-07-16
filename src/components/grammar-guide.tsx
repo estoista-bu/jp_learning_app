@@ -1,7 +1,7 @@
 
 "use client";
 
-import { ChevronRight, ClipboardCheck } from "lucide-react";
+import { ChevronRight, ClipboardCheck, GraduationCap, ClipboardList } from "lucide-react";
 import { GrammarLessonsList } from "./grammar-lessons-list";
 import { GrammarLessonView } from "./grammar-lesson-view";
 import { QuizList } from "./quiz-list";
@@ -58,6 +58,7 @@ export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animat
                   className="flex items-center justify-between w-full p-4 rounded-lg bg-card hover:bg-muted transition-colors"
                 >
                   <span className="flex items-center gap-2">
+                    <GraduationCap className="h-5 w-5 text-primary" />
                     Lessons
                     {lessonProgress > 0 && (
                         <Badge variant="secondary">{lessonProgress}%</Badge>
@@ -71,7 +72,10 @@ export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animat
                    onClick={() => onNavigate("quizzes")}
                    className="flex items-center justify-between w-full p-4 rounded-lg bg-card hover:bg-muted transition-colors"
                 >
-                  <span>Quizzes</span>
+                  <span className="flex items-center gap-2">
+                    <ClipboardList className="h-5 w-5 text-primary" />
+                    Quizzes
+                  </span>
                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
                 </button>
               </li>
