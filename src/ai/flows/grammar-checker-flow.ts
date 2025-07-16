@@ -9,6 +9,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/googleai';
 import { z } from 'zod';
 
 const GrammarCheckInputSchema = z.object({
@@ -47,6 +48,7 @@ export async function checkGrammar(
 
 const prompt = ai.definePrompt({
   name: 'grammarCheckPrompt',
+  model: googleAI.model('gemini-1.5-flash-latest'),
   input: { schema: GrammarCheckInputSchema },
   output: { schema: GrammarCheckOutputSchema },
   prompt: `You are an expert Japanese language teacher specializing in grammar. Analyze the provided Japanese text for any grammatical errors.
