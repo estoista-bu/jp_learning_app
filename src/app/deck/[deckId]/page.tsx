@@ -30,6 +30,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [wordToEdit, setWordToEdit] = useState<VocabularyWord | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [isUserDeck, setIsUserDeck] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -39,18 +40,17 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     const currentDeck = combinedDecks.find((d) => d.id === deckId) || null;
     setDeck(currentDeck);
 
+    const deckIsCustom = userDecks.some(d => d.id === deckId);
+    setIsUserDeck(deckIsCustom);
+
     // Load words
     if (currentDeck) {
-      if (currentDeck.category === 'user') {
+      if (deckIsCustom) {
+        // This is a user-created deck. Load from localStorage.
         const storedWords = localStorage.getItem(`words_${deckId}`);
-        if (storedWords) {
-          setWords(JSON.parse(storedWords));
-        } else {
-          // If it's a user deck but has no words yet, start with an empty array
-          setWords([]);
-        }
+        setWords(storedWords ? JSON.parse(storedWords) : []);
       } else {
-        // For non-user decks (like kana), filter from the initial words
+        // This is a pre-written deck (Greetings, Kana, etc.). Load from initial data.
         setWords(initialWords.filter((word) => word.deckId === deckId));
       }
     }
@@ -58,18 +58,17 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
   
   useEffect(() => {
     // Only save to localStorage if it's a user deck and the component has mounted
-    if (isMounted && deck?.category === 'user') {
+    if (isMounted && isUserDeck) {
       localStorage.setItem(`words_${deckId}`, JSON.stringify(words));
     }
-  }, [words, deckId, deck, isMounted]);
+  }, [words, deckId, isUserDeck, isMounted]);
 
 
   const handleSaveWord = (data: VocabularyFormData, id?: string) => {
+    let newWords: VocabularyWord[];
     if (id) {
       // Edit existing word
-      setWords((prev) =>
-        prev.map((w) => (w.id === id ? { ...w, ...data } : w))
-      );
+      newWords = words.map((w) => (w.id === id ? { ...w, ...data } : w));
     } else {
       // Add new word
       const newWord: VocabularyWord = {
@@ -77,14 +76,29 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
         id: Date.now().toString(),
         deckId: deckId,
       };
-      setWords((prev) => [...prev, newWord]);
+      newWords = [...words, newWord];
     }
+    setWords(newWords);
+
+    // If this is the first time adding a word to a pre-written deck,
+    // it becomes a "user deck" and we should start saving to localStorage.
+    if (!isUserDeck) {
+        setIsUserDeck(true);
+        const userDecks: Deck[] = JSON.parse(localStorage.getItem("userDecks") || "[]");
+        if (!userDecks.some(d => d.id === deckId) && deck) {
+            localStorage.setItem("userDecks", JSON.stringify([...userDecks, deck]));
+        }
+    }
+
     setIsFormOpen(false);
     setWordToEdit(null);
   };
 
   const handleRemoveWord = (id: string) => {
     setWords((prev) => prev.filter((w) => w.id !== id));
+     if (!isUserDeck) {
+        setIsUserDeck(true);
+    }
   };
 
   const handleEditWord = (word: VocabularyWord) => {
