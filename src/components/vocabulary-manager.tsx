@@ -73,7 +73,7 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
     setEditingDeck(null);
   };
 
-  const handleRemoveDeck = (id: string) => {
+  const handleConfirmRemove = (id: string) => {
     onRemoveDeck(id);
     setDeletingDeck(null);
   };
@@ -177,11 +177,11 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the
               <span className="font-semibold text-foreground"> {deletingDeck?.name}</span> deck and all the words within it.
-            </Description>
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => handleRemoveDeck(deletingDeck!.id)}>Continue</AlertDialogAction>
+            <AlertDialogAction onClick={() => handleConfirmRemove(deletingDeck!.id)}>Continue</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
