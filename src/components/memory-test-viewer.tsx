@@ -185,7 +185,7 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
     name: word.japanese,
     probability: totalWeight > 0 ? (word.weight / totalWeight) * 100 : 0,
     weight: word.weight,
-  })).sort((a, b) => b.probability - a.probability);
+  })).sort((a, b) => a.name.localeCompare(b.name, 'ja'));
 
   const formatLabel = (value: number) => {
     if (value >= 1) {
