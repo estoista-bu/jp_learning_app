@@ -21,7 +21,8 @@ import { VocabularyForm } from "@/components/vocabulary-form";
 
 type VocabularyFormData = Omit<VocabularyWord, "id" | "deckId">;
 
-export default function DeckPage({ params }: { params: { deckId: string } }) {
+export default function DeckPage({ params: paramsProp }: { params: { deckId: string } }) {
+  const params = use(paramsProp);
   const { deckId } = params;
 
   const [deck, setDeck] = useState<Deck | null>(null);
