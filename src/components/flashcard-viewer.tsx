@@ -50,7 +50,7 @@ export function FlashcardViewer({ words, isKana, onEdit, onRemove }: FlashcardVi
        }
        setIsFlipped(false);
        setAnimationDirection('none');
-    }, 150);
+    }, 100);
   };
 
   const goToNext = () => handleNavigation('next');

@@ -79,7 +79,7 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
     });
 
     // Automatically move to the next card
-    setTimeout(() => goToNext(), 300);
+    setTimeout(() => goToNext(), 100);
   };
   
   const handleNavigation = (direction: 'next' | 'prev') => {
@@ -108,7 +108,7 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
         }
       }
       setAnimationDirection('none');
-    }, 150);
+    }, 100);
   };
 
   const goToNext = () => handleNavigation('next');

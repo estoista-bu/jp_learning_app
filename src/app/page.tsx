@@ -74,7 +74,7 @@ export default function Home() {
         setSelectedQuiz(null);
       }
       setAnimation('in');
-    }, 300);
+    }, 100);
   };
 
   const handleBackGrammar = () => {
@@ -90,7 +90,7 @@ export default function Home() {
         setGrammarView('main');
       }
       setAnimation('in');
-    }, 300);
+    }, 100);
   };
 
   const getGrammarTitle = () => {
