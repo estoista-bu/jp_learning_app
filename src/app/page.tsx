@@ -5,16 +5,19 @@ import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VocabularyManager } from "@/components/vocabulary-manager";
 import { GrammarGuide } from "@/components/grammar-guide";
-import { BookOpen, Milestone, ArrowLeft } from "lucide-react";
+import { BookOpen, Milestone, ArrowLeft, Search } from "lucide-react";
 import type { Deck, GrammarLesson, Quiz } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { allDecks as initialDecks } from "@/data/decks";
+import { DictionarySearch } from "@/components/dictionary-search";
 
 type AppView = "vocabulary" | "grammar";
 type GrammarView = "main" | "lessons" | "lesson" | "quizzes" | "quiz" | "checker";
+type VocabularyView = "decks" | "dictionary";
 
 export default function Home() {
   const [currentView, setCurrentView] = useState<AppView>("vocabulary");
+  const [vocabularyView, setVocabularyView] = useState<VocabularyView>("decks");
   const [decks, setDecks] = useState<Deck[]>([]);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -145,11 +148,22 @@ export default function Home() {
 
         <main className="flex-1 flex flex-col overflow-y-auto">
           {currentView === 'vocabulary' && (
-            <VocabularyManager 
-              decks={decks}
-              onSaveDeck={saveDeck}
-              onRemoveDeck={removeDeck}
-            />
+             <Tabs value={vocabularyView} onValueChange={(v) => setVocabularyView(v as VocabularyView)} className="flex flex-col h-full">
+                <TabsList className="grid w-full grid-cols-2 rounded-none border-b">
+                    <TabsTrigger value="decks">My Decks</TabsTrigger>
+                    <TabsTrigger value="dictionary">Dictionary</TabsTrigger>
+                </TabsList>
+                <TabsContent value="decks" className="flex-1 overflow-y-auto">
+                    <VocabularyManager 
+                        decks={decks}
+                        onSaveDeck={saveDeck}
+                        onRemoveDeck={removeDeck}
+                    />
+                </TabsContent>
+                <TabsContent value="dictionary" className="flex-1 overflow-y-auto">
+                    <DictionarySearch />
+                </TabsContent>
+            </Tabs>
           )}
           {currentView === 'grammar' && (
              <div className="flex flex-col h-full">

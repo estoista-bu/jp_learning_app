@@ -72,3 +72,17 @@ export const GrammarCheckOutputSchema = z.object({
   overallFeedback: z.string().describe('A brief, encouraging overall assessment of the text.'),
 });
 export type GrammarCheckOutput = z.infer<typeof GrammarCheckOutputSchema>;
+
+
+// Types for Jisho.org API Response
+export interface JishoResult {
+  is_common: boolean;
+  japanese: {
+    word?: string;
+    reading?: string;
+  }[];
+  senses: {
+    english_definitions: string[];
+    parts_of_speech: string[];
+  }[];
+}
