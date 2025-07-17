@@ -112,6 +112,10 @@ export function Flashcard({
     }
   };
 
+  const resetSentenceGeneration = () => {
+    setGeneratedSentence(null);
+  }
+
 
   const japaneseWordLength = word.japanese.length;
   let fontSizeClass = "text-5xl";
@@ -235,23 +239,29 @@ export function Flashcard({
            {memoryTestControls}
 
            {!isKana && (
-            <div className="border-t w-full p-2 space-y-2">
+            <div className="border-t w-full p-2 space-y-2" onClick={(e) => e.stopPropagation()}>
               <div className="px-2">
-                <GeneratedSentence sentence={generatedSentence} isLoading={isGenerating} />
+                <GeneratedSentence 
+                  sentence={generatedSentence} 
+                  isLoading={isGenerating} 
+                  onGenerateAnother={resetSentenceGeneration}
+                />
               </div>
-              <div className="flex justify-center gap-2">
-                  {(['Basic', 'Advanced', 'Expert'] as Difficulty[]).map((level) => (
-                      <Button
-                          key={level}
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => handleGenerateSentence(e, level)}
-                          disabled={isGenerating}
-                      >
-                          {level}
-                      </Button>
-                  ))}
-              </div>
+              {!generatedSentence && !isGenerating && (
+                 <div className="flex justify-center gap-2">
+                    {(['Basic', 'Advanced', 'Expert'] as Difficulty[]).map((level) => (
+                        <Button
+                            key={level}
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => handleGenerateSentence(e, level)}
+                            disabled={isGenerating}
+                        >
+                            {level}
+                        </Button>
+                    ))}
+                </div>
+              )}
             </div>
            )}
         </Card>
