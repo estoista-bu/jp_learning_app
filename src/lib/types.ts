@@ -1,5 +1,7 @@
 
 
+import { z } from 'zod';
+
 export type VocabularyWord = {
   id: string;
   japanese: string;
@@ -48,4 +50,25 @@ export type JapaneseTextSegment = {
 };
 
 export type JapaneseText = JapaneseTextSegment[];
-    
+
+
+// Schema for AI Grammar Checker Input
+export const GrammarCheckInputSchema = z.object({
+  text: z.string().describe('The Japanese text to be checked for grammatical errors.'),
+});
+export type GrammarCheckInput = z.infer<typeof GrammarCheckInputSchema>;
+
+// Schema for AI Grammar Checker Output
+export const GrammarCheckOutputSchema = z.object({
+  corrections: z
+    .array(
+      z.object({
+        mistake: z.string().describe('The specific part of the text that is grammatically incorrect or awkward.'),
+        suggestion: z.string().describe('A proposed correction for the identified mistake.'),
+        explanation: z.string().describe('A clear and simple explanation of the grammatical error and why the suggestion is more appropriate.'),
+      })
+    )
+    .describe('A list of identified grammar corrections. If no mistakes are found, this array will be empty.'),
+  overallFeedback: z.string().describe('A brief, encouraging overall assessment of the text.'),
+});
+export type GrammarCheckOutput = z.infer<typeof GrammarCheckOutputSchema>;
