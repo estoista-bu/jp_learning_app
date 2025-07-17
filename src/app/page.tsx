@@ -131,10 +131,11 @@ export default function Home() {
         setGrammarView('lessons');
         setSelectedLesson(null);
       } else if (grammarView === 'quiz') {
-        setGrammarView('quizzes');
-        // Don't clear AI quiz so it can be resumed
-        if (selectedQuiz?.id !== 'ai-generated') {
-          setSelectedQuiz(null);
+        if (selectedQuiz?.id === 'ai-generated') {
+            setGrammarView('main');
+        } else {
+            setGrammarView('quizzes');
+            setSelectedQuiz(null);
         }
       } else if (grammarView === 'lessons' || grammarView === 'quizzes' || grammarView === 'checker' || grammarView === 'ai-quiz-generator') {
         setGrammarView('main');
