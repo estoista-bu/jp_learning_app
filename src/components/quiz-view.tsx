@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Quiz } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,35 @@ export function QuizView({ quiz }: QuizViewProps) {
     Array(quiz.questions.length).fill(null)
   );
   const [isFinished, setIsFinished] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Load progress from localStorage on mount
+  useEffect(() => {
+    setIsMounted(true);
+    const savedProgress = localStorage.getItem(`quiz-progress-${quiz.id}`);
+    if (savedProgress) {
+      const answers = JSON.parse(savedProgress) as (string | null)[];
+      setSelectedAnswers(answers);
+
+      // Determine the current question index based on saved answers
+      const lastAnsweredIndex = answers.findLastIndex(a => a !== null);
+      const nextQuestionIndex = lastAnsweredIndex + 1;
+      if (nextQuestionIndex < quiz.questions.length) {
+        setCurrentQuestionIndex(nextQuestionIndex);
+      } else if (answers.every(a => a !== null)) {
+        // If all questions are answered, show the results page
+        finishQuiz(false); // don't re-save high score on load
+      }
+    }
+  }, [quiz.id, quiz.questions.length]);
+
+
+  // Save progress to localStorage whenever answers change
+  useEffect(() => {
+    if (isMounted) {
+      localStorage.setItem(`quiz-progress-${quiz.id}`, JSON.stringify(selectedAnswers));
+    }
+  }, [selectedAnswers, quiz.id, isMounted]);
 
   const currentQuestion = quiz.questions[currentQuestionIndex];
   const selectedAnswer = selectedAnswers[currentQuestionIndex];
@@ -36,12 +65,14 @@ export function QuizView({ quiz }: QuizViewProps) {
     return answer === quiz.questions[index].correctAnswer ? acc + 1 : acc;
   }, 0);
 
-  const finishQuiz = () => {
+  const finishQuiz = (saveScore = true) => {
     // Save high score to localStorage
-    const storageKey = `quiz-highscore-${quiz.id}`;
-    const currentHighScore = parseInt(localStorage.getItem(storageKey) || "0", 10);
-    if (score > currentHighScore) {
-        localStorage.setItem(storageKey, score.toString());
+    if (saveScore && quiz.id !== 'ai-generated') {
+      const storageKey = `quiz-highscore-${quiz.id}`;
+      const currentHighScore = parseInt(localStorage.getItem(storageKey) || "0", 10);
+      if (score > currentHighScore) {
+          localStorage.setItem(storageKey, score.toString());
+      }
     }
     setIsFinished(true);
   };
@@ -55,9 +86,17 @@ export function QuizView({ quiz }: QuizViewProps) {
   };
 
   const restartQuiz = () => {
+    const newAnswers = Array(quiz.questions.length).fill(null);
+    setSelectedAnswers(newAnswers);
     setCurrentQuestionIndex(0);
-    setSelectedAnswers(Array(quiz.questions.length).fill(null));
     setIsFinished(false);
+    
+    // Clear saved progress for this quiz
+    localStorage.removeItem(`quiz-progress-${quiz.id}`);
+    // Clear AI quiz from session storage if it's the one being restarted
+    if (quiz.id === 'ai-generated') {
+      sessionStorage.removeItem('ai-generated-quiz');
+    }
   };
 
   const progress = isFinished ? 100 : ((currentQuestionIndex) / quiz.questions.length) * 100;

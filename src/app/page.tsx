@@ -46,6 +46,11 @@ export default function Home() {
       if (storedRole && (storedRole === 'user' || storedRole === 'admin')) {
         setUserRole(storedRole as UserRole);
       }
+      // Load AI quiz from session storage if it exists
+      const storedAiQuiz = sessionStorage.getItem('ai-generated-quiz');
+      if (storedAiQuiz) {
+        setSelectedQuiz(JSON.parse(storedAiQuiz));
+      }
     } catch (error) {
       console.error("Failed to parse from localStorage", error);
     }
@@ -89,7 +94,11 @@ export default function Home() {
         setSelectedLesson(data as GrammarLesson);
         setSelectedQuiz(null);
       } else if (view === "quiz" && data) {
-        setSelectedQuiz(data as Quiz);
+        const quizData = data as Quiz;
+        if (quizData.id === 'ai-generated') {
+          sessionStorage.setItem('ai-generated-quiz', JSON.stringify(quizData));
+        }
+        setSelectedQuiz(quizData);
         setSelectedLesson(null);
       } else {
         setSelectedLesson(null);
