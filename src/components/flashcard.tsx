@@ -266,7 +266,7 @@ export function Flashcard({
            </CardContent>
 
            {memoryTestControls}
-           {isFlipped && sentenceGenerator}
+           {isFlipped && mode === 'view' && sentenceGenerator}
         </Card>
       </div>
     </div>
