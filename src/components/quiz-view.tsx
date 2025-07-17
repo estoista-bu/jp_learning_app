@@ -73,7 +73,7 @@ export function QuizView({ quiz }: QuizViewProps) {
     let initialAnswers = Array(questions.length).fill(null);
     let initialIndex = 0;
 
-    if (savedProgressJson && quiz.id !== 'ai-generated') {
+    if (savedProgressJson) {
       const savedAnswers = JSON.parse(savedProgressJson);
       // Ensure saved progress matches current quiz length
       if (Array.isArray(savedAnswers) && savedAnswers.length === questions.length) {
@@ -94,7 +94,7 @@ export function QuizView({ quiz }: QuizViewProps) {
   }, [quiz]);
 
   useEffect(() => {
-    if (isMounted && !isFinished && selectedAnswers.length > 0 && quiz.id !== 'ai-generated') {
+    if (isMounted && !isFinished && selectedAnswers.length > 0) {
       localStorage.setItem(getProgressKey(quiz.id), JSON.stringify(selectedAnswers));
     }
   }, [selectedAnswers, quiz.id, isMounted, isFinished]);
@@ -123,19 +123,17 @@ export function QuizView({ quiz }: QuizViewProps) {
     
     const initialAnswers = Array(questions.length).fill(null);
     setSelectedAnswers(initialAnswers);
-    if (quiz.id !== 'ai-generated') {
-      localStorage.setItem(getProgressKey(quiz.id), JSON.stringify(initialAnswers));
-    }
+    localStorage.setItem(getProgressKey(quiz.id), JSON.stringify(initialAnswers));
 
     setCurrentQuestionIndex(0);
     setIsFinished(false);
   }, [quiz]);
 
   const restartQuiz = () => {
-    if (quiz.id !== 'ai-generated') {
-      localStorage.removeItem(getProgressKey(quiz.id));
+    localStorage.removeItem(getProgressKey(quiz.id));
+    if (quiz.id === 'ai-generated') {
+       sessionStorage.removeItem('ai-generated-quiz');
     }
-    // For AI quizzes, we don't need to re-fetch, just restart.
     startQuiz();
   };
 

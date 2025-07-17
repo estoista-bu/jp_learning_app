@@ -89,7 +89,23 @@ export default function Home() {
   const handleNavigateGrammar = (view: GrammarView, data: GrammarLesson | Quiz | null = null) => {
     setAnimation('out');
     setTimeout(() => {
-      setGrammarView(view);
+      if (view === "ai-quiz-generator") {
+        const progressKey = `quiz-progress-ai-generated`;
+        const progress = JSON.parse(localStorage.getItem(progressKey) || "[]");
+        const isFinished = progress.length > 0 && progress.every((a: any) => a !== null);
+        
+        if (selectedQuiz?.id === 'ai-generated' && !isFinished) {
+          setGrammarView('quiz');
+        } else {
+          setGrammarView('ai-quiz-generator');
+          setSelectedQuiz(null); // Clear old quiz if finished
+          sessionStorage.removeItem('ai-generated-quiz');
+          localStorage.removeItem(progressKey);
+        }
+      } else {
+         setGrammarView(view);
+      }
+     
       if (view === "lesson" && data) {
         setSelectedLesson(data as GrammarLesson);
         setSelectedQuiz(null);
@@ -100,7 +116,7 @@ export default function Home() {
         }
         setSelectedQuiz(quizData);
         setSelectedLesson(null);
-      } else {
+      } else if(view !== 'ai-quiz-generator') {
         setSelectedLesson(null);
         setSelectedQuiz(null);
       }
@@ -115,12 +131,9 @@ export default function Home() {
         setGrammarView('lessons');
         setSelectedLesson(null);
       } else if (grammarView === 'quiz') {
-        // If we came from the AI generator, go back there. Otherwise, go to the quiz list.
-        // We don't clear the selectedQuiz for AI quizzes so the user can go back to it.
-        if (selectedQuiz?.id === 'ai-generated') {
-          setGrammarView('ai-quiz-generator');
-        } else {
-          setGrammarView('quizzes');
+        setGrammarView('quizzes');
+        // Don't clear AI quiz so it can be resumed
+        if (selectedQuiz?.id !== 'ai-generated') {
           setSelectedQuiz(null);
         }
       } else if (grammarView === 'lessons' || grammarView === 'quizzes' || grammarView === 'checker' || grammarView === 'ai-quiz-generator') {
@@ -155,7 +168,7 @@ export default function Home() {
     ...decks
   ];
 
-  const showMainHeader = currentView === 'vocabulary' || grammarView === 'main';
+  const showMainHeader = grammarView === 'main';
 
   if (!isMounted) {
     return null; // or a loading spinner
@@ -166,7 +179,7 @@ export default function Home() {
       <div className="w-full max-w-sm h-screen bg-background flex flex-col pt-[env(safe-area-inset-top)]">
         <header className="flex flex-col p-4 border-b">
            {showMainHeader && (
-            <div className="flex justify-center items-center relative mb-4">
+            <div className="flex justify-between items-center relative mb-4">
               <div className="w-8"></div>
               <h1 className="font-headline text-xl font-bold text-primary text-center flex-1">
                   Nihongo Mastery
