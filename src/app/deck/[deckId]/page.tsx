@@ -66,7 +66,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
         setIsUserDeck(false);
       }
       setWords(loadedWords);
-      setShuffledWords([...loadedWords]);
+      setShuffledWords([...loadedWords].sort(() => Math.random() - 0.5));
     }
   }, [deckId]);
   
@@ -201,7 +201,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
       case "test":
         return <MemoryTestViewer words={words} isKana={isKanaDeck} />;
        case "list":
-        return <VocabularyListViewer words={words} onEdit={handleEditWord} onRemove={handleRemoveWord} onSelectWord={handleSelectWordFromList} />;
+        return <VocabularyListViewer words={shuffledWords} onEdit={handleEditWord} onRemove={handleRemoveWord} onSelectWord={handleSelectWordFromList} />;
       case "select":
       default:
         return (
