@@ -193,7 +193,7 @@ export function QuizView({ quiz }: QuizViewProps) {
   }
 
   return (
-    <div className="pb-4 space-y-4">
+    <div className="pb-1 space-y-1">
       <div className="space-y-2">
           <div className="flex justify-between items-center">
             <p className="text-sm text-muted-foreground">
