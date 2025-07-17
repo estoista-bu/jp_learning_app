@@ -116,12 +116,13 @@ export default function Home() {
         setSelectedLesson(null);
       } else if (grammarView === 'quiz') {
         // If we came from the AI generator, go back there. Otherwise, go to the quiz list.
+        // We don't clear the selectedQuiz for AI quizzes so the user can go back to it.
         if (selectedQuiz?.id === 'ai-generated') {
           setGrammarView('ai-quiz-generator');
         } else {
           setGrammarView('quizzes');
+          setSelectedQuiz(null);
         }
-        setSelectedQuiz(null);
       } else if (grammarView === 'lessons' || grammarView === 'quizzes' || grammarView === 'checker' || grammarView === 'ai-quiz-generator') {
         setGrammarView('main');
       }

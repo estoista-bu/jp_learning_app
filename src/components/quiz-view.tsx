@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import type { Quiz, QuizQuestion } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,75 +41,82 @@ export function QuizView({ quiz }: QuizViewProps) {
   const [selectedAnswers, setSelectedAnswers] = useState<(string | null)[]>([]);
   const [isFinished, setIsFinished] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  
+  const getProgressKey = (quizId: string) => `quiz-progress-${quizId}`;
 
-  const startQuiz = useMemo(() => {
-    return (progress: (string | null)[] = []) => {
-      const questions = shuffleArray(quiz.questions);
-      setShuffledQuestions(questions);
-      
-      const savedAnswers = progress.length > 0 ? progress : Array(questions.length).fill(null);
-      
-      // We need to map saved answers to the new shuffled order if progress exists
-      if (progress.length > 0) {
-        const reorderedAnswers = questions.map(q => {
-          // This is a simplification; true progress restoration with shuffling is complex.
-          // For now, we just reset on re-shuffle if progress exists.
-          // A more robust solution would require saving answers against question IDs.
-          // We will reset progress if a quiz is re-shuffled.
-          return null;
-        });
-        setSelectedAnswers(reorderedAnswers);
-        localStorage.setItem(`quiz-progress-${quiz.id}`, JSON.stringify(reorderedAnswers));
-        setCurrentQuestionIndex(0);
-      } else {
-         setSelectedAnswers(savedAnswers);
-         const lastAnsweredIndex = savedAnswers.findLastIndex(a => a !== null);
-         const nextQuestionIndex = lastAnsweredIndex + 1;
-         
-         if (nextQuestionIndex < questions.length) {
-            setCurrentQuestionIndex(nextQuestionIndex);
-         } else if (savedAnswers.every(a => a !== null)) {
-            finishQuiz(questions, savedAnswers, false);
-         }
-      }
+  const startQuiz = useCallback(() => {
+    const questions = shuffleArray(quiz.questions);
+    setShuffledQuestions(questions);
+    
+    const initialAnswers = Array(questions.length).fill(null);
+    setSelectedAnswers(initialAnswers);
+    localStorage.setItem(getProgressKey(quiz.id), JSON.stringify(initialAnswers));
 
-      setIsFinished(false);
-    };
+    setCurrentQuestionIndex(0);
+    setIsFinished(false);
   }, [quiz]);
+
+  const finishQuiz = useCallback((questions = shuffledQuestions, answers = selectedAnswers, saveScore = true) => {
+    if (saveScore && quiz.id !== 'ai-generated') {
+      const storageKey = `quiz-highscore-${quiz.id}`;
+      const currentHighScore = parseInt(localStorage.getItem(storageKey) || "0", 10);
+      const finalScore = answers.reduce((acc, answer, index) => {
+          return answer === questions[index]?.correctAnswer ? acc + 1 : acc;
+      }, 0);
+      if (finalScore > currentHighScore) {
+          localStorage.setItem(storageKey, finalScore.toString());
+      }
+    }
+    setIsFinished(true);
+  }, [quiz.id, selectedAnswers, shuffledQuestions]);
 
 
   // Load progress from localStorage on mount
   useEffect(() => {
     setIsMounted(true);
-    const savedProgressJson = localStorage.getItem(`quiz-progress-${quiz.id}`);
-    const savedProgress = savedProgressJson ? JSON.parse(savedProgressJson) : [];
+    const progressKey = getProgressKey(quiz.id);
+    const savedProgressJson = localStorage.getItem(progressKey);
     
-    // For simplicity, we restart if the number of questions doesn't match
-    if (savedProgress.length !== quiz.questions.length) {
-      startQuiz();
-    } else {
-      // If we have progress, we assume the question order was the same.
-      // A better implementation would involve storing question IDs with answers.
-      // For now, we just load the questions and answers as they were.
-      setShuffledQuestions(quiz.questions); // Don't re-shuffle if loading progress
-      setSelectedAnswers(savedProgress);
+    // For AI quizzes, we don't shuffle on load, we assume the order is from sessionStorage.
+    // For other quizzes, if there is no progress, we shuffle.
+    if (quiz.id === 'ai-generated' || !savedProgressJson) {
+        // If it's an AI quiz, we trust the order it came in with.
+        // If it's a new regular quiz, we shuffle it.
+        const questions = quiz.id !== 'ai-generated' ? shuffleArray(quiz.questions) : quiz.questions;
+        setShuffledQuestions(questions);
 
-      const lastAnsweredIndex = savedProgress.findLastIndex((a: any) => a !== null);
+        const progress = savedProgressJson ? JSON.parse(savedProgressJson) : Array(questions.length).fill(null);
+        setSelectedAnswers(progress);
+        
+        const lastAnsweredIndex = progress.findLastIndex((a: any) => a !== null);
+        const nextQuestionIndex = lastAnsweredIndex >= 0 ? lastAnsweredIndex + 1 : 0;
+        
+        if (nextQuestionIndex < questions.length) {
+            setCurrentQuestionIndex(nextQuestionIndex);
+        } else if (progress.every((a: any) => a !== null)) {
+            finishQuiz(questions, progress, false);
+        }
+    } else {
+      // For regular quizzes with saved progress. Don't shuffle.
+      setShuffledQuestions(quiz.questions);
+      const savedAnswers = JSON.parse(savedProgressJson);
+      setSelectedAnswers(savedAnswers);
+      
+      const lastAnsweredIndex = savedAnswers.findLastIndex((a: any) => a !== null);
       const nextQuestionIndex = lastAnsweredIndex + 1;
 
       if (nextQuestionIndex < quiz.questions.length) {
         setCurrentQuestionIndex(nextQuestionIndex);
-      } else if (savedProgress.every((a: any) => a !== null)) {
-        finishQuiz(quiz.questions, savedProgress, false);
+      } else if (savedAnswers.every((a: any) => a !== null)) {
+        finishQuiz(quiz.questions, savedAnswers, false);
       }
     }
-  }, [quiz.id, quiz.questions]);
-
+  }, [quiz, finishQuiz]);
 
   // Save progress to localStorage whenever answers change
   useEffect(() => {
-    if (isMounted && !isFinished) {
-      localStorage.setItem(`quiz-progress-${quiz.id}`, JSON.stringify(selectedAnswers));
+    if (isMounted && !isFinished && selectedAnswers.length > 0) {
+      localStorage.setItem(getProgressKey(quiz.id), JSON.stringify(selectedAnswers));
     }
   }, [selectedAnswers, quiz.id, isMounted, isFinished]);
   
@@ -125,24 +132,11 @@ export function QuizView({ quiz }: QuizViewProps) {
 
   const score = useMemo(() => {
     return selectedAnswers.reduce((acc, answer, index) => {
-      return answer === shuffledQuestions[index]?.correctAnswer ? acc + 1 : acc;
+      if (!shuffledQuestions[index]) return acc;
+      return answer === shuffledQuestions[index].correctAnswer ? acc + 1 : acc;
     }, 0);
   }, [selectedAnswers, shuffledQuestions]);
 
-
-  const finishQuiz = (questions = shuffledQuestions, answers = selectedAnswers, saveScore = true) => {
-    if (saveScore && quiz.id !== 'ai-generated') {
-      const storageKey = `quiz-highscore-${quiz.id}`;
-      const currentHighScore = parseInt(localStorage.getItem(storageKey) || "0", 10);
-      const finalScore = answers.reduce((acc, answer, index) => {
-          return answer === questions[index]?.correctAnswer ? acc + 1 : acc;
-      }, 0);
-      if (finalScore > currentHighScore) {
-          localStorage.setItem(storageKey, finalScore.toString());
-      }
-    }
-    setIsFinished(true);
-  };
 
   const goToNextQuestion = () => {
     if (currentQuestionIndex < shuffledQuestions.length - 1) {
@@ -153,11 +147,10 @@ export function QuizView({ quiz }: QuizViewProps) {
   };
 
   const restartQuiz = () => {
-    startQuiz();
-    localStorage.removeItem(`quiz-progress-${quiz.id}`);
-    if (quiz.id === 'ai-generated') {
-      sessionStorage.removeItem('ai-generated-quiz');
+    if (quiz.id !== 'ai-generated') {
+      localStorage.removeItem(getProgressKey(quiz.id));
     }
+    startQuiz();
   };
 
   const progress = isFinished ? 100 : ((currentQuestionIndex) / shuffledQuestions.length) * 100;

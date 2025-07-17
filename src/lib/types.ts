@@ -147,7 +147,7 @@ const GrammarLessonSchema = z.object({
 
 export const QuizGenerationInputSchema = z.object({
   lessons: z.array(GrammarLessonSchema).describe("A list of grammar lessons to base the quiz on."),
-  numQuestions: z.number().int().min(1).max(10).describe("The number of questions to generate for the quiz."),
+  numQuestions: z.number().int().min(1).max(100).describe("The number of questions to generate for the quiz."),
 });
 export type QuizGenerationInput = z.infer<typeof QuizGenerationInputSchema>;
 

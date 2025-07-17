@@ -58,14 +58,14 @@ export function AiQuizGenerator({ onQuizGenerated }: AiQuizGeneratorProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="numQuestions">Number of Questions (1-10)</Label>
+            <Label htmlFor="numQuestions">Number of Questions (1-100)</Label>
             <Input
               id="numQuestions"
               type="number"
               min="1"
-              max="10"
+              max="100"
               value={numQuestions}
-              onChange={(e) => setNumQuestions(Math.max(1, Math.min(10, parseInt(e.target.value, 10) || 1)))}
+              onChange={(e) => setNumQuestions(Math.max(1, Math.min(100, parseInt(e.target.value, 10) || 1)))}
               className="mt-2"
               disabled={isLoading}
             />
