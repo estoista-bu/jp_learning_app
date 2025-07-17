@@ -32,7 +32,8 @@ The student has requested a sentence with a difficulty level of: {{difficulty}}.
 Please generate one example sentence that:
 1.  Uses the word "{{word.japanese}}" correctly in context.
 2.  Matches the requested difficulty level ({{difficulty}}). For 'basic', use simple grammar (e.g., masu-form). For 'advanced' or 'expert', use more complex structures.
-3.  Provide the sentence, its reading in hiragana, and its English translation.
+3.  Is concise and suitable for a flashcard. Avoid overly long or complex sentences.
+4.  Provide the sentence, its reading in hiragana, and its English translation.
 `,
 });
 

@@ -32,7 +32,7 @@ export function GeneratedSentence({ sentence, isLoading, onGenerateAnother }: Ge
 
   return (
     <div className="text-center p-2 space-y-2 animate-in fade-in">
-      <div className="space-y-1">
+       <div className="space-y-1 max-h-[6rem] overflow-y-auto">
         <p className="font-semibold text-lg">
           <ClickableReading
               japanese={sentence.sentence}
