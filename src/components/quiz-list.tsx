@@ -26,27 +26,67 @@ export function QuizList({ onSelectQuiz }: QuizListProps) {
     setQuizzes(quizzesWithScores);
   }, []);
 
+  const n5Quizzes = quizzes.filter(q => q.level === "N5");
+  const n4Quizzes = quizzes.filter(q => q.level === "N4");
+
+
   return (
-    <div className="space-y-2 p-4">
-      {quizzes.map((quiz) => (
-        <button
-          key={quiz.id}
-          onClick={() => onSelectQuiz(quiz)}
-          className="flex items-center justify-between w-full p-4 rounded-lg bg-card hover:bg-muted transition-colors text-left"
-        >
-          <div className="flex flex-col flex-1 pr-4">
-            <span className="flex items-center gap-2">
-                {quiz.title}
-                 {quiz.score !== null && (
-                    <Badge variant="secondary" className="text-xs">
-                        High Score: {quiz.score}/{quiz.questions.length}
-                    </Badge>
-                )}
-            </span>
-          </div>
-          <ChevronRight className="h-5 w-5 text-muted-foreground ml-auto" />
-        </button>
-      ))}
+    <div className="space-y-4 p-4">
+      {/* N5 Quizzes */}
+      {n5Quizzes.length > 0 && (
+         <div>
+            <h3 className="font-headline font-semibold text-lg mb-2 text-primary">N5 Quizzes</h3>
+            <div className="space-y-2">
+            {n5Quizzes.map((quiz) => (
+                <button
+                key={quiz.id}
+                onClick={() => onSelectQuiz(quiz)}
+                className="flex items-center justify-between w-full p-4 rounded-lg bg-card hover:bg-muted transition-colors text-left"
+                >
+                <div className="flex flex-col flex-1 pr-4">
+                    <span className="flex items-center gap-2">
+                        {quiz.title}
+                        {quiz.score !== null && (
+                            <Badge variant="secondary" className="text-xs">
+                                High Score: {quiz.score}/{quiz.questions.length}
+                            </Badge>
+                        )}
+                    </span>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground ml-auto" />
+                </button>
+            ))}
+            </div>
+        </div>
+      )}
+     
+      {/* N4 Quizzes */}
+      {n4Quizzes.length > 0 && (
+         <div>
+            <h3 className="font-headline font-semibold text-lg mb-2 text-primary">N4 Quizzes</h3>
+            <div className="space-y-2">
+            {n4Quizzes.map((quiz) => (
+                <button
+                key={quiz.id}
+                onClick={() => onSelectQuiz(quiz)}
+                className="flex items-center justify-between w-full p-4 rounded-lg bg-card hover:bg-muted transition-colors text-left"
+                >
+                <div className="flex flex-col flex-1 pr-4">
+                    <span className="flex items-center gap-2">
+                        {quiz.title}
+                        {quiz.score !== null && (
+                            <Badge variant="secondary" className="text-xs">
+                                High Score: {quiz.score}/{quiz.questions.length}
+                            </Badge>
+                        )}
+                    </span>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground ml-auto" />
+                </button>
+            ))}
+            </div>
+        </div>
+      )}
     </div>
   );
 }

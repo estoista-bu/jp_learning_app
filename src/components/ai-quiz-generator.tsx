@@ -28,6 +28,7 @@ export function AiQuizGenerator({ onQuizGenerated }: AiQuizGeneratorProps) {
       const generatedQuiz: Quiz = {
         id: 'ai-generated',
         title: `AI Generated Quiz (${numQuestions} Questions)`,
+        level: 'AI',
         questions: result.questions,
       };
       onQuizGenerated(generatedQuiz);

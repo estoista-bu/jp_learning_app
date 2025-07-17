@@ -18,6 +18,7 @@ export type Deck = {
 
 export type GrammarLesson = {
   title: string;
+  level: "N5" | "N4";
   explanation: string;
   exampleSentences: {
     japanese: string;
@@ -40,6 +41,7 @@ export type QuizQuestion = {
 export type Quiz = {
   id: string;
   title: string;
+  level: "N5" | "N4" | "AI";
   questions: QuizQuestion[];
   score?: number | null;
 };
@@ -134,6 +136,7 @@ export type SentenceGenerationOutput = z.infer<typeof SentenceGenerationOutputSc
 // Schemas for AI Quiz Generation
 const GrammarLessonSchema = z.object({
     title: z.string(),
+    level: z.enum(["N5", "N4"]),
     explanation: z.string(),
     exampleSentences: z.array(z.object({
         japanese: z.string(),
