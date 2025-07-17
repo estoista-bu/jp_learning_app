@@ -265,9 +265,8 @@ export function Flashcard({
              <p className="text-muted-foreground mt-4 text-xl">{word.meaning}</p>
            </CardContent>
 
-           {mode === 'view' ? sentenceGenerator : null}
            {memoryTestControls}
-           {mode === 'test' ? sentenceGenerator : null}
+           {isFlipped && sentenceGenerator}
         </Card>
       </div>
     </div>
