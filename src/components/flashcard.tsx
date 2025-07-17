@@ -167,7 +167,7 @@ export function Flashcard({
   ) : null;
 
   const memoryTestControls = mode === 'test' && isFlipped && (
-     <div className="absolute bottom-4 z-20 w-full px-4">
+     <div className="w-full px-4 pb-2">
         <div className="flex justify-center gap-4">
             <Button size="lg" className="bg-red-600 hover:bg-red-700 text-white" onClick={(e) => handleGuess(e, false)}>
                 <ThumbsDown className="mr-2 h-5 w-5"/>
@@ -180,6 +180,35 @@ export function Flashcard({
         </div>
      </div>
   );
+
+  const sentenceGenerator = !isKana && (
+    <div className="border-t w-full p-2 space-y-2" onClick={(e) => e.stopPropagation()}>
+      <div className="px-2">
+        <GeneratedSentence 
+          sentence={generatedSentence} 
+          isLoading={isGenerating} 
+          onGenerateAnother={resetSentenceGeneration}
+          getRomaji={getRomaji}
+        />
+      </div>
+      {!generatedSentence && !isGenerating && (
+         <div className="flex justify-center gap-2">
+            {(['Basic', 'Advanced'] as Difficulty[]).map((level) => (
+                <Button
+                    key={level}
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => handleGenerateSentence(e, level)}
+                    disabled={isGenerating}
+                >
+                    {level}
+                </Button>
+            ))}
+        </div>
+      )}
+    </div>
+  );
+
 
   return (
     <div
@@ -236,35 +265,9 @@ export function Flashcard({
              <p className="text-muted-foreground mt-4 text-xl">{word.meaning}</p>
            </CardContent>
 
+           {mode === 'view' ? sentenceGenerator : null}
            {memoryTestControls}
-
-           {!isKana && (
-            <div className="border-t w-full p-2 space-y-2" onClick={(e) => e.stopPropagation()}>
-              <div className="px-2">
-                <GeneratedSentence 
-                  sentence={generatedSentence} 
-                  isLoading={isGenerating} 
-                  onGenerateAnother={resetSentenceGeneration}
-                  getRomaji={getRomaji}
-                />
-              </div>
-              {!generatedSentence && !isGenerating && (
-                 <div className="flex justify-center gap-2">
-                    {(['Basic', 'Advanced'] as Difficulty[]).map((level) => (
-                        <Button
-                            key={level}
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => handleGenerateSentence(e, level)}
-                            disabled={isGenerating}
-                        >
-                            {level}
-                        </Button>
-                    ))}
-                </div>
-              )}
-            </div>
-           )}
+           {mode === 'test' ? sentenceGenerator : null}
         </Card>
       </div>
     </div>
