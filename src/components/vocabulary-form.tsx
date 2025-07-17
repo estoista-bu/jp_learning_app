@@ -31,6 +31,8 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Sparkles } from "lucide-react";
 import { generateWords } from "@/ai/flows/generate-words-flow";
+import { Checkbox } from "./ui/checkbox";
+import { Label } from "./ui/label";
 
 const formSchema = z.object({
   japanese: z.string().min(1, "Japanese word is required."),
@@ -41,7 +43,7 @@ const formSchema = z.object({
 type VocabularyFormData = Omit<VocabularyWord, "id" | "deckId">;
 
 interface VocabularyFormProps {
-  onSaveWord: (data: VocabularyFormData, id?: string) => void;
+  onSaveWords: (data: VocabularyFormData[], id?: string) => void;
   wordToEdit: VocabularyWord | null;
   deckId: string;
   deckName: string;
@@ -53,7 +55,7 @@ interface JishoResult {
   senses: { english_definitions: string[] }[];
 }
 
-export function VocabularyForm({ onSaveWord, wordToEdit, deckId, deckName, existingWords }: VocabularyFormProps) {
+export function VocabularyForm({ onSaveWords, wordToEdit, deckId, deckName, existingWords }: VocabularyFormProps) {
   const { toast } = useToast();
   const form = useForm<VocabularyFormData>({
     resolver: zodResolver(formSchema),
@@ -72,6 +74,7 @@ export function VocabularyForm({ onSaveWord, wordToEdit, deckId, deckName, exist
   const [aiSuggestions, setAiSuggestions] = useState<WordGenerationOutput['words']>([]);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
   const [numWordsToGenerate, setNumWordsToGenerate] = useState(5);
+  const [autoAddWords, setAutoAddWords] = useState(false);
 
 
   const japaneseValue = useWatch({ control: form.control, name: 'japanese' });
@@ -130,7 +133,7 @@ export function VocabularyForm({ onSaveWord, wordToEdit, deckId, deckName, exist
   }, [wordToEdit, form]);
 
   function onSubmit(values: VocabularyFormData) {
-    onSaveWord(values, wordToEdit?.id);
+    onSaveWords([values], wordToEdit?.id);
     toast({
       title: "Success!",
       description: `The word "${values.japanese}" has been ${wordToEdit ? 'updated' : 'added'}.`,
@@ -168,7 +171,13 @@ export function VocabularyForm({ onSaveWord, wordToEdit, deckId, deckName, exist
           existingWords, 
           numWords: numWordsToGenerate 
         });
-        setAiSuggestions(result.words);
+
+        if (autoAddWords) {
+          onSaveWords(result.words);
+        } else {
+          setAiSuggestions(result.words);
+        }
+
     } catch (error) {
         console.error("AI Word generation failed", error);
         toast({
@@ -285,17 +294,32 @@ export function VocabularyForm({ onSaveWord, wordToEdit, deckId, deckName, exist
                                 How many new words would you like to generate for the deck "{deckName}"?
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="py-4">
-                           <FormLabel htmlFor="numWords">Number of words (1-10)</FormLabel>
-                            <Input
-                                id="numWords"
-                                type="number"
-                                min="1"
-                                max="10"
-                                value={numWordsToGenerate}
-                                onChange={(e) => setNumWordsToGenerate(Math.max(1, Math.min(10, parseInt(e.target.value, 10) || 1)))}
-                                className="mt-2"
-                            />
+                        <div className="py-4 space-y-4">
+                           <div>
+                                <Label htmlFor="numWords">Number of words (1-10)</Label>
+                                <Input
+                                    id="numWords"
+                                    type="number"
+                                    min="1"
+                                    max="10"
+                                    value={numWordsToGenerate}
+                                    onChange={(e) => setNumWordsToGenerate(Math.max(1, Math.min(10, parseInt(e.target.value, 10) || 1)))}
+                                    className="mt-2"
+                                />
+                           </div>
+                           <div className="flex items-center space-x-2">
+                                <Checkbox 
+                                    id="autoAdd" 
+                                    checked={autoAddWords} 
+                                    onCheckedChange={(checked) => setAutoAddWords(!!checked)}
+                                />
+                                <Label
+                                    htmlFor="autoAdd"
+                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                >
+                                    Add to deck automatically
+                                </Label>
+                           </div>
                         </div>
                         <DialogFooter>
                             <DialogClose asChild>
@@ -311,7 +335,7 @@ export function VocabularyForm({ onSaveWord, wordToEdit, deckId, deckName, exist
                 {isGenerating && (
                     <div className="flex items-center justify-center p-4">
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        <p className="text-muted-foreground">Generating suggestions...</p>
+                        <p className="text-muted-foreground">Generating...</p>
                     </div>
                 )}
                 

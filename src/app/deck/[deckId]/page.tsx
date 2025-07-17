@@ -20,6 +20,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { VocabularyForm } from "@/components/vocabulary-form";
+import { useToast } from "@/hooks/use-toast";
 
 type VocabularyFormData = Omit<VocabularyWord, "id" | "deckId">;
 type DeckViewMode = "select" | "view" | "test";
@@ -27,6 +28,7 @@ type DeckViewMode = "select" | "view" | "test";
 export default function DeckPage({ params: paramsProp }: { params: { deckId: string } }) {
   const params = use(paramsProp);
   const { deckId } = params;
+  const { toast } = useToast();
 
   const [deck, setDeck] = useState<Deck | null>(null);
   const [words, setWords] = useState<VocabularyWord[]>([]);
@@ -68,18 +70,30 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
   }, [words, deckId, isUserDeck, isMounted]);
 
 
-  const handleSaveWord = (data: VocabularyFormData, id?: string) => {
-    let newWords: VocabularyWord[];
-    if (id) {
-      newWords = words.map((w) => (w.id === id ? { ...w, ...data } : w));
+  const handleSaveWords = (wordsData: VocabularyFormData[], idToEdit?: string) => {
+    let newWords: VocabularyWord[] = [...words];
+
+    if (idToEdit) {
+      // Editing a single word
+      newWords = words.map((w) => (w.id === idToEdit ? { ...w, ...wordsData[0] } : w));
+      toast({
+        title: "Success!",
+        description: `The word "${wordsData[0].japanese}" has been updated.`,
+      });
     } else {
-      const newWord: VocabularyWord = {
+      // Adding one or more new words
+      const wordsToAdd = wordsData.map(data => ({
         ...data,
-        id: Date.now().toString(),
+        id: `${Date.now()}-${Math.random()}`,
         deckId: deckId,
-      };
-      newWords = [...words, newWord];
+      }));
+      newWords = [...words, ...wordsToAdd];
+       toast({
+        title: "Success!",
+        description: `${wordsToAdd.length} new word(s) have been added.`,
+      });
     }
+
     setWords(newWords);
 
     if (!isUserDeck) {
@@ -93,6 +107,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     setIsFormOpen(false);
     setWordToEdit(null);
   };
+
 
   const handleRemoveWord = (id: string) => {
     setWords((prev) => prev.filter((w) => w.id !== id));
@@ -218,7 +233,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
                         </SheetDescription>
                     </SheetHeader>
                     <VocabularyForm
-                        onSaveWord={handleSaveWord}
+                        onSaveWords={handleSaveWords}
                         wordToEdit={wordToEdit}
                         deckId={deckId}
                         deckName={deck?.name || ''}
