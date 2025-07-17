@@ -155,6 +155,8 @@ export default function Home() {
     ...decks
   ];
 
+  const showMainHeader = currentView === 'vocabulary' || grammarView === 'main';
+
   if (!isMounted) {
     return null; // or a loading spinner
   }
@@ -163,29 +165,31 @@ export default function Home() {
     <div className="flex justify-center items-start min-h-screen bg-gray-100 dark:bg-gray-800">
       <div className="w-full max-w-sm h-screen bg-background flex flex-col pt-[env(safe-area-inset-top)]">
         <header className="flex flex-col p-4 border-b">
-           <div className="flex justify-center items-center relative">
-            <div className="w-8"></div>
-            <h1 className="font-headline text-xl font-bold text-primary text-center flex-1">
-                Nihongo Mastery
-            </h1>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="w-8 h-8">
-                  <User className="h-5 w-5" />
-                  <span className="sr-only">Open user menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Account Role</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuRadioGroup value={userRole} onValueChange={(value) => setUserRole(value as UserRole)}>
-                  <DropdownMenuRadioItem value="user">User</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="admin">Admin</DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          <div className="mt-4">
+           {showMainHeader && (
+            <div className="flex justify-center items-center relative mb-4">
+              <div className="w-8"></div>
+              <h1 className="font-headline text-xl font-bold text-primary text-center flex-1">
+                  Nihongo Mastery
+              </h1>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="w-8 h-8">
+                    <User className="h-5 w-5" />
+                    <span className="sr-only">Open user menu</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Account Role</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup value={userRole} onValueChange={(value) => setUserRole(value as UserRole)}>
+                    <DropdownMenuRadioItem value="user">User</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="admin">Admin</DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+           )}
+          <div>
             <Tabs value={currentView} onValueChange={(v) => setCurrentView(v as AppView)}>
               <TabsList className="grid w-full grid-cols-2 bg-transparent p-0">
                 <TabsTrigger value="vocabulary" className="data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
