@@ -8,9 +8,10 @@ interface JapaneseTextProps {
   text: string;
   reading?: string;
   isBlock?: boolean;
+  isInteractive?: boolean;
 }
 
-export function JapaneseText({ text, reading, isBlock = false }: JapaneseTextProps) {
+export function JapaneseText({ text, reading, isBlock = false, isInteractive = true }: JapaneseTextProps) {
   // Regex to find Japanese parts of the text. This will match sequences of
   // Japanese characters (including underscores), or sequences of non-Japanese characters.
   const regex = /([\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf_]+|[^\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf_]+)/g;
@@ -22,8 +23,8 @@ export function JapaneseText({ text, reading, isBlock = false }: JapaneseTextPro
   return (
     <Wrapper className={cn(isBlock ? "block" : "inline")}>
       {segments.map((segment, index) => {
-        if (japaneseRegex.test(segment)) {
-          // If the segment contains Japanese, wrap it with ClickableReading.
+        if (japaneseRegex.test(segment) && isInteractive) {
+          // If the segment contains Japanese and is interactive, wrap it with ClickableReading.
           // The reading prop is passed for the entire phrase.
           return (
             <ClickableReading
@@ -33,7 +34,7 @@ export function JapaneseText({ text, reading, isBlock = false }: JapaneseTextPro
             />
           );
         } else {
-          // If it's just English text, render it as a simple span.
+          // If it's just English text or not interactive, render it as a simple span.
           return <span key={index}>{segment}</span>;
         }
       })}

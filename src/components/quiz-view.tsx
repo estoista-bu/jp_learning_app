@@ -27,6 +27,7 @@ interface QuizViewProps {
 
 // Helper function to shuffle an array
 const shuffleArray = <T,>(array: T[]): T[] => {
+  if (!array) return [];
   const newArray = [...array];
   for (let i = newArray.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -50,7 +51,9 @@ export function QuizView({ quiz }: QuizViewProps) {
     
     const initialAnswers = Array(questions.length).fill(null);
     setSelectedAnswers(initialAnswers);
-    localStorage.setItem(getProgressKey(quiz.id), JSON.stringify(initialAnswers));
+    if (quiz.id !== 'ai-generated') {
+      localStorage.setItem(getProgressKey(quiz.id), JSON.stringify(initialAnswers));
+    }
 
     setCurrentQuestionIndex(0);
     setIsFinished(false);
@@ -61,6 +64,7 @@ export function QuizView({ quiz }: QuizViewProps) {
       const storageKey = `quiz-highscore-${quiz.id}`;
       const currentHighScore = parseInt(localStorage.getItem(storageKey) || "0", 10);
       const finalScore = answers.reduce((acc, answer, index) => {
+          if (!questions || !questions[index]) return acc;
           return answer === questions[index]?.correctAnswer ? acc + 1 : acc;
       }, 0);
       if (finalScore > currentHighScore) {
@@ -68,7 +72,7 @@ export function QuizView({ quiz }: QuizViewProps) {
       }
     }
     setIsFinished(true);
-  }, [quiz.id, selectedAnswers, shuffledQuestions]);
+  }, [quiz.id, shuffledQuestions]);
 
 
   // Load progress from localStorage on mount
@@ -76,46 +80,35 @@ export function QuizView({ quiz }: QuizViewProps) {
     setIsMounted(true);
     const progressKey = getProgressKey(quiz.id);
     const savedProgressJson = localStorage.getItem(progressKey);
-    
-    // For AI quizzes, we don't shuffle on load, we assume the order is from sessionStorage.
-    // For other quizzes, if there is no progress, we shuffle.
-    if (quiz.id === 'ai-generated' || !savedProgressJson) {
-        // If it's an AI quiz, we trust the order it came in with.
-        // If it's a new regular quiz, we shuffle it.
-        const questions = quiz.id !== 'ai-generated' ? shuffleArray(quiz.questions) : quiz.questions;
-        setShuffledQuestions(questions);
+    const questionsToUse = quiz.id === 'ai-generated' ? quiz.questions : shuffleArray(quiz.questions);
 
-        const progress = savedProgressJson ? JSON.parse(savedProgressJson) : Array(questions.length).fill(null);
-        setSelectedAnswers(progress);
+    if (savedProgressJson) {
+        // For regular quizzes with saved progress.
+        const savedAnswers = JSON.parse(savedProgressJson);
+        const savedQuestionsOrder = shuffleArray(quiz.questions); // Use a consistent shuffle
+        setShuffledQuestions(savedQuestionsOrder);
+        setSelectedAnswers(savedAnswers);
         
-        const lastAnsweredIndex = progress.findLastIndex((a: any) => a !== null);
+        const lastAnsweredIndex = savedAnswers.findLastIndex((a: any) => a !== null);
         const nextQuestionIndex = lastAnsweredIndex >= 0 ? lastAnsweredIndex + 1 : 0;
-        
-        if (nextQuestionIndex < questions.length) {
+
+        if (nextQuestionIndex < savedQuestionsOrder.length) {
             setCurrentQuestionIndex(nextQuestionIndex);
-        } else if (progress.every((a: any) => a !== null)) {
-            finishQuiz(questions, progress, false);
+        } else if (savedAnswers.every((a: any) => a !== null)) {
+            finishQuiz(savedQuestionsOrder, savedAnswers, false);
         }
     } else {
-      // For regular quizzes with saved progress. Don't shuffle.
-      setShuffledQuestions(quiz.questions);
-      const savedAnswers = JSON.parse(savedProgressJson);
-      setSelectedAnswers(savedAnswers);
-      
-      const lastAnsweredIndex = savedAnswers.findLastIndex((a: any) => a !== null);
-      const nextQuestionIndex = lastAnsweredIndex + 1;
-
-      if (nextQuestionIndex < quiz.questions.length) {
-        setCurrentQuestionIndex(nextQuestionIndex);
-      } else if (savedAnswers.every((a: any) => a !== null)) {
-        finishQuiz(quiz.questions, savedAnswers, false);
-      }
+        // For AI quizzes or new regular quizzes.
+        setShuffledQuestions(questionsToUse);
+        const progress = Array(questionsToUse.length).fill(null);
+        setSelectedAnswers(progress);
+        setCurrentQuestionIndex(0);
     }
   }, [quiz, finishQuiz]);
 
   // Save progress to localStorage whenever answers change
   useEffect(() => {
-    if (isMounted && !isFinished && selectedAnswers.length > 0) {
+    if (isMounted && !isFinished && selectedAnswers.length > 0 && quiz.id !== 'ai-generated') {
       localStorage.setItem(getProgressKey(quiz.id), JSON.stringify(selectedAnswers));
     }
   }, [selectedAnswers, quiz.id, isMounted, isFinished]);
@@ -184,10 +177,11 @@ export function QuizView({ quiz }: QuizViewProps) {
       </div>
     );
   }
+  const hasAnswered = selectedAnswer !== null;
 
   return (
     <div className="pb-1 space-y-1">
-      <div className="space-y-2">
+      <div className="space-y-2 p-4">
           <div className="flex justify-between items-center">
             <p className="text-sm text-muted-foreground">
               Question {currentQuestionIndex + 1} of {shuffledQuestions.length}
@@ -225,6 +219,7 @@ export function QuizView({ quiz }: QuizViewProps) {
                 text={currentQuestion.question}
                 reading={currentQuestion.questionReading}
                 isBlock
+                isInteractive={true}
               />
           </CardTitle>
         </CardHeader>
@@ -233,7 +228,6 @@ export function QuizView({ quiz }: QuizViewProps) {
             {currentQuestion.options.map((option, index) => {
               const isSelected = selectedAnswer === option;
               const isCorrect = currentQuestion.correctAnswer === option;
-              const hasAnswered = selectedAnswer !== null;
               const optionReading = currentQuestion.optionsReading?.[index]
 
               return (
@@ -259,6 +253,7 @@ export function QuizView({ quiz }: QuizViewProps) {
                      <JapaneseText
                         text={option}
                         reading={optionReading}
+                        isInteractive={!hasAnswered}
                       />
                   </span>
                   {hasAnswered && isCorrect && <CheckCircle className="ml-4 h-5 w-5 text-green-600 dark:text-green-400"/>}
@@ -270,13 +265,14 @@ export function QuizView({ quiz }: QuizViewProps) {
         </CardContent>
       </Card>
       
-      {selectedAnswer && (
+      {hasAnswered && (
         <div className="p-4 bg-muted/50 rounded-lg animate-in fade-in space-y-4">
             <div className="text-sm text-muted-foreground">
                  <JapaneseText
                     text={currentQuestion.explanation}
                     reading={currentQuestion.explanationReading}
                     isBlock
+                    isInteractive={true}
                   />
             </div>
             <Button onClick={goToNextQuestion} className="w-full">
