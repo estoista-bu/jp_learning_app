@@ -193,39 +193,40 @@ export function QuizView({ quiz }: QuizViewProps) {
   }
 
   return (
-    <div className="pb-4 space-y-6">
+    <div className="pb-4 space-y-4">
+      <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <p className="text-sm text-muted-foreground">
+              Question {currentQuestionIndex + 1} of {shuffledQuestions.length}
+            </p>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Start Over
+                  </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                  <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                          This will restart the quiz and all your current progress will be lost.
+                      </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={restartQuiz}>
+                          Restart Quiz
+                      </AlertDialogAction>
+                  </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+          <Progress value={progress} />
+      </div>
+
       <Card>
         <CardHeader>
-          <div className="space-y-2 mb-4">
-            <div className="flex justify-between items-center">
-              <p className="text-sm text-muted-foreground">
-                Question {currentQuestionIndex + 1} of {shuffledQuestions.length}
-              </p>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                        <RefreshCw className="mr-2 h-4 w-4" />
-                        Start Over
-                    </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This will restart the quiz and all your current progress will be lost.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={restartQuiz}>
-                            Restart Quiz
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-            <Progress value={progress} />
-          </div>
           <CardTitle className="text-lg">
              <JapaneseText 
                 text={currentQuestion.question}
