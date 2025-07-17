@@ -3,7 +3,7 @@
 
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus, Eye, BrainCircuit } from "lucide-react";
+import { ArrowLeft, Plus, Eye, BrainCircuit, ListChecks } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { allDecks as initialDecks } from "@/data/decks";
@@ -11,6 +11,7 @@ import { allWords as initialWords } from "@/data/words";
 import type { Deck, VocabularyWord } from "@/lib/types";
 import { FlashcardViewer } from "@/components/flashcard-viewer";
 import { MemoryTestViewer } from "@/components/memory-test-viewer";
+import { VocabularyListViewer } from "@/components/vocabulary-list-viewer";
 import {
   Sheet,
   SheetContent,
@@ -23,7 +24,7 @@ import { VocabularyForm } from "@/components/vocabulary-form";
 import { useToast } from "@/hooks/use-toast";
 
 type VocabularyFormData = Omit<VocabularyWord, "id" | "deckId">;
-type DeckViewMode = "select" | "view" | "test";
+type DeckViewMode = "select" | "view" | "test" | "list";
 
 export default function DeckPage({ params: paramsProp }: { params: { deckId: string } }) {
   const params = use(paramsProp);
@@ -161,6 +162,8 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
         return <FlashcardViewer words={words} isKana={isKanaDeck} onEdit={handleEditWord} onRemove={handleRemoveWord} />;
       case "test":
         return <MemoryTestViewer words={words} isKana={isKanaDeck} />;
+       case "list":
+        return <VocabularyListViewer words={words} onEdit={handleEditWord} onRemove={handleRemoveWord} />;
       case "select":
       default:
         return (
@@ -175,6 +178,11 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
               <h2 className="text-lg font-bold">Memory Test</h2>
               <p className="text-sm text-muted-foreground">Test your recall.</p>
             </Card>
+             <Card onClick={() => setMode('list')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
+               <ListChecks className="h-10 w-10 mx-auto text-primary/80 mb-2"/>
+              <h2 className="text-lg font-bold">View as List</h2>
+              <p className="text-sm text-muted-foreground">See all words at once.</p>
+            </Card>
           </div>
         );
     }
@@ -184,6 +192,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     if (mode === "select") return deck?.name || "...";
     if (mode === "view") return "View Each";
     if (mode === "test") return "Memory Test";
+    if (mode === "list") return "Word List";
     return deck?.name || "...";
   }
 
