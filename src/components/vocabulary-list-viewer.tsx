@@ -31,7 +31,6 @@ import { MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import { ScrollArea } from "./ui/scroll-area";
 import { ClickableReading } from "./clickable-reading";
-import { cn } from "@/lib/utils";
 
 interface VocabularyListViewerProps {
   words: VocabularyWord[];

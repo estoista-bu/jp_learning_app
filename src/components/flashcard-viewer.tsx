@@ -15,33 +15,29 @@ interface FlashcardViewerProps {
     isKana?: boolean;
     onEdit: (word: VocabularyWord) => void;
     onRemove: (id: string) => void;
+    onShuffle: () => void;
     startIndex?: number;
 }
 
-export function FlashcardViewer({ words, isKana, onEdit, onRemove, startIndex = 0 }: FlashcardViewerProps) {
+export function FlashcardViewer({ words, isKana, onEdit, onRemove, onShuffle, startIndex = 0 }: FlashcardViewerProps) {
   const [currentIndex, setCurrentIndex] = useState(startIndex);
   const [isFlipped, setIsFlipped] = useState(false);
   const [animationDirection, setAnimationDirection] = useState<AnimationDirection>("none");
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  const [shuffledWords, setShuffledWords] = useState<VocabularyWord[]>([]);
   
   useEffect(() => {
-    setShuffledWords([...words]);
-  }, [words]);
-
-  useEffect(() => {
-    if (shuffledWords.length > 0) {
-      setCurrentIndex(startIndex % shuffledWords.length);
+    if (words.length > 0) {
+      setCurrentIndex(startIndex % words.length);
     }
-  }, [startIndex, shuffledWords]);
+  }, [startIndex, words]);
 
 
   const minSwipeDistance = 50;
 
   const handleNavigation = (direction: 'next' | 'prev') => {
-    if (shuffledWords.length < 2) return;
+    if (words.length < 2) return;
     if (animationTimeoutRef.current) {
       clearTimeout(animationTimeoutRef.current);
     }
@@ -49,9 +45,9 @@ export function FlashcardViewer({ words, isKana, onEdit, onRemove, startIndex = 
     
     animationTimeoutRef.current = setTimeout(() => {
        if (direction === 'next') {
-         setCurrentIndex((prev) => (prev + 1) % shuffledWords.length);
+         setCurrentIndex((prev) => (prev + 1) % words.length);
        } else {
-         setCurrentIndex((prev) => (prev - 1 + shuffledWords.length) % shuffledWords.length);
+         setCurrentIndex((prev) => (prev - 1 + words.length) % words.length);
        }
        setIsFlipped(false);
        setAnimationDirection('none');
@@ -61,17 +57,11 @@ export function FlashcardViewer({ words, isKana, onEdit, onRemove, startIndex = 
   const goToNext = () => handleNavigation('next');
   const goToPrevious = () => handleNavigation('prev');
 
-  const shuffle = () => {
-    if (shuffledWords.length < 2) return;
-    const newShuffledWords = [...shuffledWords];
-    for (let i = newShuffledWords.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [newShuffledWords[i], newShuffledWords[j]] = [newShuffledWords[j], newShuffledWords[i]];
-    }
-    setShuffledWords(newShuffledWords);
+  const handleShuffleClick = () => {
+    onShuffle();
     setCurrentIndex(0);
     setIsFlipped(false);
-  };
+  }
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -96,7 +86,7 @@ export function FlashcardViewer({ words, isKana, onEdit, onRemove, startIndex = 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [shuffledWords, currentIndex]);
+  }, [words, currentIndex]);
   
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
@@ -121,7 +111,7 @@ export function FlashcardViewer({ words, isKana, onEdit, onRemove, startIndex = 
     setTouchEnd(null);
   };
 
-  const currentWord = shuffledWords.length > 0 ? shuffledWords[currentIndex] : null;
+  const currentWord = words.length > 0 ? words[currentIndex] : null;
 
   return (
     <div className="flex flex-col w-full h-full">
@@ -154,22 +144,22 @@ export function FlashcardViewer({ words, isKana, onEdit, onRemove, startIndex = 
             ) : null}
         </div>
         
-        {shuffledWords.length > 0 && (
+        {words.length > 0 && (
             <footer className="flex items-center justify-between p-4 border-t">
-            <Button variant="outline" size="icon" onClick={goToPrevious} disabled={shuffledWords.length < 2}>
+            <Button variant="outline" size="icon" onClick={goToPrevious} disabled={words.length < 2}>
                 <ChevronLeft className="h-4 w-4" />
                 <span className="sr-only">Previous word</span>
             </Button>
             <div className="flex items-center gap-4">
-                <Button variant="outline" size="icon" onClick={shuffle} disabled={shuffledWords.length < 2}>
+                <Button variant="outline" size="icon" onClick={handleShuffleClick} disabled={words.length < 2}>
                 <Shuffle className="h-4 w-4" />
                 <span className="sr-only">Shuffle words</span>
                 </Button>
                 <p className="text-sm text-muted-foreground">
-                {currentIndex + 1} / {shuffledWords.length}
+                {currentIndex + 1} / {words.length}
                 </p>
             </div>
-            <Button variant="outline" size="icon" onClick={goToNext} disabled={shuffledWords.length < 2}>
+            <Button variant="outline" size="icon" onClick={goToNext} disabled={words.length < 2}>
                 <ChevronRight className="h-4 w-4" />
                 <span className="sr-only">Next word</span>
             </Button>

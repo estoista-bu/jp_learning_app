@@ -33,6 +33,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
 
   const [deck, setDeck] = useState<Deck | null>(null);
   const [words, setWords] = useState<VocabularyWord[]>([]);
+  const [shuffledWords, setShuffledWords] = useState<VocabularyWord[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [wordToEdit, setWordToEdit] = useState<VocabularyWord | null>(null);
   const [isMounted, setIsMounted] = useState(false);
@@ -51,18 +52,21 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     const deckIsCustom = userDecks.some(d => d.id === deckId);
     
     if (currentDeck) {
+      let loadedWords: VocabularyWord[] = [];
       const storedUserWords = JSON.parse(localStorage.getItem(`words_${deckId}`) || "[]");
       if (storedUserWords.length > 0) {
-        setWords(storedUserWords);
+        loadedWords = storedUserWords;
         setIsUserDeck(true);
       } else if (deckIsCustom) {
-         setWords([]);
+         loadedWords = [];
          setIsUserDeck(true);
       }
       else {
-        setWords(initialWords.filter((word) => word.deckId === deckId));
+        loadedWords = initialWords.filter((word) => word.deckId === deckId);
         setIsUserDeck(false);
       }
+      setWords(loadedWords);
+      setShuffledWords([...loadedWords]);
     }
   }, [deckId]);
   
@@ -70,6 +74,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     if (isMounted && isUserDeck) {
       localStorage.setItem(`words_${deckId}`, JSON.stringify(words));
     }
+     setShuffledWords([...words]);
   }, [words, deckId, isUserDeck, isMounted]);
 
 
@@ -125,13 +130,25 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
   };
 
   const handleSelectWordFromList = (word: VocabularyWord) => {
-    const index = words.findIndex(w => w.id === word.id);
+    // Find the index in the *shuffled* array to maintain order
+    const index = shuffledWords.findIndex(w => w.id === word.id);
     if (index !== -1) {
       setInitialCardIndex(index);
       setPreviousMode(mode); // Coming from 'list'
       setMode('view');
     }
   }
+
+  const handleShuffle = () => {
+    const newShuffledWords = [...shuffledWords];
+    for (let i = newShuffledWords.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newShuffledWords[i], newShuffledWords[j]] = [newShuffledWords[j], newShuffledWords[i]];
+    }
+    setShuffledWords(newShuffledWords);
+    setInitialCardIndex(0); // Go to the first card of the new shuffled order
+  };
+
 
   const handleSetMode = (newMode: DeckViewMode) => {
     setPreviousMode(mode);
@@ -180,7 +197,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
 
     switch (mode) {
       case "view":
-        return <FlashcardViewer words={words} isKana={isKanaDeck} onEdit={handleEditWord} onRemove={handleRemoveWord} startIndex={initialCardIndex} />;
+        return <FlashcardViewer words={shuffledWords} isKana={isKanaDeck} onEdit={handleEditWord} onRemove={handleRemoveWord} onShuffle={handleShuffle} startIndex={initialCardIndex} />;
       case "test":
         return <MemoryTestViewer words={words} isKana={isKanaDeck} />;
        case "list":
