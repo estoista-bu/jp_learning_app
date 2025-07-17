@@ -11,9 +11,6 @@ import { googleAI } from '@genkit-ai/googleai';
 import { z } from 'zod';
 import wav from 'wav';
 
-ai.use(googleAI({ apiVersion: 'v1' }));
-
-
 const ttsFlow = ai.defineFlow(
   {
     name: 'ttsFlow',
