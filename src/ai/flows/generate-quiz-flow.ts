@@ -21,9 +21,7 @@ const generateQuizPrompt = ai.definePrompt({
   input: { schema: QuizGenerationInputSchema },
   output: { schema: QuizGenerationOutputSchema },
   prompt: `You are an expert Japanese language teacher designing a multiple-choice quiz.
-The quiz should be based *only* on the content of the following grammar lessons.
-
-Do not create questions about topics not present in these lessons.
+The quiz should be based *only* on the content of the following grammar lessons. Do not create questions about topics not present in these lessons.
 
 {{#each lessons}}
 Lesson Title: {{this.title}}
@@ -42,6 +40,15 @@ For each question:
 3.  Provide Japanese readings for the question and options if they contain Kanji.
 4.  Mark the correct answer.
 5.  Write a concise explanation for why the answer is correct, referencing the rule from the lessons.
+
+{{#if deckName}}
+**VERY IMPORTANT**: The user has selected a flashcard deck named "{{deckName}}". Prioritize creating questions that use vocabulary from the following list. At least 75% of the questions should incorporate one or more of these words if possible.
+
+Vocabulary from "{{deckName}}" deck:
+{{#each vocabularyWords}}
+- {{this.japanese}} ({{this.reading}}): {{this.meaning}}
+{{/each}}
+{{/if}}
 `,
 });
 

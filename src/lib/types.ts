@@ -145,9 +145,17 @@ const GrammarLessonSchema = z.object({
     })),
 });
 
+const VocabularyWordForQuizSchema = z.object({
+  japanese: z.string(),
+  reading: z.string(),
+  meaning: z.string(),
+});
+
 export const QuizGenerationInputSchema = z.object({
   lessons: z.array(GrammarLessonSchema).describe("A list of grammar lessons to base the quiz on."),
   numQuestions: z.number().int().min(1).max(100).describe("The number of questions to generate for the quiz."),
+  deckName: z.string().optional().describe("The name of the user-selected vocabulary deck."),
+  vocabularyWords: z.array(VocabularyWordForQuizSchema).optional().describe("A list of vocabulary words from the selected deck to bias the quiz questions towards."),
 });
 export type QuizGenerationInput = z.infer<typeof QuizGenerationInputSchema>;
 
