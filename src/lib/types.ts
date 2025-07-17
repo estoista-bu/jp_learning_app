@@ -91,6 +91,7 @@ export interface JishoResult {
 export const WordGenerationInputSchema = z.object({
   deckName: z.string().describe("The topic or title of the deck for which to generate vocabulary."),
   existingWords: z.array(z.string()).describe("A list of Japanese words that are already in the deck to avoid generating duplicates."),
+  numWords: z.number().int().min(1).max(10).describe("The number of words to generate."),
 });
 export type WordGenerationInput = z.infer<typeof WordGenerationInputSchema>;
 

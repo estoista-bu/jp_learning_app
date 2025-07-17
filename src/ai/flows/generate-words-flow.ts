@@ -23,7 +23,7 @@ const generateWordsPrompt = ai.definePrompt({
   prompt: `You are an expert Japanese language teacher creating a vocabulary list for a student.
 The student is creating a flashcard deck with the title: "{{deckName}}".
 
-Your task is to generate 5 relevant Japanese vocabulary words related to this topic.
+Your task is to generate {{numWords}} relevant Japanese vocabulary words related to this topic.
 
 IMPORTANT: The student's deck already contains the following words. Do NOT generate any of these words.
 Existing words:
@@ -31,7 +31,7 @@ Existing words:
 - {{this}}
 {{/each}}
 
-Please provide 5 new, unique vocabulary words. For each word, provide the standard Japanese writing (with Kanji), the reading in hiragana, and the English meaning.
+Please provide {{numWords}} new, unique vocabulary words. For each word, provide the standard Japanese writing (with Kanji), the reading in hiragana, and the English meaning.
 `,
 });
 

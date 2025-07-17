@@ -14,6 +14,16 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import type { VocabularyWord, WordGenerationOutput } from "@/lib/types";
@@ -57,8 +67,12 @@ export function VocabularyForm({ onSaveWord, wordToEdit, deckId, deckName, exist
   const [suggestions, setSuggestions] = useState<JishoResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
+  
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState<WordGenerationOutput['words']>([]);
+  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
+  const [numWordsToGenerate, setNumWordsToGenerate] = useState(5);
+
 
   const japaneseValue = useWatch({ control: form.control, name: 'japanese' });
 
@@ -145,10 +159,15 @@ export function VocabularyForm({ onSaveWord, wordToEdit, deckId, deckName, exist
   };
   
   const handleGenerateWords = async () => {
+    setIsGenerateDialogOpen(false);
     setIsGenerating(true);
     setAiSuggestions([]);
     try {
-        const result = await generateWords({ deckName, existingWords });
+        const result = await generateWords({ 
+          deckName, 
+          existingWords, 
+          numWords: numWordsToGenerate 
+        });
         setAiSuggestions(result.words);
     } catch (error) {
         console.error("AI Word generation failed", error);
@@ -243,20 +262,59 @@ export function VocabularyForm({ onSaveWord, wordToEdit, deckId, deckName, exist
 
         {!wordToEdit && (
             <div className="space-y-2">
-                <Button 
-                    type="button" 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={handleGenerateWords}
-                    disabled={isGenerating}
-                >
-                    {isGenerating ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
-                    ) : (
-                        <Sparkles className="mr-2 h-4 w-4 text-accent"/>
-                    )}
-                    Generate with AI
-                </Button>
+                 <Dialog open={isGenerateDialogOpen} onOpenChange={setIsGenerateDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button 
+                            type="button" 
+                            variant="outline" 
+                            className="w-full"
+                            disabled={isGenerating}
+                        >
+                             {isGenerating ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+                            ) : (
+                                <Sparkles className="mr-2 h-4 w-4 text-accent"/>
+                            )}
+                            Generate with AI
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Generate Words</DialogTitle>
+                            <DialogDescription>
+                                How many new words would you like to generate for the deck "{deckName}"?
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="py-4">
+                           <FormLabel htmlFor="numWords">Number of words (1-10)</FormLabel>
+                            <Input
+                                id="numWords"
+                                type="number"
+                                min="1"
+                                max="10"
+                                value={numWordsToGenerate}
+                                onChange={(e) => setNumWordsToGenerate(Math.max(1, Math.min(10, parseInt(e.target.value, 10) || 1)))}
+                                className="mt-2"
+                            />
+                        </div>
+                        <DialogFooter>
+                            <DialogClose asChild>
+                               <Button type="button" variant="secondary">Cancel</Button>
+                            </DialogClose>
+                            <Button onClick={handleGenerateWords}>
+                                Generate
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                 </Dialog>
+
+                {isGenerating && (
+                    <div className="flex items-center justify-center p-4">
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <p className="text-muted-foreground">Generating suggestions...</p>
+                    </div>
+                )}
+                
                 {aiSuggestions.length > 0 && (
                      <Card className="p-2">
                         <p className="text-xs font-semibold text-muted-foreground mb-2 px-1">Suggestions:</p>
