@@ -106,7 +106,7 @@ export type WordGenerationOutput = z.infer<typeof WordGenerationOutputSchema>;
 
 
 // Schemas for AI Sentence Generation
-export const DifficultySchema = z.enum(['Basic', 'Advanced', 'Expert']);
+export const DifficultySchema = z.enum(['Basic', 'Advanced']);
 export type Difficulty = z.infer<typeof DifficultySchema>;
 
 const VocabularyWordSchema = z.object({

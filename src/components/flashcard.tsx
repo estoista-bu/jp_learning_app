@@ -250,7 +250,7 @@ export function Flashcard({
               </div>
               {!generatedSentence && !isGenerating && (
                  <div className="flex justify-center gap-2">
-                    {(['Basic', 'Advanced', 'Expert'] as Difficulty[]).map((level) => (
+                    {(['Basic', 'Advanced'] as Difficulty[]).map((level) => (
                         <Button
                             key={level}
                             variant="outline"
