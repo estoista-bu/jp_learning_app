@@ -38,6 +38,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
   const [isMounted, setIsMounted] = useState(false);
   const [isUserDeck, setIsUserDeck] = useState(false);
   const [mode, setMode] = useState<DeckViewMode>("select");
+  const [previousMode, setPreviousMode] = useState<DeckViewMode>("select");
   const [initialCardIndex, setInitialCardIndex] = useState(0);
 
   useEffect(() => {
@@ -127,8 +128,19 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     const index = words.findIndex(w => w.id === word.id);
     if (index !== -1) {
       setInitialCardIndex(index);
+      setPreviousMode(mode); // Coming from 'list'
       setMode('view');
     }
+  }
+
+  const handleSetMode = (newMode: DeckViewMode) => {
+    setPreviousMode(mode);
+    setMode(newMode);
+  }
+
+  const handleBack = () => {
+    setMode(previousMode);
+    setPreviousMode('select'); // Reset for next navigation
   }
   
   const handleFormOpenChange = (open: boolean) => {
@@ -177,17 +189,17 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
       default:
         return (
           <div className="flex-1 flex flex-col items-center justify-center p-4 gap-4">
-            <Card onClick={() => setMode('view')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
+            <Card onClick={() => handleSetMode('view')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
               <Eye className="h-10 w-10 mx-auto text-primary mb-2"/>
               <h2 className="text-lg font-bold">View Each</h2>
               <p className="text-sm text-muted-foreground">Review cards one by one.</p>
             </Card>
-            <Card onClick={() => setMode('list')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
+            <Card onClick={() => handleSetMode('list')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
                <ListChecks className="h-10 w-10 mx-auto text-primary/80 mb-2"/>
               <h2 className="text-lg font-bold">View as List</h2>
               <p className="text-sm text-muted-foreground">See all words at once.</p>
             </Card>
-            <Card onClick={() => setMode('test')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
+            <Card onClick={() => handleSetMode('test')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
                <BrainCircuit className="h-10 w-10 mx-auto text-accent mb-2"/>
               <h2 className="text-lg font-bold">Memory Test</h2>
               <p className="text-sm text-muted-foreground">Test your recall.</p>
@@ -218,7 +230,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
                         </Button>
                        </Link>
                     ) : (
-                        <Button variant="ghost" size="icon" className="w-8 h-8" onClick={() => setMode('select')}>
+                        <Button variant="ghost" size="icon" className="w-8 h-8" onClick={handleBack}>
                             <ArrowLeft className="h-4 w-4" />
                             <span className="sr-only">Back to Mode Select</span>
                         </Button>
