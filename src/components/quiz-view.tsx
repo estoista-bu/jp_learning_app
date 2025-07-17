@@ -25,7 +25,6 @@ interface QuizViewProps {
   quiz: Quiz;
 }
 
-// Helper function to shuffle an array
 const shuffleArray = <T,>(array: T[]): T[] => {
   if (!array) return [];
   const newArray = [...array];
@@ -45,6 +44,79 @@ export function QuizView({ quiz }: QuizViewProps) {
   
   const getProgressKey = (quizId: string) => `quiz-progress-${quizId}`;
 
+  const score = useMemo(() => {
+    return selectedAnswers.reduce((acc, answer, index) => {
+      if (!shuffledQuestions[index]) return acc;
+      return answer === shuffledQuestions[index].correctAnswer ? acc + 1 : acc;
+    }, 0);
+  }, [selectedAnswers, shuffledQuestions]);
+
+  const finishQuiz = useCallback((saveScore = true) => {
+    if (saveScore && quiz.id !== 'ai-generated') {
+      const storageKey = `quiz-highscore-${quiz.id}`;
+      const currentHighScore = parseInt(localStorage.getItem(storageKey) || "0", 10);
+      if (score > currentHighScore) {
+          localStorage.setItem(storageKey, score.toString());
+      }
+    }
+    setIsFinished(true);
+  }, [quiz.id, score]);
+
+
+  useEffect(() => {
+    const questions = shuffleArray(quiz.questions);
+    setShuffledQuestions(questions);
+    
+    const progressKey = getProgressKey(quiz.id);
+    const savedProgressJson = localStorage.getItem(progressKey);
+
+    let initialAnswers = Array(questions.length).fill(null);
+    let initialIndex = 0;
+
+    if (savedProgressJson && quiz.id !== 'ai-generated') {
+      const savedAnswers = JSON.parse(savedProgressJson);
+      // Ensure saved progress matches current quiz length
+      if (Array.isArray(savedAnswers) && savedAnswers.length === questions.length) {
+        initialAnswers = savedAnswers;
+        const lastAnsweredIndex = savedAnswers.findLastIndex((a: any) => a !== null);
+        initialIndex = lastAnsweredIndex >= 0 ? lastAnsweredIndex + 1 : 0;
+        
+        if (initialIndex >= questions.length && savedAnswers.every((a: any) => a !== null)) {
+          setIsFinished(true); // Auto-finish if all were answered
+        }
+      }
+    }
+    
+    setSelectedAnswers(initialAnswers);
+    setCurrentQuestionIndex(initialIndex);
+    setIsMounted(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quiz]);
+
+  useEffect(() => {
+    if (isMounted && !isFinished && selectedAnswers.length > 0 && quiz.id !== 'ai-generated') {
+      localStorage.setItem(getProgressKey(quiz.id), JSON.stringify(selectedAnswers));
+    }
+  }, [selectedAnswers, quiz.id, isMounted, isFinished]);
+  
+  const currentQuestion = shuffledQuestions[currentQuestionIndex];
+  const selectedAnswer = selectedAnswers[currentQuestionIndex];
+
+  const handleSelectAnswer = (answer: string) => {
+    if (selectedAnswer) return; 
+    const newAnswers = [...selectedAnswers];
+    newAnswers[currentQuestionIndex] = answer;
+    setSelectedAnswers(newAnswers);
+  };
+
+  const goToNextQuestion = () => {
+    if (currentQuestionIndex < shuffledQuestions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      finishQuiz();
+    }
+  };
+
   const startQuiz = useCallback(() => {
     const questions = shuffleArray(quiz.questions);
     setShuffledQuestions(questions);
@@ -59,90 +131,11 @@ export function QuizView({ quiz }: QuizViewProps) {
     setIsFinished(false);
   }, [quiz]);
 
-  const finishQuiz = useCallback((questions = shuffledQuestions, answers = selectedAnswers, saveScore = true) => {
-    if (saveScore && quiz.id !== 'ai-generated') {
-      const storageKey = `quiz-highscore-${quiz.id}`;
-      const currentHighScore = parseInt(localStorage.getItem(storageKey) || "0", 10);
-      const finalScore = answers.reduce((acc, answer, index) => {
-          if (!questions || !questions[index]) return acc;
-          return answer === questions[index]?.correctAnswer ? acc + 1 : acc;
-      }, 0);
-      if (finalScore > currentHighScore) {
-          localStorage.setItem(storageKey, finalScore.toString());
-      }
-    }
-    setIsFinished(true);
-  }, [quiz.id, shuffledQuestions]);
-
-
-  // Load progress from localStorage on mount
-  useEffect(() => {
-    setIsMounted(true);
-    const progressKey = getProgressKey(quiz.id);
-    const savedProgressJson = localStorage.getItem(progressKey);
-    const questionsToUse = quiz.id === 'ai-generated' ? quiz.questions : shuffleArray(quiz.questions);
-
-    if (savedProgressJson) {
-        // For regular quizzes with saved progress.
-        const savedAnswers = JSON.parse(savedProgressJson);
-        const savedQuestionsOrder = shuffleArray(quiz.questions); // Use a consistent shuffle
-        setShuffledQuestions(savedQuestionsOrder);
-        setSelectedAnswers(savedAnswers);
-        
-        const lastAnsweredIndex = savedAnswers.findLastIndex((a: any) => a !== null);
-        const nextQuestionIndex = lastAnsweredIndex >= 0 ? lastAnsweredIndex + 1 : 0;
-
-        if (nextQuestionIndex < savedQuestionsOrder.length) {
-            setCurrentQuestionIndex(nextQuestionIndex);
-        } else if (savedAnswers.every((a: any) => a !== null)) {
-            finishQuiz(savedQuestionsOrder, savedAnswers, false);
-        }
-    } else {
-        // For AI quizzes or new regular quizzes.
-        setShuffledQuestions(questionsToUse);
-        const progress = Array(questionsToUse.length).fill(null);
-        setSelectedAnswers(progress);
-        setCurrentQuestionIndex(0);
-    }
-  }, [quiz, finishQuiz]);
-
-  // Save progress to localStorage whenever answers change
-  useEffect(() => {
-    if (isMounted && !isFinished && selectedAnswers.length > 0 && quiz.id !== 'ai-generated') {
-      localStorage.setItem(getProgressKey(quiz.id), JSON.stringify(selectedAnswers));
-    }
-  }, [selectedAnswers, quiz.id, isMounted, isFinished]);
-  
-  const currentQuestion = shuffledQuestions[currentQuestionIndex];
-  const selectedAnswer = selectedAnswers[currentQuestionIndex];
-
-  const handleSelectAnswer = (answer: string) => {
-    if (selectedAnswer) return; // Prevent changing answer
-    const newAnswers = [...selectedAnswers];
-    newAnswers[currentQuestionIndex] = answer;
-    setSelectedAnswers(newAnswers);
-  };
-
-  const score = useMemo(() => {
-    return selectedAnswers.reduce((acc, answer, index) => {
-      if (!shuffledQuestions[index]) return acc;
-      return answer === shuffledQuestions[index].correctAnswer ? acc + 1 : acc;
-    }, 0);
-  }, [selectedAnswers, shuffledQuestions]);
-
-
-  const goToNextQuestion = () => {
-    if (currentQuestionIndex < shuffledQuestions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else {
-      finishQuiz();
-    }
-  };
-
   const restartQuiz = () => {
     if (quiz.id !== 'ai-generated') {
       localStorage.removeItem(getProgressKey(quiz.id));
     }
+    // For AI quizzes, we don't need to re-fetch, just restart.
     startQuiz();
   };
 
@@ -219,7 +212,7 @@ export function QuizView({ quiz }: QuizViewProps) {
                 text={currentQuestion.question}
                 reading={currentQuestion.questionReading}
                 isBlock
-                isInteractive={true}
+                isInteractive={!hasAnswered}
               />
           </CardTitle>
         </CardHeader>
