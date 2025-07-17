@@ -51,6 +51,8 @@ export type JapaneseTextSegment = {
 
 export type JapaneseText = JapaneseTextSegment[];
 
+export type UserRole = "user" | "admin";
+
 
 // Schema for AI Grammar Checker Input
 export const GrammarCheckInputSchema = z.object({

@@ -5,11 +5,22 @@ import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VocabularyManager } from "@/components/vocabulary-manager";
 import { GrammarGuide } from "@/components/grammar-guide";
-import { BookOpen, Milestone, ArrowLeft, Search } from "lucide-react";
-import type { Deck, GrammarLesson, Quiz } from "@/lib/types";
+import { BookOpen, Milestone, ArrowLeft, Search, User } from "lucide-react";
+import type { Deck, GrammarLesson, Quiz, UserRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { allDecks as initialDecks } from "@/data/decks";
 import { DictionarySearch } from "@/components/dictionary-search";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 type AppView = "vocabulary" | "grammar";
 type GrammarView = "main" | "lessons" | "lesson" | "quizzes" | "quiz" | "checker";
@@ -20,6 +31,8 @@ export default function Home() {
   const [vocabularyView, setVocabularyView] = useState<VocabularyView>("decks");
   const [decks, setDecks] = useState<Deck[]>([]);
   const [isMounted, setIsMounted] = useState(false);
+  const [userRole, setUserRole] = useState<UserRole>("user");
+
 
   useEffect(() => {
     setIsMounted(true);
@@ -28,16 +41,21 @@ export default function Home() {
       if (storedDecks) {
         setDecks(JSON.parse(storedDecks));
       }
+      const storedRole = localStorage.getItem("userRole");
+      if (storedRole && (storedRole === 'user' || storedRole === 'admin')) {
+        setUserRole(storedRole as UserRole);
+      }
     } catch (error) {
-      console.error("Failed to parse decks from localStorage", error);
+      console.error("Failed to parse from localStorage", error);
     }
   }, []);
 
   useEffect(() => {
     if (isMounted) {
       localStorage.setItem("userDecks", JSON.stringify(decks));
+      localStorage.setItem("userRole", userRole);
     }
-  }, [decks, isMounted]);
+  }, [decks, userRole, isMounted]);
 
 
   // State for Grammar Guide
@@ -127,9 +145,28 @@ export default function Home() {
     <div className="flex justify-center items-start min-h-screen bg-gray-100 dark:bg-gray-800">
       <div className="w-full max-w-sm h-screen bg-background flex flex-col pt-[env(safe-area-inset-top)]">
         <header className="flex flex-col p-4 border-b">
-          <h1 className="font-headline text-xl font-bold text-primary text-center">
-            Nihongo Mastery
-          </h1>
+           <div className="flex justify-center items-center relative">
+            <div className="w-8"></div>
+            <h1 className="font-headline text-xl font-bold text-primary text-center flex-1">
+                Nihongo Mastery
+            </h1>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="w-8 h-8">
+                  <User className="h-5 w-5" />
+                  <span className="sr-only">Open user menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Account Role</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup value={userRole} onValueChange={(value) => setUserRole(value as UserRole)}>
+                  <DropdownMenuRadioItem value="user">User</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="admin">Admin</DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
           <div className="mt-4">
             <Tabs value={currentView} onValueChange={(v) => setCurrentView(v as AppView)}>
               <TabsList className="grid w-full grid-cols-2 bg-transparent p-0">
