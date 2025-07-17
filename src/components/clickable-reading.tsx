@@ -20,7 +20,7 @@ export function ClickableReading({ japanese, reading, isBlock = false }: Clickab
 
   // If no Japanese characters, render plain text.
   if (!containsJapanese) {
-    return <span>{japanese}</span>;
+    return <span className={cn(isBlock ? "block" : "inline")}>{japanese}</span>;
   }
   
   // If no specific reading is provided, use the Japanese text itself.
@@ -34,14 +34,14 @@ export function ClickableReading({ japanese, reading, isBlock = false }: Clickab
   const WrapperComponent = isBlock ? 'div' : 'span';
   
   return (
-     <WrapperComponent className={cn(isBlock ? "block" : "inline")} onClick={stopPropagation}>
+     <WrapperComponent className={cn(isBlock ? "block" : "inline")}>
         <Popover>
-            <PopoverTrigger asChild>
+            <PopoverTrigger asChild onClick={stopPropagation}>
                 <span className="cursor-pointer hover:text-primary">
                     {japanese}
                 </span>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-2">
+            <PopoverContent className="w-auto p-2" onClick={stopPropagation}>
                 <p className="text-sm font-semibold text-accent">{readingText}</p>
             </PopoverContent>
         </Popover>
