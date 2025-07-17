@@ -245,6 +245,7 @@ export function Flashcard({
                   sentence={generatedSentence} 
                   isLoading={isGenerating} 
                   onGenerateAnother={resetSentenceGeneration}
+                  getRomaji={getRomaji}
                 />
               </div>
               {!generatedSentence && !isGenerating && (

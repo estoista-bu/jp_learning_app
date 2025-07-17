@@ -3,16 +3,17 @@
 
 import { Loader2 } from 'lucide-react';
 import type { SentenceGenerationOutput } from '@/lib/types';
-import { ClickableReading } from './clickable-reading';
 import { Button } from './ui/button';
+import * as wanakana from 'wanakana';
 
 interface GeneratedSentenceProps {
   sentence: SentenceGenerationOutput | null;
   isLoading: boolean;
   onGenerateAnother: () => void;
+  getRomaji: (text: string) => string;
 }
 
-export function GeneratedSentence({ sentence, isLoading, onGenerateAnother }: GeneratedSentenceProps) {
+export function GeneratedSentence({ sentence, isLoading, onGenerateAnother, getRomaji }: GeneratedSentenceProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-2 text-muted-foreground">
@@ -32,14 +33,17 @@ export function GeneratedSentence({ sentence, isLoading, onGenerateAnother }: Ge
 
   return (
     <div className="text-center p-2 space-y-2 animate-in fade-in">
-       <div className="space-y-1 max-h-[6rem] overflow-y-auto">
+       <div className="space-y-1 max-h-[7rem] overflow-y-auto px-2">
         <p className="font-semibold text-lg">
-          <ClickableReading
-              japanese={sentence.sentence}
-              reading={sentence.reading}
-          />
+          {sentence.sentence}
         </p>
-        <p className="text-sm text-muted-foreground italic">
+        <p className="text-sm text-accent">
+          {sentence.reading}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {getRomaji(sentence.reading)}
+        </p>
+        <p className="text-sm text-muted-foreground italic mt-2">
           {sentence.translation}
         </p>
       </div>
