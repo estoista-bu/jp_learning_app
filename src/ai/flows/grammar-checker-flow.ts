@@ -19,7 +19,7 @@ const grammarCheckPrompt = ai.definePrompt({
   name: 'grammarCheckPrompt',
   input: { schema: GrammarCheckInputSchema },
   output: { schema: GrammarCheckOutputSchema },
-  model: 'gemini-1.0-pro',
+  model: 'gemini-1.5-pro',
   prompt: `You are a friendly and encouraging Japanese language teacher. Your task is to analyze the user's Japanese text for grammatical errors.
 
 Analyze the following text:
