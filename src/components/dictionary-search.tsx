@@ -5,7 +5,7 @@ import { useState, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, Search } from 'lucide-react';
+import { Loader2, Search, BookMarked } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { JishoResult } from '@/lib/types';
 
@@ -62,6 +62,16 @@ export function DictionarySearch() {
 
   return (
     <div className="p-4 space-y-4">
+      <div className="text-center space-y-2 mb-4">
+        <BookMarked className="mx-auto h-8 w-8 text-primary"/>
+        <h2 className="text-lg font-headline font-semibold">Dictionary Search</h2>
+        <p className="text-sm text-muted-foreground px-2">
+            Search for Japanese words.
+            <br />
+            Accepts Kanji, Katakana, Hiragana, Romaji, and English.
+        </p>
+      </div>
+
       <div className="flex w-full items-center space-x-2">
         <Input
           type="text"
@@ -81,11 +91,6 @@ export function DictionarySearch() {
           <span className="sr-only">Search</span>
         </Button>
       </div>
-       <p className="text-sm text-muted-foreground px-2 text-center">
-          Search for Japanese words.
-          <br />
-          Accepts Kanji, Katakana, Hiragana, Romaji, and English words.
-        </p>
        <p className="text-xs text-center text-muted-foreground">Powered by Jisho.org</p>
 
       <div className="space-y-4">
