@@ -10,6 +10,17 @@ import { cn } from "@/lib/utils";
 import { CheckCircle, XCircle, RefreshCw, Circle, CheckCircle2 } from "lucide-react";
 import { ClickableReading } from "./clickable-reading";
 import { JapaneseText } from "./japanese-text";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface QuizViewProps {
   quiz: Quiz;
@@ -115,7 +126,7 @@ export function QuizView({ quiz }: QuizViewProps) {
             <p className="text-2xl font-semibold text-muted-foreground">({percentage.toFixed(0)}%)</p>
             <Button onClick={restartQuiz} className="mt-4">
               <RefreshCw className="mr-2 h-4 w-4" />
-              Try Again
+              Start Over
             </Button>
           </CardContent>
         </Card>
@@ -126,9 +137,33 @@ export function QuizView({ quiz }: QuizViewProps) {
   return (
     <div className="pb-4 space-y-6">
       <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">
-          Question {currentQuestionIndex + 1} of {quiz.questions.length}
-        </p>
+        <div className="flex justify-between items-center">
+          <p className="text-sm text-muted-foreground">
+            Question {currentQuestionIndex + 1} of {quiz.questions.length}
+          </p>
+           <AlertDialog>
+            <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Start Over
+                </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This will restart the quiz and all your current progress will be lost.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={restartQuiz}>
+                        Restart Quiz
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
         <Progress value={progress} />
       </div>
 
