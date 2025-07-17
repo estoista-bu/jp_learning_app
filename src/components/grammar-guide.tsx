@@ -1,7 +1,7 @@
 
 "use client";
 
-import { ChevronRight, GraduationCap, ClipboardList, BrainCircuit } from "lucide-react";
+import { ChevronRight, GraduationCap, ClipboardList, BrainCircuit, Wand2 } from "lucide-react";
 import { GrammarLessonsList } from "./grammar-lessons-list";
 import { GrammarLessonView } from "./grammar-lesson-view";
 import { QuizList } from "./quiz-list";
@@ -13,12 +13,14 @@ import { Badge } from "./ui/badge";
 import { useState, useEffect } from "react";
 import { grammarLessons } from "@/data/lessons";
 
+type GrammarView = "main" | "lessons" | "lesson" | "quizzes" | "quiz" | "checker" | "ai-quiz-generator";
+
 interface GrammarGuideProps {
-    currentView: "main" | "lessons" | "lesson" | "quizzes" | "quiz" | "checker";
+    currentView: GrammarView;
     selectedLesson: GrammarLesson | null;
     selectedQuiz: Quiz | null;
     animation: 'in' | 'out' | null;
-    onNavigate: (view: "main" | "lessons" | "lesson" | "quizzes" | "quiz" | "checker", data?: GrammarLesson | Quiz) => void;
+    onNavigate: (view: GrammarView, data?: GrammarLesson | Quiz) => void;
 }
 
 export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animation, onNavigate }: GrammarGuideProps) {
@@ -73,6 +75,18 @@ export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animat
                   <span className="flex items-center gap-2">
                     <ClipboardList className="h-5 w-5 text-primary" />
                     Quizzes
+                  </span>
+                   <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                </button>
+              </li>
+              <li>
+                <button
+                   onClick={() => onNavigate("ai-quiz-generator")}
+                   className="flex items-center justify-between w-full p-4 rounded-lg bg-card hover:bg-muted transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <Wand2 className="h-5 w-5 text-primary" />
+                    AI Quiz Generator
                   </span>
                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
                 </button>

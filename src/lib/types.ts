@@ -129,3 +129,36 @@ export const SentenceGenerationOutputSchema = z.object({
   translation: z.string().describe("The English translation of the sentence."),
 });
 export type SentenceGenerationOutput = z.infer<typeof SentenceGenerationOutputSchema>;
+
+
+// Schemas for AI Quiz Generation
+const GrammarLessonSchema = z.object({
+    title: z.string(),
+    explanation: z.string(),
+    exampleSentences: z.array(z.object({
+        japanese: z.string(),
+        reading: z.string(),
+        meaning: z.string(),
+    })),
+});
+
+export const QuizGenerationInputSchema = z.object({
+  lessons: z.array(GrammarLessonSchema).describe("A list of grammar lessons to base the quiz on."),
+  numQuestions: z.number().int().min(1).max(10).describe("The number of questions to generate for the quiz."),
+});
+export type QuizGenerationInput = z.infer<typeof QuizGenerationInputSchema>;
+
+const QuizQuestionSchema = z.object({
+  question: z.string().describe("The question text."),
+  questionReading: z.string().optional().describe("The hiragana reading for the question text, if applicable."),
+  options: z.array(z.string()).length(4).describe("An array of four possible answers."),
+  optionsReading: z.array(z.string()).length(4).optional().describe("The hiragana readings for the options, if applicable."),
+  correctAnswer: z.string().describe("The correct answer from the options array."),
+  explanation: z.string().describe("An explanation of why the correct answer is right."),
+  explanationReading: z.string().optional().describe("The hiragana reading for the explanation text, if applicable."),
+});
+
+export const QuizGenerationOutputSchema = z.object({
+  questions: z.array(QuizQuestionSchema)
+});
+export type QuizGenerationOutput = z.infer<typeof QuizGenerationOutputSchema>;

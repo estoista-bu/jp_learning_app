@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VocabularyManager } from "@/components/vocabulary-manager";
 import { GrammarGuide } from "@/components/grammar-guide";
-import { BookOpen, Milestone, ArrowLeft, Search, User } from "lucide-react";
+import { BookOpen, Milestone, ArrowLeft, Search, User, Wand2 } from "lucide-react";
 import type { Deck, GrammarLesson, Quiz, UserRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { allDecks as initialDecks } from "@/data/decks";
@@ -21,9 +21,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { AiQuizGenerator } from "@/components/ai-quiz-generator";
 
 type AppView = "vocabulary" | "grammar";
-type GrammarView = "main" | "lessons" | "lesson" | "quizzes" | "quiz" | "checker";
+type GrammarView = "main" | "lessons" | "lesson" | "quizzes" | "quiz" | "checker" | "ai-quiz-generator";
 type VocabularyView = "decks" | "dictionary";
 
 export default function Home() {
@@ -105,9 +106,14 @@ export default function Home() {
         setGrammarView('lessons');
         setSelectedLesson(null);
       } else if (grammarView === 'quiz') {
-        setGrammarView('quizzes');
+        // If we came from the AI generator, go back there. Otherwise, go to the quiz list.
+        if (selectedQuiz?.id === 'ai-generated') {
+          setGrammarView('ai-quiz-generator');
+        } else {
+          setGrammarView('quizzes');
+        }
         setSelectedQuiz(null);
-      } else if (grammarView === 'lessons' || grammarView === 'quizzes' || grammarView === 'checker') {
+      } else if (grammarView === 'lessons' || grammarView === 'quizzes' || grammarView === 'checker' || grammarView === 'ai-quiz-generator') {
         setGrammarView('main');
       }
       setAnimation('in');
@@ -126,6 +132,8 @@ export default function Home() {
         return selectedQuiz?.title || "Quiz";
       case "checker":
         return "AI Grammar Checker";
+       case "ai-quiz-generator":
+        return "AI Quiz Generator";
       case "main":
       default:
         return "Grammar Guide";
@@ -219,14 +227,20 @@ export default function Home() {
                     </div>
                 </div>
               )}
-              <GrammarGuide
-                currentView={grammarView}
-                selectedLesson={selectedLesson}
-                selectedQuiz={selectedQuiz}
-                animation={animation}
-                onNavigate={handleNavigateGrammar}
-                data-testid="grammar-guide"
-              />
+              {grammarView === 'ai-quiz-generator' ? (
+                <AiQuizGenerator
+                  onQuizGenerated={(quiz) => handleNavigateGrammar('quiz', quiz)}
+                />
+              ) : (
+                <GrammarGuide
+                  currentView={grammarView}
+                  selectedLesson={selectedLesson}
+                  selectedQuiz={selectedQuiz}
+                  animation={animation}
+                  onNavigate={handleNavigateGrammar}
+                  data-testid="grammar-guide"
+                />
+              )}
             </div>
           )}
         </main>
