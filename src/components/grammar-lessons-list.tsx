@@ -28,7 +28,7 @@ export function GrammarLessonsList({ onSelectLesson }: GrammarLessonsListProps) 
 
   return (
     <div className="p-4">
-      <Accordion type="multiple" defaultValue={["n5-lessons", "n4-lessons"]} className="w-full space-y-4">
+      <Accordion type="multiple" className="w-full space-y-4">
         <AccordionItem value="n5-lessons" className="border-none">
           <AccordionTrigger className="font-headline font-semibold text-lg text-primary hover:no-underline rounded-lg bg-card p-4">
             N5 Lessons
