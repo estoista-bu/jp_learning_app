@@ -31,14 +31,16 @@ import { MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import { ScrollArea } from "./ui/scroll-area";
 import { ClickableReading } from "./clickable-reading";
+import { cn } from "@/lib/utils";
 
 interface VocabularyListViewerProps {
   words: VocabularyWord[];
   onEdit: (word: VocabularyWord) => void;
   onRemove: (id: string) => void;
+  onSelectWord: (word: VocabularyWord) => void;
 }
 
-export function VocabularyListViewer({ words, onEdit, onRemove }: VocabularyListViewerProps) {
+export function VocabularyListViewer({ words, onEdit, onRemove, onSelectWord }: VocabularyListViewerProps) {
   const [deletingWord, setDeletingWord] = useState<VocabularyWord | null>(null);
 
   const handleConfirmRemove = (id: string) => {
@@ -59,12 +61,12 @@ export function VocabularyListViewer({ words, onEdit, onRemove }: VocabularyList
           </TableHeader>
           <TableBody>
             {words.map((word) => (
-              <TableRow key={word.id}>
+              <TableRow key={word.id} onClick={() => onSelectWord(word)} className="cursor-pointer">
                 <TableCell className="font-medium">
                   <ClickableReading japanese={word.japanese} reading={word.reading} />
                 </TableCell>
                 <TableCell>{word.meaning}</TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="h-8 w-8 p-0">

@@ -15,10 +15,11 @@ interface FlashcardViewerProps {
     isKana?: boolean;
     onEdit: (word: VocabularyWord) => void;
     onRemove: (id: string) => void;
+    startIndex?: number;
 }
 
-export function FlashcardViewer({ words, isKana, onEdit, onRemove }: FlashcardViewerProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+export function FlashcardViewer({ words, isKana, onEdit, onRemove, startIndex = 0 }: FlashcardViewerProps) {
+  const [currentIndex, setCurrentIndex] = useState(startIndex);
   const [isFlipped, setIsFlipped] = useState(false);
   const [animationDirection, setAnimationDirection] = useState<AnimationDirection>("none");
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -28,9 +29,13 @@ export function FlashcardViewer({ words, isKana, onEdit, onRemove }: FlashcardVi
   
   useEffect(() => {
     setShuffledWords([...words]);
-    setCurrentIndex(0);
-    setIsFlipped(false);
   }, [words]);
+
+  useEffect(() => {
+    if (shuffledWords.length > 0) {
+      setCurrentIndex(startIndex % shuffledWords.length);
+    }
+  }, [startIndex, shuffledWords]);
 
 
   const minSwipeDistance = 50;
