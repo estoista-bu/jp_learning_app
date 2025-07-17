@@ -103,3 +103,27 @@ export const WordGenerationOutputSchema = z.object({
   }))
 });
 export type WordGenerationOutput = z.infer<typeof WordGenerationOutputSchema>;
+
+
+// Schemas for AI Sentence Generation
+export const DifficultySchema = z.enum(['Basic', 'Advanced', 'Expert']);
+export type Difficulty = z.infer<typeof DifficultySchema>;
+
+const VocabularyWordSchema = z.object({
+  japanese: z.string(),
+  reading: z.string(),
+  meaning: z.string(),
+});
+
+export const SentenceGenerationInputSchema = z.object({
+  word: VocabularyWordSchema.describe("The word to create a sentence for."),
+  difficulty: DifficultySchema.describe("The desired difficulty level for the sentence."),
+});
+export type SentenceGenerationInput = z.infer<typeof SentenceGenerationInputSchema>;
+
+export const SentenceGenerationOutputSchema = z.object({
+  sentence: z.string().describe("The generated example sentence in Japanese."),
+  reading: z.string().describe("The reading of the sentence in hiragana."),
+  translation: z.string().describe("The English translation of the sentence."),
+});
+export type SentenceGenerationOutput = z.infer<typeof SentenceGenerationOutputSchema>;

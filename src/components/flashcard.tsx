@@ -5,7 +5,7 @@ import { useState } from "react";
 import { X, Pencil, Volume2, Loader2,ThumbsUp, ThumbsDown } from "lucide-react";
 import * as wanakana from 'wanakana';
 import { cn } from "@/lib/utils";
-import type { VocabularyWord } from "@/lib/types";
+import type { VocabularyWord, SentenceGenerationOutput, Difficulty } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +19,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { generateSentence } from "@/ai/flows/generate-sentence-flow";
+import { useToast } from "@/hooks/use-toast";
+import { GeneratedSentence } from "./generated-sentence";
 
 interface FlashcardProps {
   word: VocabularyWord;
@@ -42,6 +45,10 @@ export function Flashcard({
     onGuess
 }: FlashcardProps) {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [generatedSentence, setGeneratedSentence] = useState<SentenceGenerationOutput | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const { toast } = useToast();
+
 
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -85,6 +92,26 @@ export function Flashcard({
     }
     return wanakana.toRomaji(reading);
   }
+
+  const handleGenerateSentence = async (e: React.MouseEvent, difficulty: Difficulty) => {
+    e.stopPropagation();
+    setIsGenerating(true);
+    setGeneratedSentence(null);
+    try {
+      const result = await generateSentence({ word, difficulty });
+      setGeneratedSentence(result);
+    } catch (error) {
+      console.error("Sentence generation failed", error);
+      toast({
+        title: "Generation Failed",
+        description: "Could not generate a sentence. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
 
   const japaneseWordLength = word.japanese.length;
   let fontSizeClass = "text-5xl";
@@ -178,20 +205,10 @@ export function Flashcard({
         </Card>
 
         {/* Back of the card */}
-        <Card className="absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col items-center justify-center overflow-hidden">
+        <Card className="absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col items-center justify-between overflow-hidden">
            {editButtons}
-           <CardContent className="p-4 text-center flex flex-col items-center justify-center flex-1">
-             <p className="font-body text-3xl font-semibold text-accent break-all">
-               {word.reading}
-             </p>
-             <p className="text-muted-foreground mt-1 text-lg">{getRomaji(word.reading)}</p>
-             <p className="text-muted-foreground mt-4 text-xl">{word.meaning}</p>
-           </CardContent>
-
-           {memoryTestControls}
-
-           <div className="w-full p-2 flex justify-end">
-              <Button 
+           <div className="w-full flex justify-end p-2">
+            <Button 
                 variant="ghost" 
                 size="icon" 
                 onClick={handlePlayAudio} 
@@ -206,6 +223,37 @@ export function Flashcard({
                 )}
               </Button>
            </div>
+           
+           <CardContent className="p-4 text-center flex flex-col items-center justify-center flex-grow">
+             <p className="font-body text-3xl font-semibold text-accent break-all">
+               {word.reading}
+             </p>
+             <p className="text-muted-foreground mt-1 text-lg">{getRomaji(word.reading)}</p>
+             <p className="text-muted-foreground mt-4 text-xl">{word.meaning}</p>
+           </CardContent>
+
+           {memoryTestControls}
+
+           {!isKana && (
+            <div className="border-t w-full p-2 space-y-2">
+              <div className="px-2">
+                <GeneratedSentence sentence={generatedSentence} isLoading={isGenerating} />
+              </div>
+              <div className="flex justify-center gap-2">
+                  {(['Basic', 'Advanced', 'Expert'] as Difficulty[]).map((level) => (
+                      <Button
+                          key={level}
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => handleGenerateSentence(e, level)}
+                          disabled={isGenerating}
+                      >
+                          {level}
+                      </Button>
+                  ))}
+              </div>
+            </div>
+           )}
         </Card>
       </div>
     </div>
