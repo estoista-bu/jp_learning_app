@@ -1,18 +1,20 @@
-
 /**
  * @jest-environment jsdom
  */
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import Home from './page';
 import { GrammarGuide } from '@/components/grammar-guide';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Mock the VocabularyManager and GrammarGuide components to isolate the test to the Home component's logic.
 jest.mock('@/components/vocabulary-manager', () => ({
   VocabularyManager: () => <div data-testid="vocabulary-manager">Vocabulary Content</div>,
 }));
 jest.mock('@/components/grammar-guide', () => ({
-  GrammarGuide: (props: any) => <div {...props}>Grammar Content</div>,
+  __esModule: true,
+  GrammarGuide: (props: any) => <div data-testid="grammar-guide" {...props}>Grammar Content</div>,
 }));
+
 
 describe('Home Page', () => {
   /**
@@ -32,7 +34,8 @@ describe('Home Page', () => {
   it('should show Vocabulary tab content by default', () => {
     render(<Home />);
     expect(screen.getByTestId('vocabulary-manager')).toBeVisible();
-    expect(screen.queryByTestId('grammar-guide')).not.toBeInTheDocument();
+    // In this setup, GrammarGuide is rendered but hidden by Tabs component logic, not removed from DOM
+    expect(screen.getByTestId('grammar-guide')).not.toBeVisible();
   });
 
   /**
@@ -49,7 +52,7 @@ describe('Home Page', () => {
 
     // After clicking, the GrammarGuide should be visible and VocabularyManager should not
     expect(screen.getByTestId('grammar-guide')).toBeVisible();
-    expect(screen.queryByTestId('vocabulary-manager')).not.toBeInTheDocument();
+    expect(screen.getByTestId('vocabulary-manager')).not.toBeVisible();
   });
 
   /**
@@ -69,6 +72,6 @@ describe('Home Page', () => {
     const vocabularyTab = screen.getByRole('tab', { name: /Vocabulary/i });
     fireEvent.click(vocabularyTab);
     expect(screen.getByTestId('vocabulary-manager')).toBeVisible();
-    expect(screen.queryByTestId('grammar-guide')).not.toBeInTheDocument();
+    expect(screen.getByTestId('grammar-guide')).not.toBeVisible();
   });
 });

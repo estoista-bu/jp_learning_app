@@ -1,4 +1,3 @@
-
 /**
  * @jest-environment jsdom
  */
@@ -49,10 +48,9 @@ describe('Flashcard Component', () => {
       />
     );
     expect(screen.getByText(mockWord.japanese)).toBeVisible();
-    // Use queryByText and check for not.toBeVisible() because the elements
-    // exist in the DOM but are hidden by the card flip animation.
-    expect(screen.queryByText(mockWord.reading)).not.toBeVisible();
-    expect(screen.queryByText(mockWord.meaning)).not.toBeVisible();
+    // The back of the card elements are in the DOM but not visible due to CSS transform
+    expect(screen.getByText(mockWord.reading)).not.toBeVisible();
+    expect(screen.getByText(mockWord.meaning)).not.toBeVisible();
   });
 
   /**
