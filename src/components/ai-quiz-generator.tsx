@@ -34,8 +34,13 @@ export function AiQuizGenerator({ onQuizGenerated }: AiQuizGeneratorProps) {
 
   useEffect(() => {
     const userDecks: Deck[] = JSON.parse(localStorage.getItem("userDecks") || "[]");
-    const combined = [...initialDecks.filter(d => d.category === 'user'), ...userDecks];
-    setAllDecks(combined);
+    const initialUserDecks = initialDecks.filter(d => d.category === 'user');
+    
+    // Combine and remove duplicates
+    const combined = [...initialUserDecks, ...userDecks];
+    const uniqueDecks = Array.from(new Map(combined.map(deck => [deck.id, deck])).values());
+
+    setAllDecks(uniqueDecks);
   }, []);
 
   const handleGenerateQuiz = async () => {
@@ -49,7 +54,15 @@ export function AiQuizGenerator({ onQuizGenerated }: AiQuizGeneratorProps) {
         const selectedDeck = allDecks.find(d => d.id === selectedDeckId);
         if (selectedDeck) {
           deckName = selectedDeck.name;
-          vocabularyWords = JSON.parse(localStorage.getItem(`words_${selectedDeckId}`) || "[]");
+          
+          // Try to load words from localStorage first (for user-modified decks)
+          let wordsForDeck = JSON.parse(localStorage.getItem(`words_${selectedDeckId}`) || "[]");
+          // If empty, fall back to initial words data (for default decks)
+          if(wordsForDeck.length === 0) {
+            const { allWords: initialWords } = await import('@/data/words');
+            wordsForDeck = initialWords.filter(word => word.deckId === selectedDeckId);
+          }
+          vocabularyWords = wordsForDeck;
           quizTitle = `AI Quiz for "${deckName}"`;
         }
       }
