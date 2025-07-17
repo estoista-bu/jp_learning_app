@@ -16,10 +16,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import type { VocabularyWord } from "@/lib/types";
+import type { VocabularyWord, WordGenerationOutput } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2 } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
+import { generateWords } from "@/ai/flows/generate-words-flow";
 
 const formSchema = z.object({
   japanese: z.string().min(1, "Japanese word is required."),
@@ -33,6 +34,8 @@ interface VocabularyFormProps {
   onSaveWord: (data: VocabularyFormData, id?: string) => void;
   wordToEdit: VocabularyWord | null;
   deckId: string;
+  deckName: string;
+  existingWords: string[];
 }
 
 interface JishoResult {
@@ -40,7 +43,7 @@ interface JishoResult {
   senses: { english_definitions: string[] }[];
 }
 
-export function VocabularyForm({ onSaveWord, wordToEdit, deckId }: VocabularyFormProps) {
+export function VocabularyForm({ onSaveWord, wordToEdit, deckId, deckName, existingWords }: VocabularyFormProps) {
   const { toast } = useToast();
   const form = useForm<VocabularyFormData>({
     resolver: zodResolver(formSchema),
@@ -54,6 +57,8 @@ export function VocabularyForm({ onSaveWord, wordToEdit, deckId }: VocabularyFor
   const [suggestions, setSuggestions] = useState<JishoResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState<WordGenerationOutput['words']>([]);
 
   const japaneseValue = useWatch({ control: form.control, name: 'japanese' });
 
@@ -118,6 +123,7 @@ export function VocabularyForm({ onSaveWord, wordToEdit, deckId }: VocabularyFor
     });
     form.reset();
     setIsSuggestionsOpen(false);
+    setAiSuggestions([]);
   }
 
   const handleSuggestionClick = (result: JishoResult) => {
@@ -130,10 +136,36 @@ export function VocabularyForm({ onSaveWord, wordToEdit, deckId }: VocabularyFor
     setIsSuggestionsOpen(false);
     setSuggestions([]);
   };
+  
+  const handleAiSuggestionClick = (word: { japanese: string; reading: string; meaning: string; }) => {
+    form.setValue("japanese", word.japanese, { shouldValidate: true });
+    form.setValue("reading", word.reading, { shouldValidate: true });
+    form.setValue("meaning", word.meaning, { shouldValidate: true });
+    setAiSuggestions([]);
+  };
+  
+  const handleGenerateWords = async () => {
+    setIsGenerating(true);
+    setAiSuggestions([]);
+    try {
+        const result = await generateWords({ deckName, existingWords });
+        setAiSuggestions(result.words);
+    } catch (error) {
+        console.error("AI Word generation failed", error);
+        toast({
+            title: "Generation Failed",
+            description: "Could not generate words. Please try again.",
+            variant: "destructive"
+        })
+    } finally {
+        setIsGenerating(false);
+    }
+  }
+
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
         <div className="relative">
           <FormField
             control={form.control}
@@ -208,6 +240,38 @@ export function VocabularyForm({ onSaveWord, wordToEdit, deckId }: VocabularyFor
             </FormItem>
           )}
         />
+
+        {!wordToEdit && (
+            <div className="space-y-2">
+                <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={handleGenerateWords}
+                    disabled={isGenerating}
+                >
+                    {isGenerating ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+                    ) : (
+                        <Sparkles className="mr-2 h-4 w-4 text-accent"/>
+                    )}
+                    Generate with AI
+                </Button>
+                {aiSuggestions.length > 0 && (
+                     <Card className="p-2">
+                        <p className="text-xs font-semibold text-muted-foreground mb-2 px-1">Suggestions:</p>
+                        <div className="flex flex-wrap gap-2">
+                            {aiSuggestions.map((word, i) => (
+                                <Button key={i} type="button" variant="secondary" size="sm" onClick={() => handleAiSuggestionClick(word)}>
+                                    {word.japanese}
+                                </Button>
+                            ))}
+                        </div>
+                    </Card>
+                )}
+            </div>
+        )}
+        
         <Button
           type="submit"
           className="w-full font-bold bg-primary hover:bg-primary/90 text-primary-foreground"

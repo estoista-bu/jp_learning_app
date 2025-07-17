@@ -221,6 +221,8 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
                         onSaveWord={handleSaveWord}
                         wordToEdit={wordToEdit}
                         deckId={deckId}
+                        deckName={deck?.name || ''}
+                        existingWords={words.map(w => w.japanese)}
                     />
                 </SheetContent>
             </Sheet>

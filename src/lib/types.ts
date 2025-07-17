@@ -86,3 +86,19 @@ export interface JishoResult {
     parts_of_speech: string[];
   }[];
 }
+
+// Schemas for AI Word Generation
+export const WordGenerationInputSchema = z.object({
+  deckName: z.string().describe("The topic or title of the deck for which to generate vocabulary."),
+  existingWords: z.array(z.string()).describe("A list of Japanese words that are already in the deck to avoid generating duplicates."),
+});
+export type WordGenerationInput = z.infer<typeof WordGenerationInputSchema>;
+
+export const WordGenerationOutputSchema = z.object({
+  words: z.array(z.object({
+    japanese: z.string().describe("The vocabulary word in Japanese (using Kanji where appropriate)."),
+    reading: z.string().describe("The reading of the word in Hiragana."),
+    meaning: z.string().describe("The English meaning of the word."),
+  }))
+});
+export type WordGenerationOutput = z.infer<typeof WordGenerationOutputSchema>;
