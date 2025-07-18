@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, UserPlus, BookCopy, PlusCircle } from 'lucide-react';
+import { ArrowLeft, UserPlus, BookCopy, PlusCircle, Pencil } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -21,6 +21,7 @@ import {
   DialogClose
 } from '@/components/ui/dialog';
 import { DeckForm } from '../deck-form';
+import Link from 'next/link';
 
 interface GroupDetailViewProps {
   group: Group;
@@ -87,9 +88,17 @@ export function GroupDetailView({ group, allUsers, groupDecks, onBack, onGroupUp
             {groupDecks.length > 0 ? (
               <ul className="space-y-2">
                 {groupDecks.map(deck => (
-                  <li key={deck.id} className="flex items-center p-2 bg-muted/50 rounded-md">
-                    <BookCopy className="h-4 w-4 mr-2 text-primary"/>
-                    <span>{deck.name}</span>
+                  <li key={deck.id} className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
+                    <div className="flex items-center gap-2">
+                      <BookCopy className="h-4 w-4 mr-2 text-primary"/>
+                      <span>{deck.name}</span>
+                    </div>
+                    <Button variant="ghost" size="sm" asChild>
+                       <Link href={`/app/deck/${deck.id}`}>
+                         <Pencil className="h-4 w-4 mr-2" />
+                         Edit Deck
+                       </Link>
+                    </Button>
                   </li>
                 ))}
               </ul>
