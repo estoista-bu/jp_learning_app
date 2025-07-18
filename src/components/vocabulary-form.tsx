@@ -33,6 +33,7 @@ import { Loader2, Sparkles } from "lucide-react";
 import { generateWords } from "@/ai/flows/generate-words-flow";
 import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
+import { Alert, AlertDescription } from "./ui/alert";
 
 const formSchema = z.object({
   japanese: z.string().min(1, "Japanese word is required."),
@@ -320,6 +321,11 @@ export function VocabularyForm({ onSaveWords, wordToEdit, deckId, deckName, exis
                                     Add to deck automatically
                                 </Label>
                            </div>
+                           <Alert variant="destructive" className="bg-orange-50 border-orange-200 text-orange-800 dark:bg-orange-950 dark:border-orange-800 dark:text-orange-300 [&>svg]:text-orange-600">
+                             <AlertDescription className="text-xs">
+                                AI can make mistakes, please confirm with external source if unsure.
+                             </AlertDescription>
+                           </Alert>
                         </div>
                         <DialogFooter>
                             <DialogClose asChild>

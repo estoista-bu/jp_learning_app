@@ -19,6 +19,7 @@ import { generateQuiz } from '@/ai/flows/generate-quiz-flow';
 import { grammarLessons } from '@/data/lessons';
 import { allDecks as initialDecks } from '@/data/decks';
 import type { Quiz, Deck, VocabularyWord } from '@/lib/types';
+import { Alert, AlertDescription } from './ui/alert';
 
 interface AiQuizGeneratorProps {
     onQuizGenerated: (quiz: Quiz) => void;
@@ -135,6 +136,11 @@ export function AiQuizGenerator({ onQuizGenerated }: AiQuizGeneratorProps) {
                 </SelectContent>
             </Select>
           </div>
+           <Alert variant="destructive" className="bg-orange-50 border-orange-200 text-orange-800 dark:bg-orange-950 dark:border-orange-800 dark:text-orange-300 [&>svg]:text-orange-600">
+             <AlertDescription className="text-xs">
+                AI can make mistakes, please confirm with external source if unsure.
+             </AlertDescription>
+           </Alert>
           <Button onClick={handleGenerateQuiz} disabled={isLoading} className="w-full">
             {isLoading ? (
               <>

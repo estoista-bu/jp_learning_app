@@ -4,7 +4,7 @@
 import { Loader2 } from 'lucide-react';
 import type { SentenceGenerationOutput } from '@/lib/types';
 import { Button } from './ui/button';
-import * as wanakana from 'wanakana';
+import { Alert, AlertDescription } from './ui/alert';
 
 interface GeneratedSentenceProps {
   sentence: SentenceGenerationOutput | null;
@@ -47,6 +47,11 @@ export function GeneratedSentence({ sentence, isLoading, onGenerateAnother, getR
           {sentence.translation}
         </p>
       </div>
+       <Alert variant="destructive" className="p-2 bg-orange-50 border-orange-200 text-orange-800 dark:bg-orange-950 dark:border-orange-800 dark:text-orange-300 [&>svg]:text-orange-600">
+         <AlertDescription className="text-xs">
+            AI can make mistakes, please confirm with external source if unsure.
+         </AlertDescription>
+       </Alert>
       <Button
         variant="link"
         size="sm"

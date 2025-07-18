@@ -20,6 +20,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription } from "./ui/alert";
 
 interface QuizViewProps {
   quiz: Quiz;
@@ -220,6 +221,13 @@ export function QuizView({ quiz }: QuizViewProps) {
             </AlertDialog>
           </div>
           <Progress value={progress} />
+           {quiz.level === 'AI' && (
+             <Alert variant="destructive" className="p-2 bg-orange-50 border-orange-200 text-orange-800 dark:bg-orange-950 dark:border-orange-800 dark:text-orange-300 [&>svg]:text-orange-600">
+                <AlertDescription className="text-xs">
+                    AI can make mistakes, please confirm with external source if unsure.
+                </AlertDescription>
+            </Alert>
+           )}
       </div>
 
       <Card>
@@ -247,8 +255,8 @@ export function QuizView({ quiz }: QuizViewProps) {
                   className={cn(
                     "w-full justify-start h-auto py-3 text-left whitespace-normal text-foreground",
                     "hover:text-foreground",
-                    hasAnswered && isCorrect && "bg-green-100 border-green-400 text-green-800 hover:bg-green-100 dark:bg-green-900/50 dark:border-green-700 dark:text-green-300",
-                    hasAnswered && !isCorrect && isSelected && "bg-red-100 border-red-400 text-red-800 hover:bg-red-100 dark:bg-red-900/50 dark:border-red-700 dark:text-red-300",
+                    hasAnswered && isCorrect && "bg-green-200 border-green-500 text-green-900 hover:bg-green-200 dark:bg-green-900/60 dark:border-green-700 dark:text-green-200",
+                    hasAnswered && !isCorrect && isSelected && "bg-red-200 border-red-500 text-red-900 hover:bg-red-200 dark:bg-red-900/60 dark:border-red-700 dark:text-red-200",
                     !hasAnswered && "hover:bg-accent/10"
                   )}
                   onClick={() => handleSelectAnswer(option)}

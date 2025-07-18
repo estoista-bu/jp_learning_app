@@ -76,6 +76,11 @@ export function GrammarChecker() {
             <CardTitle>Analysis Result</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <Alert variant="destructive" className="bg-orange-50 border-orange-200 text-orange-800 dark:bg-orange-950 dark:border-orange-800 dark:text-orange-300 [&>svg]:text-orange-600">
+                <AlertDescription className="text-xs">
+                    AI can make mistakes, please confirm with external source if unsure.
+                </AlertDescription>
+            </Alert>
             {result.corrections.length === 0 ? (
               <Alert>
                 <CheckCircle2 className="h-4 w-4" />
