@@ -3,10 +3,11 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookCopy, Brain, Percent, Trophy, BarChart2 } from 'lucide-react';
+import { BookCopy, Brain, Percent, Trophy, BarChart2, GraduationCap } from 'lucide-react';
 import { allDecks as initialDecks } from '@/data/decks';
 import { allWords } from '@/data/words';
 import { quizzes as allProvidedQuizzes } from '@/data/quizzes';
+import { grammarLessons } from '@/data/lessons';
 import type { Deck } from '@/lib/types';
 import { ScrollArea } from './ui/scroll-area';
 
@@ -40,6 +41,7 @@ export function StatsPage() {
         ai: { total: 0, correct: 0, dailyCorrect: 0, dailyTotal: 0, weeklyCorrect: 0, weeklyTotal: 0, monthlyCorrect: 0, monthlyTotal: 0 }
     });
     const [quizMastery, setQuizMastery] = useState(0);
+    const [lessonCompletion, setLessonCompletion] = useState(0);
 
     useEffect(() => {
         // --- Vocabulary Stats ---
@@ -112,6 +114,13 @@ export function StatsPage() {
 
         if (totalPossibleScore > 0) {
             setQuizMastery((userTotalHighScore / totalPossibleScore) * 100);
+        }
+        
+        // --- Lesson Completion ---
+        const readLessonsCount = grammarLessons.filter(lesson => !!localStorage.getItem(`lesson-read-${lesson.title}`)).length;
+        const totalLessons = grammarLessons.length;
+        if (totalLessons > 0) {
+            setLessonCompletion((readLessonsCount / totalLessons) * 100);
         }
 
     }, []);
@@ -201,16 +210,28 @@ export function StatsPage() {
                                 <StatRow label="Daily Rate:" value={formatRate(quizStats.ai.dailyCorrect, quizStats.ai.dailyTotal)} />
                             </CardContent>
                         </Card>
-                         <Card className="col-span-1 md:col-span-2">
+                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-base">
                                     <Percent className="h-5 w-5 text-accent" />
                                     <span>Quiz Mastery</span>
                                 </CardTitle>
-                                 <CardDescription>Your high scores vs. perfect scores on all standard quizzes.</CardDescription>
+                                 <CardDescription>Your high scores vs. perfect scores on all standard quizzes (does not include AI quizzes).</CardDescription>
                             </CardHeader>
                             <CardContent>
                                <p className="text-3xl font-bold text-center">{quizMastery.toFixed(1)}<span className="text-lg">%</span></p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-base">
+                                    <GraduationCap className="h-5 w-5 text-accent" />
+                                    <span>Lessons Studied</span>
+                                </CardTitle>
+                                 <CardDescription>Percentage of grammar lessons you have viewed.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                               <p className="text-3xl font-bold text-center">{lessonCompletion.toFixed(1)}<span className="text-lg">%</span></p>
                             </CardContent>
                         </Card>
                     </div>
