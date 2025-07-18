@@ -147,7 +147,7 @@ export function StatsPage({ userId }: StatsPageProps) {
                 {/* Vocabulary Section */}
                 <section>
                     <h2 className="text-xl font-headline font-bold text-primary mb-2">Vocabulary Stats</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-base">
@@ -185,7 +185,7 @@ export function StatsPage({ userId }: StatsPageProps) {
                 {/* Quizzes Section */}
                 <section>
                     <h2 className="text-xl font-headline font-bold text-primary mb-2">Quiz Stats</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-base">
