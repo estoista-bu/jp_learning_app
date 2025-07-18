@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState } from 'react';
-import type { User } from '@/lib/types';
+import { useState, useEffect } from 'react';
+import type { User, Group } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -12,9 +12,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Users, LogOut, BarChart3, Group, PanelLeft } from 'lucide-react';
+import { Users, LogOut, BarChart3, Group as GroupIcon } from 'lucide-react';
 import { UserList } from './user-list';
 import { UserStatsView } from './user-stats-view';
+import { UserManagement } from './user-management';
 import {
   Sidebar,
   SidebarContent,
@@ -22,11 +23,12 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarProvider,
-  SidebarTrigger,
   SidebarInset,
-  useSidebar
+  SidebarTrigger,
+  useSidebar,
+  SidebarProvider
 } from '@/components/ui/sidebar';
+import { users as defaultUsers } from '@/lib/users';
 
 interface AdminDashboardProps {
   currentUser: User;
@@ -38,7 +40,74 @@ type AdminView = 'stats' | 'management';
 function AdminDashboardContent({ currentUser, onLogout }: AdminDashboardProps) {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [view, setView] = useState<AdminView>('stats');
+  const [users, setUsers] = useState<User[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const { setOpenMobile } = useSidebar();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    // Load users from localStorage or use defaults
+    const storedUsers = localStorage.getItem('allUsers');
+    if (storedUsers) {
+      setUsers(JSON.parse(storedUsers));
+    } else {
+      setUsers(defaultUsers);
+    }
+    
+    // Load groups from localStorage
+    const storedGroups = localStorage.getItem('allGroups');
+    if (storedGroups) {
+      setGroups(JSON.parse(storedGroups));
+    }
+
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isMounted) {
+      localStorage.setItem('allUsers', JSON.stringify(users));
+    }
+  }, [users, isMounted]);
+
+  useEffect(() => {
+    if (isMounted) {
+      localStorage.setItem('allGroups', JSON.stringify(groups));
+    }
+  }, [groups, isMounted]);
+
+  const handleUserCreate = (newUser: User) => {
+    setUsers(prev => [...prev, newUser]);
+  };
+
+  const handleUserDelete = (userId: string) => {
+    setUsers(prev => prev.filter(u => u.id !== userId));
+  };
+  
+  const handleGroupUpdate = (updatedGroup: Group) => {
+    const existingGroup = groups.find(g => g.id === updatedGroup.id);
+    if (existingGroup) {
+      setGroups(groups.map(g => (g.id === updatedGroup.id ? updatedGroup : g)));
+    } else {
+      setGroups([...groups, updatedGroup]);
+    }
+  };
+
+  const handleGroupDelete = (groupId: string) => {
+    setGroups(groups.filter(g => g.id !== groupId));
+    // Also remove this group from any users
+    setUsers(prevUsers => 
+      prevUsers.map(u => ({
+        ...u,
+        groups: u.groups?.filter(gId => gId !== groupId)
+      }))
+    );
+  };
+  
+  const handleAssignGroups = (userId: string, groupIds: string[]) => {
+    setUsers(prevUsers => 
+      prevUsers.map(u => u.id === userId ? { ...u, groups: groupIds } : u)
+    );
+  };
 
   const handleBack = () => {
     setSelectedUser(null);
@@ -46,7 +115,8 @@ function AdminDashboardContent({ currentUser, onLogout }: AdminDashboardProps) {
   
   const handleViewChange = (newView: AdminView) => {
     setView(newView);
-    setOpenMobile(false); // Close mobile sidebar on navigation
+    setSelectedUser(null);
+    setOpenMobile(false);
   }
 
   const renderContent = () => {
@@ -59,18 +129,23 @@ function AdminDashboardContent({ currentUser, onLogout }: AdminDashboardProps) {
         return (
             <div className="p-4">
                 <h2 className="text-2xl font-bold mb-4">User Statistics</h2>
-                <UserList onSelectUser={setSelectedUser} />
+                <UserList onSelectUser={setSelectedUser} users={users} />
             </div>
         );
       case 'management':
         return (
-          <div className="p-4">
-            <h2 className="text-2xl font-bold mb-4">User Management</h2>
-            <p className="text-muted-foreground">User grouping functionality will be implemented here.</p>
-          </div>
+          <UserManagement 
+            users={users.filter(u => u.role !== 'admin')} 
+            groups={groups}
+            onUserCreate={handleUserCreate}
+            onUserDelete={handleUserDelete}
+            onGroupUpdate={handleGroupUpdate}
+            onGroupDelete={handleGroupDelete}
+            onAssignUserToGroup={handleAssignGroups}
+          />
         );
       default:
-        return <UserList onSelectUser={setSelectedUser} />;
+        return <UserList onSelectUser={setSelectedUser} users={users} />;
     }
   };
 
@@ -108,8 +183,8 @@ function AdminDashboardContent({ currentUser, onLogout }: AdminDashboardProps) {
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                       <SidebarMenuButton onClick={() => handleViewChange('management')} isActive={view === 'management'}>
-                          <Group />
-                         Users management
+                          <GroupIcon />
+                         User Management
                       </SidebarMenuButton>
                   </SidebarMenuItem>
               </SidebarMenu>

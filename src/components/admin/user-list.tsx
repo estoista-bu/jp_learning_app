@@ -1,31 +1,24 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { User } from "@/lib/types";
-import { users as allUsers } from "@/lib/users";
 import { Card } from "@/components/ui/card";
 import { ChevronRight } from "lucide-react";
 
 interface UserListProps {
   onSelectUser: (user: User) => void;
+  users: User[];
 }
 
-export function UserList({ onSelectUser }: UserListProps) {
-  const [users, setUsers] = useState<User[]>([]);
-
-  useEffect(() => {
-    // In a real app, this would be an API call.
-    // We filter out the password for security and also filter out admin users.
-    const nonAdminUsers = allUsers.filter(user => user.role !== 'admin');
-    const safeUsers = nonAdminUsers.map(({ password, ...rest }) => rest);
-    setUsers(safeUsers as User[]);
-  }, []);
+export function UserList({ onSelectUser, users }: UserListProps) {
+  const nonAdminUsers = users.filter(user => user.role !== 'admin');
+  const safeUsers = nonAdminUsers.map(({ password, ...rest }) => rest);
 
   return (
     <div className="space-y-2">
       <p className="text-sm text-muted-foreground px-2">Select a user to view their detailed statistics.</p>
-      {users.map((user) => (
+      {safeUsers.map((user) => (
         <Card 
           key={user.id} 
           className="cursor-pointer hover:bg-muted"
@@ -40,6 +33,9 @@ export function UserList({ onSelectUser }: UserListProps) {
           </div>
         </Card>
       ))}
+      {safeUsers.length === 0 && (
+        <p className="text-muted-foreground text-center p-4">No users available to display.</p>
+      )}
     </div>
   );
 }

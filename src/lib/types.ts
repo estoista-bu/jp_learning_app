@@ -50,8 +50,15 @@ export type UserRole = "user" | "admin";
 export type User = {
   id: string;
   username: string;
-  password?: string; // Should be handled securely on a server
+  password?: string;
   role: UserRole;
+  groups?: string[]; // Array of group IDs
+}
+
+export type Group = {
+  id: string;
+  name: string;
+  description: string;
 }
 
 // Schema for AI Grammar Checker Input
@@ -171,5 +178,3 @@ export const QuizGenerationOutputSchema = z.object({
   questions: z.array(QuizQuestionSchema)
 });
 export type QuizGenerationOutput = z.infer<typeof QuizGenerationOutputSchema>;
-
-    
