@@ -217,7 +217,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
       case "select":
       default:
         return (
-          <div className="flex-1 flex flex-col items-center justify-center p-4 gap-4">
+          <div className="flex-1 flex flex-col items-center justify-center p-4 gap-4 md:flex-row">
             <Card onClick={() => handleSetMode('view')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
               <Eye className="h-10 w-10 mx-auto text-primary mb-2"/>
               <h2 className="text-lg font-bold">View Each</h2>
@@ -248,7 +248,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-800">
-        <div className="w-full max-w-sm h-screen bg-background flex flex-col">
+        <div className="w-full max-w-5xl bg-background flex flex-col h-screen md:h-auto md:min-h-[calc(100vh-2rem)] md:my-4 md:rounded-lg md:shadow-lg">
             <Sheet open={isFormOpen} onOpenChange={handleFormOpenChange}>
                 <header className="flex items-center justify-between p-4 border-b sticky top-0 bg-background/95 backdrop-blur-sm z-10">
                     {mode === 'select' ? (
@@ -304,5 +304,3 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     </div>
   );
 }
-
-    

@@ -197,8 +197,8 @@ export default function AppPage() {
   }
 
   return (
-    <div className="flex justify-center items-start min-h-screen bg-gray-100 dark:bg-gray-800">
-      <div className="w-full max-w-sm h-screen bg-background flex flex-col pt-[env(safe-area-inset-top)]">
+    <div className="flex flex-col items-center min-h-screen bg-gray-100 dark:bg-gray-800">
+      <div className="w-full max-w-5xl bg-background flex flex-col pt-[env(safe-area-inset-top)] md:my-4 md:rounded-lg md:shadow-lg">
         <header className="flex flex-col p-4 border-b">
            {!showSubHeader && (
             <div className="flex justify-between items-center relative mb-4">
@@ -306,5 +306,3 @@ export default function AppPage() {
     </div>
   );
 }
-
-    
