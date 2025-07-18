@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, Edit, Trash2, ArrowLeft } from 'lucide-react';
 import { GroupDetailView } from './group-detail-view';
@@ -68,7 +69,7 @@ export function UserManagement({
 
   const { toast } = useToast();
   const userForm = useForm({ resolver: zodResolver(userFormSchema), defaultValues: { username: '', password: '', role: 'user' as const } });
-  const groupForm = useForm({ resolver: zodResolver(groupFormSchema), defaultValues: { name: '', description: '' } });
+  const groupForm = useForm<z.infer<typeof groupFormSchema>>({ resolver: zodResolver(groupFormSchema), defaultValues: { name: '', description: '' } });
 
   const handleUserSubmit = (data: z.infer<typeof userFormSchema>) => {
     onUserCreate({ ...data, id: `user-${Date.now()}` });
@@ -191,26 +192,32 @@ export function UserManagement({
                 <DialogHeader>
                     <DialogTitle>{editingGroup ? 'Edit Group' : 'Create New Group'}</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={groupForm.handleSubmit(handleGroupSubmit)} className="space-y-4">
-                    <FormField control={groupForm.control} name="name" render={({ field }) => (
-                        <div>
-                            <Label htmlFor="group-name">Group Name</Label>
-                            <Input id="group-name" {...field} />
-                            {groupForm.formState.errors.name && <p className="text-sm text-destructive mt-1">{groupForm.formState.errors.name.message}</p>}
-                        </div>
-                    )} />
-                    <FormField control={groupForm.control} name="description" render={({ field }) => (
-                        <div>
-                            <Label htmlFor="group-desc">Description</Label>
-                            <Input id="group-desc" {...field} />
-                             {groupForm.formState.errors.description && <p className="text-sm text-destructive mt-1">{groupForm.formState.errors.description.message}</p>}
-                        </div>
-                    )} />
-                    <DialogFooter>
-                        <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
-                        <Button type="submit">Save Group</Button>
-                    </DialogFooter>
-                </form>
+                 <Form {...groupForm}>
+                    <form onSubmit={groupForm.handleSubmit(handleGroupSubmit)} className="space-y-4">
+                        <FormField control={groupForm.control} name="name" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel htmlFor="group-name">Group Name</FormLabel>
+                                <FormControl>
+                                    <Input id="group-name" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
+                        <FormField control={groupForm.control} name="description" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel htmlFor="group-desc">Description</FormLabel>
+                                <FormControl>
+                                    <Input id="group-desc" {...field} />
+                                </FormControl>
+                                 <FormMessage />
+                            </FormItem>
+                        )} />
+                        <DialogFooter>
+                            <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
+                            <Button type="submit">Save Group</Button>
+                        </DialogFooter>
+                    </form>
+                 </Form>
             </DialogContent>
         </Dialog>
 
@@ -218,38 +225,47 @@ export function UserManagement({
           <DialogHeader>
             <DialogTitle>Create New User</DialogTitle>
           </DialogHeader>
+          <Form {...userForm}>
           <form onSubmit={userForm.handleSubmit(handleUserSubmit)} className="space-y-4">
             <FormField control={userForm.control} name="username" render={({ field }) => (
-              <div>
-                <Label htmlFor="username">Username</Label>
-                <Input id="username" {...field} />
-                {userForm.formState.errors.username && <p className="text-sm text-destructive mt-1">{userForm.formState.errors.username.message}</p>}
-              </div>
+              <FormItem>
+                <FormLabel>Username</FormLabel>
+                 <FormControl>
+                    <Input id="username" {...field} />
+                 </FormControl>
+                <FormMessage />
+              </FormItem>
             )} />
             <FormField control={userForm.control} name="password" render={({ field }) => (
-              <div>
-                <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" {...field} />
-                {userForm.formState.errors.password && <p className="text-sm text-destructive mt-1">{userForm.formState.errors.password.message}</p>}
-              </div>
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                 <FormControl>
+                    <Input id="password" type="password" {...field} />
+                 </FormControl>
+                <FormMessage />
+              </FormItem>
             )} />
             <FormField control={userForm.control} name="role" render={({ field }) => (
-              <div>
-                <Label htmlFor="role">Role</Label>
+              <FormItem>
+                <FormLabel>Role</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                    <FormControl>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                    </FormControl>
                   <SelectContent>
                     <SelectItem value="user">User</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+                <FormMessage />
+              </FormItem>
             )} />
             <DialogFooter>
                 <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
                 <Button type="submit">Create User</Button>
             </DialogFooter>
           </form>
+          </Form>
         </DialogContent>
       </Dialog>
     </div>
