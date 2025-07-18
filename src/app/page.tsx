@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VocabularyManager } from "@/components/vocabulary-manager";
 import { GrammarGuide } from "@/components/grammar-guide";
-import { BookOpen, Milestone, ArrowLeft, Search, User, Wand2 } from "lucide-react";
+import { BookOpen, Milestone, ArrowLeft, Search, User, Wand2, BarChart } from "lucide-react";
 import type { Deck, GrammarLesson, Quiz, UserRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { allDecks as initialDecks } from "@/data/decks";
@@ -22,8 +22,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { AiQuizGenerator } from "@/components/ai-quiz-generator";
+import { StatsPage } from "@/components/stats-page";
 
-type AppView = "vocabulary" | "grammar";
+type AppView = "vocabulary" | "grammar" | "stats";
 type GrammarView = "main" | "lessons" | "lesson" | "quizzes" | "quiz" | "checker" | "ai-quiz-generator";
 type VocabularyView = "decks" | "dictionary";
 
@@ -90,15 +91,17 @@ export default function Home() {
     setAnimation('out');
     setTimeout(() => {
       if (view === "ai-quiz-generator") {
+        const storedAiQuiz = sessionStorage.getItem('ai-generated-quiz');
         const progressKey = `quiz-progress-ai-generated`;
         const progress = JSON.parse(localStorage.getItem(progressKey) || "[]");
         const isFinished = progress.length > 0 && progress.every((a: any) => a !== null);
         
-        if (selectedQuiz?.id === 'ai-generated' && !isFinished) {
+        if (storedAiQuiz && !isFinished) {
+          setSelectedQuiz(JSON.parse(storedAiQuiz));
           setGrammarView('quiz');
         } else {
           setGrammarView('ai-quiz-generator');
-          setSelectedQuiz(null); // Clear old quiz if finished
+          setSelectedQuiz(null); // Clear old quiz
           sessionStorage.removeItem('ai-generated-quiz');
           localStorage.removeItem(progressKey);
         }
@@ -169,7 +172,7 @@ export default function Home() {
     ...decks
   ];
 
-  const showMainHeader = grammarView === 'main';
+  const showSubHeader = grammarView !== 'main' || currentView === 'stats';
 
   if (!isMounted) {
     return null; // or a loading spinner
@@ -179,7 +182,7 @@ export default function Home() {
     <div className="flex justify-center items-start min-h-screen bg-gray-100 dark:bg-gray-800">
       <div className="w-full max-w-sm h-screen bg-background flex flex-col pt-[env(safe-area-inset-top)]">
         <header className="flex flex-col p-4 border-b">
-           {showMainHeader && (
+           {!showSubHeader && (
             <div className="flex justify-between items-center relative mb-4">
               <div className="w-8"></div>
               <h1 className="font-headline text-xl font-bold text-primary text-center flex-1">
@@ -205,7 +208,7 @@ export default function Home() {
            )}
           <div>
             <Tabs value={currentView} onValueChange={(v) => setCurrentView(v as AppView)}>
-              <TabsList className="grid w-full grid-cols-2 bg-transparent p-0">
+              <TabsList className="grid w-full grid-cols-3 bg-transparent p-0">
                 <TabsTrigger value="vocabulary" className="data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
                   <BookOpen className="mr-2 h-4 w-4" />
                   Vocabulary
@@ -213,6 +216,10 @@ export default function Home() {
                 <TabsTrigger value="grammar" className="data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
                   <Milestone className="mr-2 h-4 w-4" />
                   Grammar
+                </TabsTrigger>
+                 <TabsTrigger value="stats" className="data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
+                  <BarChart className="mr-2 h-4 w-4" />
+                  Stats
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -270,6 +277,9 @@ export default function Home() {
                 />
               )}
             </div>
+          )}
+           {currentView === 'stats' && (
+             <StatsPage />
           )}
         </main>
       </div>

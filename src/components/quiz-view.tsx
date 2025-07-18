@@ -52,15 +52,34 @@ export function QuizView({ quiz }: QuizViewProps) {
   }, [selectedAnswers, shuffledQuestions]);
 
   const finishQuiz = useCallback((saveScore = true) => {
-    if (saveScore && quiz.id !== 'ai-generated') {
-      const storageKey = `quiz-highscore-${quiz.id}`;
-      const currentHighScore = parseInt(localStorage.getItem(storageKey) || "0", 10);
-      if (score > currentHighScore) {
-          localStorage.setItem(storageKey, score.toString());
-      }
+    if (saveScore) {
+       if (quiz.id === 'ai-generated') {
+          const results = JSON.parse(localStorage.getItem('quizResults_ai') || '[]');
+          results.push({
+              score,
+              total: shuffledQuestions.length,
+              timestamp: new Date().toISOString(),
+          });
+          localStorage.setItem('quizResults_ai', JSON.stringify(results));
+       } else {
+          const storageKey = `quiz-highscore-${quiz.id}`;
+          const currentHighScore = parseInt(localStorage.getItem(storageKey) || "0", 10);
+          if (score > currentHighScore) {
+              localStorage.setItem(storageKey, score.toString());
+          }
+          // Store results for stats page
+          const results = JSON.parse(localStorage.getItem('quizResults_provided') || '[]');
+          results.push({
+              id: quiz.id,
+              score,
+              total: shuffledQuestions.length,
+              timestamp: new Date().toISOString(),
+          });
+          localStorage.setItem('quizResults_provided', JSON.stringify(results));
+       }
     }
     setIsFinished(true);
-  }, [quiz.id, score]);
+  }, [quiz.id, score, shuffledQuestions.length]);
 
 
   useEffect(() => {

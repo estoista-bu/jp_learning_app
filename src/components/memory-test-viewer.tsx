@@ -45,8 +45,11 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
   const [historyIndex, setHistoryIndex] = useState(-1);
 
   useEffect(() => {
-    // Initialize words with a default weight
-    const initialWords = words.map(word => ({ ...word, weight: 3 }));
+    const memoryTestData = JSON.parse(localStorage.getItem('memoryTestResults') || '{}');
+    const initialWords = words.map(word => ({ 
+        ...word, 
+        weight: memoryTestData[word.id] === 'known' ? 1 : 10 
+    }));
     setWeightedWords(initialWords);
     setHistory([]);
     setHistoryIndex(-1);
@@ -83,6 +86,11 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
     if (historyIndex < 0) return;
     
     const currentWord = history[historyIndex];
+    
+    const memoryTestData = JSON.parse(localStorage.getItem('memoryTestResults') || '{}');
+    memoryTestData[currentWord.id] = guessed ? 'known' : 'unknown';
+    localStorage.setItem('memoryTestResults', JSON.stringify(memoryTestData));
+
     setWeightedWords(prevWords => {
         return prevWords.map(w => {
             if (w.id === currentWord.id) {
