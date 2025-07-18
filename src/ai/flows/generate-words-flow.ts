@@ -44,7 +44,7 @@ const generateWordsFlow = ai.defineFlow(
     outputSchema: WordGenerationOutputSchema,
   },
   async (input) => {
-    // Ask for more words than requested to ensure we get enough, then trim.
+    // Ask for more words than requested to ensure we get enough unique ones, then trim.
     const requestedNum = input.numWords + 15;
 
     const { output } = await generateWordsPrompt({
