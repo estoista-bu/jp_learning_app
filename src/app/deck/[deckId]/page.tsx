@@ -59,23 +59,27 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     if (!userId) return;
 
     const userDecks: Deck[] = JSON.parse(localStorage.getItem(`userDecks_${userId}`) || "[]");
-    const combinedDecks = [...initialDecks, ...userDecks];
-    const currentDeck = combinedDecks.find((d) => d.id === deckId) || null;
+    const groupDecks: Deck[] = JSON.parse(localStorage.getItem('allGroupDecks') || '[]');
+    const combinedDecks = [...initialDecks, ...userDecks, ...groupDecks];
+    const uniqueDecks = Array.from(new Map(combinedDecks.map(deck => [deck.id, deck])).values());
+    
+    const currentDeck = uniqueDecks.find((d) => d.id === deckId) || null;
     setDeck(currentDeck);
 
-    const deckIsCustom = userDecks.some(d => d.id === deckId);
+    const deckIsCustom = userDecks.some(d => d.id === deckId) || groupDecks.some(d => d.id === deckId);
     
     if (currentDeck) {
       let loadedWords: VocabularyWord[] = [];
-      const storedUserWords = JSON.parse(localStorage.getItem(`words_${deckId}_${userId}`) || "[]");
+      const userWordsKey = currentDeck.category === 'group' ? `words_${deckId}` : `words_${deckId}_${userId}`;
+      const storedUserWords = JSON.parse(localStorage.getItem(userWordsKey) || "[]");
+
       if (storedUserWords.length > 0) {
         loadedWords = storedUserWords;
         setIsUserDeck(true);
       } else if (deckIsCustom) {
          loadedWords = [];
          setIsUserDeck(true);
-      }
-      else {
+      } else {
         loadedWords = initialWords.filter((word) => word.deckId === deckId);
         setIsUserDeck(false);
       }
@@ -85,15 +89,16 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
   }, [deckId, userId]);
   
   useEffect(() => {
-    if (isMounted && isUserDeck && userId) {
-      localStorage.setItem(`words_${deckId}_${userId}`, JSON.stringify(words));
+    if (isMounted && isUserDeck && userId && deck) {
+       const userWordsKey = deck.category === 'group' ? `words_${deck.id}` : `words_${deck.id}_${userId}`;
+       localStorage.setItem(userWordsKey, JSON.stringify(words));
     }
      setShuffledWords([...words]);
-  }, [words, deckId, isUserDeck, isMounted, userId]);
+  }, [words, deckId, isUserDeck, isMounted, userId, deck]);
 
 
   const handleSaveWords = (wordsData: VocabularyFormData[], idToEdit?: string) => {
-    if (!userId) return;
+    if (!userId || !deck) return;
     let newWords: VocabularyWord[] = [...words];
 
     if (idToEdit) {
@@ -119,9 +124,11 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
 
     if (!isUserDeck) {
         setIsUserDeck(true);
-        const userDecks: Deck[] = JSON.parse(localStorage.getItem(`userDecks_${userId}`) || "[]");
-        if (!userDecks.some(d => d.id === deckId) && deck) {
-            localStorage.setItem(`userDecks_${userId}`, JSON.stringify([...userDecks, deck]));
+        if (deck.category !== 'group') {
+            const userDecks: Deck[] = JSON.parse(localStorage.getItem(`userDecks_${userId}`) || "[]");
+            if (!userDecks.some(d => d.id === deckId) && deck) {
+                localStorage.setItem(`userDecks_${userId}`, JSON.stringify([...userDecks, deck]));
+            }
         }
     }
 
