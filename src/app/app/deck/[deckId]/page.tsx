@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { allDecks as initialDecks } from "@/data/decks";
 import { allWords as initialWords } from "@/data/words";
-import type { Deck, VocabularyWord } from "@/lib/types";
+import type { Deck, VocabularyWord, User, UserRole } from "@/lib/types";
 import { FlashcardViewer } from "@/components/flashcard-viewer";
 import { MemoryTestViewer } from "@/components/memory-test-viewer";
 import { VocabularyListViewer } from "@/components/vocabulary-list-viewer";
@@ -44,6 +44,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
   const [previousMode, setPreviousMode] = useState<DeckViewMode>("select");
   const [initialCardIndex, setInitialCardIndex] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
 
   useEffect(() => {
     const storedUserId = localStorage.getItem("userId");
@@ -52,6 +53,12 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
       return;
     }
     setUserId(storedUserId);
+
+    const { users } = require('@/lib/users');
+    const user: User | undefined = users.find((u: User) => u.id === storedUserId);
+    if (user) {
+        setUserRole(user.role);
+    }
     setIsMounted(true);
   }, [router]);
 
@@ -175,6 +182,10 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
   }
 
   const handleBack = () => {
+    if (userRole === 'admin' && mode !== 'select') {
+        router.push('/app');
+        return;
+    }
     setMode(previousMode);
     setPreviousMode('select');
   }
@@ -235,11 +246,13 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
               <h2 className="text-lg font-bold">View as List</h2>
               <p className="text-sm text-muted-foreground">See all words at once.</p>
             </Card>
-            <Card onClick={() => handleSetMode('test')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
-               <BrainCircuit className="h-10 w-10 mx-auto text-accent mb-2"/>
-              <h2 className="text-lg font-bold">Memory Test</h2>
-              <p className="text-sm text-muted-foreground">Test your recall.</p>
-            </Card>
+            {userRole !== 'admin' && (
+              <Card onClick={() => handleSetMode('test')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
+                 <BrainCircuit className="h-10 w-10 mx-auto text-accent mb-2"/>
+                <h2 className="text-lg font-bold">Memory Test</h2>
+                <p className="text-sm text-muted-foreground">Test your recall.</p>
+              </Card>
+            )}
           </div>
         );
     }
