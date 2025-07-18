@@ -87,9 +87,21 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
     
     const currentWord = history[historyIndex];
     
+    // Update last known status
     const memoryTestData = JSON.parse(localStorage.getItem('memoryTestResults') || '{}');
     memoryTestData[currentWord.id] = guessed ? 'known' : 'unknown';
     localStorage.setItem('memoryTestResults', JSON.stringify(memoryTestData));
+
+    // Update mastery stats for progress bars
+    if (guessed) {
+      const masteryStats = JSON.parse(localStorage.getItem('wordMasteryStats') || '{}');
+      if (!masteryStats[currentWord.id]) {
+        masteryStats[currentWord.id] = { correct: 0 };
+      }
+      masteryStats[currentWord.id].correct += 1;
+      localStorage.setItem('wordMasteryStats', JSON.stringify(masteryStats));
+    }
+
 
     setWeightedWords(prevWords => {
         return prevWords.map(w => {

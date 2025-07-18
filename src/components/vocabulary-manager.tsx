@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Plus, Book, MoreHorizontal, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,9 +22,10 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
-import type { Deck } from "@/lib/types";
+import type { Deck, VocabularyWord } from "@/lib/types";
 import { DeckForm } from "@/components/deck-form";
 import { allDecks as initialDecks } from "@/data/decks";
+import { allWords as initialWords } from "@/data/words";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,8 +36,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Progress } from "./ui/progress";
 
 type KanaSelection = "hiragana" | "katakana";
+const MASTERY_THRESHOLD = 10; // Number of correct guesses to master a word
 
 interface VocabularyManagerProps {
   decks: Deck[];
@@ -49,6 +52,12 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
   const [editingDeck, setEditingDeck] = useState<Deck | null>(null);
   const [deletingDeck, setDeletingDeck] = useState<Deck | null>(null);
   const [selectedKana, setSelectedKana] = useState<KanaSelection>("hiragana");
+  const [masteryStats, setMasteryStats] = useState<Record<string, { correct: number }>>({});
+
+  useEffect(() => {
+    const storedMasteryStats = JSON.parse(localStorage.getItem('wordMasteryStats') || '{}');
+    setMasteryStats(storedMasteryStats);
+  }, []);
 
   const handleOpenForm = (deck: Deck | null) => {
     setEditingDeck(deck);
@@ -80,6 +89,15 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
 
   const userDecks = combinedDecks.filter(deck => !decks.some(d => d.id === deck.id)).concat(decks);
 
+  const getMasteryRate = (deckId: string) => {
+    const wordsForDeck: VocabularyWord[] = JSON.parse(localStorage.getItem(`words_${deckId}`) || "[]");
+    const wordList = wordsForDeck.length > 0 ? wordsForDeck : initialWords.filter(w => w.deckId === deckId);
+    
+    if (wordList.length === 0) return 0;
+
+    const masteredCount = wordList.filter(word => (masteryStats[word.id]?.correct || 0) >= MASTERY_THRESHOLD).length;
+    return (masteredCount / wordList.length) * 100;
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -124,9 +142,11 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
                 </div>
               </Card>
 
-              {userDecks.map((deck) => (
+              {userDecks.map((deck) => {
+                const masteryRate = getMasteryRate(deck.id);
+                return (
                   <Card key={deck.id} className="relative group">
-                    <div className="absolute top-2 right-2">
+                    <div className="absolute top-2 right-2 z-10">
                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -147,15 +167,21 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
                       </DropdownMenu>
                     </div>
                     <Link href={`/deck/${deck.id}`} className="block">
-                      <CardHeader className="p-4">
+                      <CardHeader className="p-4 pb-2">
                         <CardTitle className="flex items-center gap-2 text-base">
                           <Book className="h-5 w-5 text-primary" />
                           <span>{deck.name}</span>
                         </CardTitle>
                       </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                         <div className="flex items-center gap-2">
+                            <Progress value={masteryRate} className="h-2 w-full" />
+                            <span className="text-xs text-muted-foreground font-mono">{masteryRate.toFixed(0)}%</span>
+                         </div>
+                      </CardContent>
                     </Link>
                   </Card>
-                ))}
+                )})}
             </div>
           </div>
         </div>

@@ -170,7 +170,7 @@ export function StatsPage() {
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-base">
                                     <Trophy className="h-5 w-5 text-accent" />
-                                    <span>Provided Quizzes</span>
+                                    <span>Standard Quizzes</span>
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="text-sm space-y-2">
@@ -200,7 +200,7 @@ export function StatsPage() {
                                     <Percent className="h-5 w-5 text-accent" />
                                     <span>Quiz Mastery</span>
                                 </CardTitle>
-                                 <CardDescription>Your high scores vs. perfect scores on all provided quizzes.</CardDescription>
+                                 <CardDescription>Your high scores vs. perfect scores on all standard quizzes.</CardDescription>
                             </CardHeader>
                             <CardContent>
                                <p className="text-3xl font-bold text-center">{quizMastery.toFixed(1)}<span className="text-lg">%</span></p>
