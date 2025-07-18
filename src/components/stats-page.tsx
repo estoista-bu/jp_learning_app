@@ -170,7 +170,7 @@ export function StatsPage() {
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-base">
                                     <Trophy className="h-5 w-5 text-accent" />
-                                    <span>Standard Quizzes</span>
+                                    <span>Quizzes</span>
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="text-sm space-y-2">
