@@ -24,7 +24,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Deck, VocabularyWord } from "@/lib/types";
 import { DeckForm } from "@/components/deck-form";
-import { allDecks as initialDecks } from "@/data/decks";
 import { allWords as initialWords } from "@/data/words";
 import {
   AlertDialog,
@@ -82,14 +81,6 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck, userId }: V
     onRemoveDeck(id);
     setDeletingDeck(null);
   };
-  
-  const combinedDecks = [
-    ...initialDecks.filter(d => d.category === 'user'),
-    ...decks
-  ];
-
-  const userDecks = Array.from(new Map(combinedDecks.map(item => [item.id, item])).values());
-
 
   const getMasteryRate = (deckId: string) => {
     const wordsForDeck: VocabularyWord[] = JSON.parse(localStorage.getItem(`words_${deckId}_${userId}`) || "[]");
@@ -107,6 +98,8 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck, userId }: V
     }
     return <Book className="h-5 w-5 text-primary" />;
   }
+  
+  const userDecks = decks.filter(d => d.category === 'user' || d.category === 'group');
 
   return (
     <div className="flex flex-col h-full">
