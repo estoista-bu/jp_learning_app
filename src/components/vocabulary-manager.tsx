@@ -179,9 +179,12 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck, userId }: V
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="p-4 pt-0">
-                         <div className="flex items-center gap-2">
+                         <div className="space-y-1">
+                            <div className="flex justify-between items-center">
+                                <p className="text-xs text-muted-foreground">Mastery</p>
+                                <span className="text-xs text-muted-foreground font-mono">{masteryRate.toFixed(0)}%</span>
+                            </div>
                             <Progress value={masteryRate} className="h-2 w-full" />
-                            <span className="text-xs text-muted-foreground font-mono">{masteryRate.toFixed(0)}%</span>
                          </div>
                       </CardContent>
                     </Link>
