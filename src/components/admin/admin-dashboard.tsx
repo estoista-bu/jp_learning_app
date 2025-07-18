@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import type { User, Group } from '@/lib/types';
+import type { User, Group, Deck } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -42,6 +42,7 @@ function AdminDashboardContent({ currentUser, onLogout }: AdminDashboardProps) {
   const [view, setView] = useState<AdminView>('stats');
   const [users, setUsers] = useState<User[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
+  const [groupDecks, setGroupDecks] = useState<Deck[]>([]);
   const { setOpenMobile } = useSidebar();
   const [isMounted, setIsMounted] = useState(false);
 
@@ -54,10 +55,14 @@ function AdminDashboardContent({ currentUser, onLogout }: AdminDashboardProps) {
       setUsers(defaultUsers);
     }
     
-    // Load groups from localStorage
+    // Load groups and group decks from localStorage
     const storedGroups = localStorage.getItem('allGroups');
     if (storedGroups) {
       setGroups(JSON.parse(storedGroups));
+    }
+    const storedGroupDecks = localStorage.getItem('allGroupDecks');
+    if (storedGroupDecks) {
+      setGroupDecks(JSON.parse(storedGroupDecks));
     }
 
     setIsMounted(true);
@@ -74,6 +79,13 @@ function AdminDashboardContent({ currentUser, onLogout }: AdminDashboardProps) {
       localStorage.setItem('allGroups', JSON.stringify(groups));
     }
   }, [groups, isMounted]);
+
+  useEffect(() => {
+    if (isMounted) {
+      localStorage.setItem('allGroupDecks', JSON.stringify(groupDecks));
+    }
+  }, [groupDecks, isMounted]);
+
 
   const handleUserCreate = (newUser: User) => {
     setUsers(prev => [...prev, newUser]);
@@ -101,6 +113,8 @@ function AdminDashboardContent({ currentUser, onLogout }: AdminDashboardProps) {
         groups: u.groups?.filter(gId => gId !== groupId)
       }))
     );
+     // Also remove decks associated with this group
+    setGroupDecks(prevDecks => prevDecks.filter(d => d.groupId !== groupId));
   };
   
   const handleAssignGroups = (userId: string, groupIds: string[]) => {
@@ -108,6 +122,17 @@ function AdminDashboardContent({ currentUser, onLogout }: AdminDashboardProps) {
       prevUsers.map(u => u.id === userId ? { ...u, groups: groupIds } : u)
     );
   };
+
+  const handleDeckCreateForGroup = (deckData: Omit<Deck, "id" | "category" | "groupId">, groupId: string) => {
+     const newDeck: Deck = {
+      ...deckData,
+      id: `deck-${Date.now()}`,
+      category: "group",
+      groupId: groupId,
+    };
+    setGroupDecks(prev => [...prev, newDeck]);
+  };
+
 
   const handleBack = () => {
     setSelectedUser(null);
@@ -137,11 +162,13 @@ function AdminDashboardContent({ currentUser, onLogout }: AdminDashboardProps) {
           <UserManagement 
             users={users.filter(u => u.role !== 'admin')} 
             groups={groups}
+            groupDecks={groupDecks}
             onUserCreate={handleUserCreate}
             onUserDelete={handleUserDelete}
             onGroupUpdate={handleGroupUpdate}
             onGroupDelete={handleGroupDelete}
             onAssignUserToGroup={handleAssignGroups}
+            onDeckCreateForGroup={handleDeckCreateForGroup}
           />
         );
       default:

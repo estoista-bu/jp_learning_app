@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, Book, MoreHorizontal, ChevronDown } from "lucide-react";
+import { Plus, Book, MoreHorizontal, ChevronDown, Group } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -88,7 +88,8 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck, userId }: V
     ...decks
   ];
 
-  const userDecks = combinedDecks.filter(deck => !decks.some(d => d.id === deck.id)).concat(decks);
+  const userDecks = Array.from(new Map(combinedDecks.map(item => [item.id, item])).values());
+
 
   const getMasteryRate = (deckId: string) => {
     const wordsForDeck: VocabularyWord[] = JSON.parse(localStorage.getItem(`words_${deckId}_${userId}`) || "[]");
@@ -98,6 +99,13 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck, userId }: V
 
     const masteredCount = wordList.filter(word => (masteryStats[word.id]?.correct || 0) >= MASTERY_THRESHOLD).length;
     return (masteredCount / wordList.length) * 100;
+  }
+  
+  const getDeckIcon = (deck: Deck) => {
+    if (deck.category === 'group') {
+      return <Group className="h-5 w-5 text-accent" />;
+    }
+    return <Book className="h-5 w-5 text-primary" />;
   }
 
   return (
@@ -145,32 +153,35 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck, userId }: V
 
               {userDecks.map((deck) => {
                 const masteryRate = getMasteryRate(deck.id);
+                const isEditable = deck.category === 'user';
                 return (
                   <Card key={deck.id} className="relative group">
-                    <div className="absolute top-2 right-2 z-10">
-                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleOpenForm(deck)}>
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-destructive"
-                            onClick={() => setDeletingDeck(deck)}
-                          >
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
+                    {isEditable && (
+                      <div className="absolute top-2 right-2 z-10">
+                         <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleOpenForm(deck)}>
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-destructive"
+                              onClick={() => setDeletingDeck(deck)}
+                            >
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    )}
                     <Link href={`/app/deck/${deck.id}`} className="block">
                       <CardHeader className="p-4 pb-2">
                         <CardTitle className="flex items-center gap-2 text-base">
-                          <Book className="h-5 w-5 text-primary" />
+                          {getDeckIcon(deck)}
                           <span>{deck.name}</span>
                         </CardTitle>
                       </CardHeader>
@@ -216,5 +227,3 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck, userId }: V
     </div>
   );
 }
-
-    

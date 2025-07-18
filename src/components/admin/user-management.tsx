@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import type { User, Group } from '@/lib/types';
+import type { User, Group, Deck } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger, DialogClose } from '@/components/ui/dialog';
@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Edit, Trash2, ArrowLeft } from 'lucide-react';
+import { PlusCircle, Edit, Trash2 } from 'lucide-react';
 import { GroupDetailView } from './group-detail-view';
 import { ScrollArea } from '../ui/scroll-area';
 import {
@@ -43,21 +43,25 @@ const groupFormSchema = z.object({
 interface UserManagementProps {
   users: User[];
   groups: Group[];
+  groupDecks: Deck[];
   onUserCreate: (user: User) => void;
   onUserDelete: (userId: string) => void;
   onGroupUpdate: (group: Group) => void;
   onGroupDelete: (groupId: string) => void;
   onAssignUserToGroup: (userId: string, groupIds: string[]) => void;
+  onDeckCreateForGroup: (deckData: Omit<Deck, "id" | "category" | "groupId">, groupId: string) => void;
 }
 
 export function UserManagement({
   users,
   groups,
+  groupDecks,
   onUserCreate,
   onUserDelete,
   onGroupUpdate,
   onGroupDelete,
   onAssignUserToGroup,
+  onDeckCreateForGroup
 }: UserManagementProps) {
   const [view, setView] = useState<'main' | 'group-detail'>('main');
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
@@ -104,9 +108,11 @@ export function UserManagement({
       <GroupDetailView 
         group={selectedGroup} 
         allUsers={users}
+        groupDecks={groupDecks.filter(d => d.groupId === selectedGroup.id)}
         onBack={() => setView('main')}
         onGroupUpdate={onGroupUpdate}
         onAssignUserToGroup={onAssignUserToGroup}
+        onDeckCreate={(deckData) => onDeckCreateForGroup(deckData, selectedGroup.id)}
       />
     );
   }
@@ -133,26 +139,24 @@ export function UserManagement({
                 <h3 className="text-xl font-semibold mb-2">Groups</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {groups.map(group => (
-                        <Card 
-                            key={group.id} 
-                            className="flex flex-col cursor-pointer hover:bg-muted transition-colors"
-                            onClick={() => openGroupDetails(group)}
-                        >
-                           <CardHeader>
-                               <CardTitle className="flex justify-between items-center">
-                                   <span>{group.name}</span>
-                                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => handleEditGroup(e, group)}>
-                                       <Edit className="h-4 w-4" />
-                                   </Button>
-                               </CardTitle>
-                               <CardDescription>{group.description}</CardDescription>
-                           </CardHeader>
-                           <CardContent className="flex-grow flex items-end">
-                                <p className="text-xs text-muted-foreground">
-                                    {users.filter(u => u.groups?.includes(group.id)).length} member(s)
-                                </p>
-                           </CardContent>
-                        </Card>
+                        <div key={group.id} onClick={() => openGroupDetails(group)} className="cursor-pointer">
+                            <Card className="flex flex-col h-full hover:bg-muted transition-colors">
+                               <CardHeader>
+                                   <CardTitle className="flex justify-between items-center">
+                                       <span>{group.name}</span>
+                                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => handleEditGroup(e, group)}>
+                                           <Edit className="h-4 w-4" />
+                                       </Button>
+                                   </CardTitle>
+                                   <CardDescription>{group.description}</CardDescription>
+                               </CardHeader>
+                               <CardContent className="flex-grow flex items-end">
+                                    <p className="text-xs text-muted-foreground">
+                                        {users.filter(u => u.groups?.includes(group.id)).length} member(s)
+                                    </p>
+                               </CardContent>
+                            </Card>
+                        </div>
                     ))}
                     {groups.length === 0 && <p className="text-muted-foreground">No groups created yet.</p>}
                 </div>
@@ -190,6 +194,7 @@ export function UserManagement({
                                   </AlertDialog>
                               </div>
                           ))}
+                           {users.length === 0 && <p className="text-muted-foreground text-center">No manageable users found.</p>}
                         </CardContent>
                     </ScrollArea>
                 </Card>

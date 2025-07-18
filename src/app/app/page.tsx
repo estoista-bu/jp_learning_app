@@ -47,26 +47,41 @@ export default function AppPage() {
     const { users } = require('@/lib/users');
     const user = users.find((u: User) => u.id === storedUserId) || null;
     setCurrentUser(user);
-
     setIsMounted(true);
+  }, [router]);
+  
+  useEffect(() => {
+    if (!currentUser) return;
+
     try {
-      const storedDecks = localStorage.getItem(`userDecks_${user?.id}`);
-      if (storedDecks) {
-        setDecks(JSON.parse(storedDecks));
-      }
+      // Load user-specific decks
+      const storedDecks = JSON.parse(localStorage.getItem(`userDecks_${currentUser.id}`) || '[]');
+      setDecks(storedDecks);
+
+      // Load group decks
+      const allGroupDecks: Deck[] = JSON.parse(localStorage.getItem('allGroupDecks') || '[]');
+      const userGroupIds = currentUser.groups || [];
+      const relevantGroupDecks = allGroupDecks.filter(deck => userGroupIds.includes(deck.groupId!));
+
+      // Combine user and group decks
+      const allUserDecks = [...storedDecks, ...relevantGroupDecks];
+      const uniqueDecks = Array.from(new Map(allUserDecks.map(deck => [deck.id, deck])).values());
+      setDecks(uniqueDecks);
       
-      const storedAiQuiz = sessionStorage.getItem(`ai-generated-quiz_${user?.id}`);
+      const storedAiQuiz = sessionStorage.getItem(`ai-generated-quiz_${currentUser.id}`);
       if (storedAiQuiz) {
         setSelectedQuiz(JSON.parse(storedAiQuiz));
       }
     } catch (error) {
       console.error("Failed to parse from localStorage", error);
     }
-  }, [router]);
+  }, [currentUser]);
+
 
   useEffect(() => {
     if (isMounted && currentUser) {
-      localStorage.setItem(`userDecks_${currentUser.id}`, JSON.stringify(decks));
+      const userSpecificDecks = decks.filter(d => d.category === 'user');
+      localStorage.setItem(`userDecks_${currentUser.id}`, JSON.stringify(userSpecificDecks));
     }
   }, [decks, currentUser, isMounted]);
 
@@ -82,7 +97,7 @@ export default function AppPage() {
         prev.map(d => (d.id === id ? { ...d, ...deckData, category: "user" } : d))
       );
     } else {
-      const newDeck = { ...deckData, id: Date.now().toString(), category: "user" as const };
+      const newDeck: Deck = { ...deckData, id: Date.now().toString(), category: "user" as const };
       setDecks(prev => [...prev, newDeck]);
     }
   };

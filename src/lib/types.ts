@@ -12,7 +12,8 @@ export type VocabularyWord = {
 export type Deck = {
   id: string;
   name: string;
-  category?: 'user' | 'kana';
+  category?: 'user' | 'kana' | 'group';
+  groupId?: string; // Added to associate decks with groups
 };
 
 export type GrammarLesson = {
