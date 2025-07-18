@@ -122,7 +122,7 @@ export function StatsPage() {
     }
     
     const StatRow = ({ label, value }: { label: string, value: string }) => (
-        <p className="flex justify-between items-center text-sm">
+        <p className="flex justify-between items-center text-xs">
             <span className="flex-shrink-0 font-medium">{label}</span>
             <span className="font-mono text-muted-foreground">{value}</span>
         </p>
