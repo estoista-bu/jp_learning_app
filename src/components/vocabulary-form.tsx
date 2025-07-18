@@ -297,14 +297,14 @@ export function VocabularyForm({ onSaveWords, wordToEdit, deckId, deckName, exis
                         </DialogHeader>
                         <div className="py-4 space-y-4">
                            <div>
-                                <Label htmlFor="numWords">Number of words (1-10)</Label>
+                                <Label htmlFor="numWords">Number of words (1-100)</Label>
                                 <Input
                                     id="numWords"
                                     type="number"
                                     min="1"
-                                    max="10"
+                                    max="100"
                                     value={numWordsToGenerate}
-                                    onChange={(e) => setNumWordsToGenerate(Math.max(1, Math.min(10, parseInt(e.target.value, 10) || 1)))}
+                                    onChange={(e) => setNumWordsToGenerate(Math.max(1, Math.min(100, parseInt(e.target.value, 10) || 1)))}
                                     className="mt-2"
                                 />
                            </div>
