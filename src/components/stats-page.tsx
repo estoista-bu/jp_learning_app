@@ -120,6 +120,13 @@ export function StatsPage() {
         if (total === 0) return '0.0%';
         return `${((correct / total) * 100).toFixed(1)}%`;
     }
+    
+    const StatRow = ({ label, value }: { label: string, value: string }) => (
+        <p className="flex justify-between items-center text-sm">
+            <span className="flex-shrink-0 font-medium">{label}</span>
+            <span className="font-mono text-muted-foreground">{value}</span>
+        </p>
+    );
 
     return (
         <ScrollArea className="flex-1">
@@ -173,11 +180,11 @@ export function StatsPage() {
                                     <span>Quizzes</span>
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="text-sm space-y-2">
-                                <p className="flex justify-between"><strong>Total Rate:</strong> <span className="font-mono">{formatRate(quizStats.provided.correct, quizStats.provided.total)}</span></p>
-                                <p className="flex justify-between"><strong>Monthly Rate:</strong> <span className="font-mono">{formatRate(quizStats.provided.monthlyCorrect, quizStats.provided.monthlyTotal)}</span></p>
-                                <p className="flex justify-between"><strong>Weekly Rate:</strong> <span className="font-mono">{formatRate(quizStats.provided.weeklyCorrect, quizStats.provided.weeklyTotal)}</span></p>
-                                <p className="flex justify-between"><strong>Daily Rate:</strong> <span className="font-mono">{formatRate(quizStats.provided.dailyCorrect, quizStats.provided.dailyTotal)}</span></p>
+                            <CardContent className="space-y-2">
+                                <StatRow label="Total Rate:" value={formatRate(quizStats.provided.correct, quizStats.provided.total)} />
+                                <StatRow label="Monthly Rate:" value={formatRate(quizStats.provided.monthlyCorrect, quizStats.provided.monthlyTotal)} />
+                                <StatRow label="Weekly Rate:" value={formatRate(quizStats.provided.weeklyCorrect, quizStats.provided.weeklyTotal)} />
+                                <StatRow label="Daily Rate:" value={formatRate(quizStats.provided.dailyCorrect, quizStats.provided.dailyTotal)} />
                             </CardContent>
                         </Card>
                          <Card>
@@ -187,11 +194,11 @@ export function StatsPage() {
                                     <span>AI Quizzes</span>
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="text-sm space-y-2">
-                                <p className="flex justify-between"><strong>Total Rate:</strong> <span className="font-mono">{formatRate(quizStats.ai.correct, quizStats.ai.total)}</span></p>
-                                <p className="flex justify-between"><strong>Monthly Rate:</strong> <span className="font-mono">{formatRate(quizStats.ai.monthlyCorrect, quizStats.ai.monthlyTotal)}</span></p>
-                                <p className="flex justify-between"><strong>Weekly Rate:</strong> <span className="font-mono">{formatRate(quizStats.ai.weeklyCorrect, quizStats.ai.weeklyTotal)}</span></p>
-                                <p className="flex justify-between"><strong>Daily Rate:</strong> <span className="font-mono">{formatRate(quizStats.ai.dailyCorrect, quizStats.ai.dailyTotal)}</span></p>
+                            <CardContent className="space-y-2">
+                                <StatRow label="Total Rate:" value={formatRate(quizStats.ai.correct, quizStats.ai.total)} />
+                                <StatRow label="Monthly Rate:" value={formatRate(quizStats.ai.monthlyCorrect, quizStats.ai.monthlyTotal)} />
+                                <StatRow label="Weekly Rate:" value={formatRate(quizStats.ai.weeklyCorrect, quizStats.ai.weeklyTotal)} />
+                                <StatRow label="Daily Rate:" value={formatRate(quizStats.ai.dailyCorrect, quizStats.ai.dailyTotal)} />
                             </CardContent>
                         </Card>
                          <Card className="col-span-1 md:col-span-2">
