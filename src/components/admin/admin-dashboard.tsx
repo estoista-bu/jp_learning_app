@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Users, LogOut, BarChart3, Group } from 'lucide-react';
+import { Users, LogOut, BarChart3, Group, PanelLeft } from 'lucide-react';
 import { UserList } from './user-list';
 import { UserStatsView } from './user-stats-view';
 import {
@@ -79,7 +79,7 @@ function AdminDashboardContent({ currentUser, onLogout }: AdminDashboardProps) {
       <Sidebar>
           <SidebarHeader>
                <div className="flex items-center justify-between">
-                   <div className="w-8"></div>
+                  <h1 className="text-2xl font-bold p-2"><span className="text-primary">Admin</span></h1>
                    <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="w-8 h-8">
@@ -116,10 +116,10 @@ function AdminDashboardContent({ currentUser, onLogout }: AdminDashboardProps) {
           </SidebarContent>
       </Sidebar>
       <SidebarInset>
-          <div className="p-4 sm:p-6 md:p-8 flex items-center gap-4">
+          <header className="p-4 sm:p-6 md:p-8 flex items-center gap-4 border-b md:border-0">
                <SidebarTrigger className="md:hidden"/>
-               <h1 className="text-2xl font-bold"><span className="text-primary">Admin</span> Dashboard</h1>
-          </div>
+               <h1 className="text-2xl font-bold"><span className="text-muted-foreground">Dashboard</span></h1>
+          </header>
           <main className="flex-1 overflow-y-auto">
              {renderContent()}
           </main>
