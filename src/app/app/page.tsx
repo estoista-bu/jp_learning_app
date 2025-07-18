@@ -52,20 +52,23 @@ export default function AppPage() {
   
   useEffect(() => {
     if (!currentUser) return;
-
+  
     try {
-      // Load user-specific decks
-      const storedDecks = JSON.parse(localStorage.getItem(`userDecks_${currentUser.id}`) || '[]');
-      setDecks(storedDecks);
-
-      // Load group decks
+      // 1. Load user-specific decks from localStorage
+      const userDecks: Deck[] = JSON.parse(localStorage.getItem(`userDecks_${currentUser.id}`) || '[]');
+  
+      // 2. Load all group decks from localStorage
       const allGroupDecks: Deck[] = JSON.parse(localStorage.getItem('allGroupDecks') || '[]');
+  
+      // 3. Filter group decks to find those relevant to the current user
       const userGroupIds = currentUser.groups || [];
       const relevantGroupDecks = allGroupDecks.filter(deck => userGroupIds.includes(deck.groupId!));
-
-      // Combine user and group decks
-      const allUserDecks = [...storedDecks, ...relevantGroupDecks];
-      const uniqueDecks = Array.from(new Map(allUserDecks.map(deck => [deck.id, deck])).values());
+  
+      // 4. Combine initial decks, user decks, and relevant group decks
+      const combinedDecks = [...initialDecks, ...userDecks, ...relevantGroupDecks];
+  
+      // 5. Use a Map to ensure decks are unique by ID, preserving user/group versions over initial ones
+      const uniqueDecks = Array.from(new Map(combinedDecks.map(deck => [deck.id, deck])).values());
       setDecks(uniqueDecks);
       
       const storedAiQuiz = sessionStorage.getItem(`ai-generated-quiz_${currentUser.id}`);
@@ -74,13 +77,15 @@ export default function AppPage() {
       }
     } catch (error) {
       console.error("Failed to parse from localStorage", error);
+       // Fallback to initial decks if local storage fails
+      setDecks(initialDecks);
     }
   }, [currentUser]);
 
 
   useEffect(() => {
     if (isMounted && currentUser) {
-      const userSpecificDecks = decks.filter(d => d.category === 'user');
+      const userSpecificDecks = decks.filter(d => d.category === 'user' && !initialDecks.some(id => id.id === d.id));
       localStorage.setItem(`userDecks_${currentUser.id}`, JSON.stringify(userSpecificDecks));
     }
   }, [decks, currentUser, isMounted]);
