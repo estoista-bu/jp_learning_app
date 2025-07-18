@@ -45,7 +45,7 @@ export function QuizView({ quiz, userId, onBack }: QuizViewProps) {
   const [isFinished, setIsFinished] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   
-  const getProgressKey = (quizId: string) => `quiz-progress-${quizId}_${userId}`;
+  const getProgressKey = useCallback((quizId: string) => `quiz-progress-${quizId}_${userId}`, [userId]);
 
   const score = useMemo(() => {
     return selectedAnswers.reduce((acc, answer, index) => {
@@ -95,16 +95,23 @@ export function QuizView({ quiz, userId, onBack }: QuizViewProps) {
     if (resume) {
         const savedProgressJson = localStorage.getItem(progressKey);
         if (savedProgressJson) {
-            const savedAnswers = JSON.parse(savedProgressJson);
-            if (Array.isArray(savedAnswers) && savedAnswers.length === questions.length) {
-                const allAnswered = savedAnswers.every(a => a !== null);
-                if (!allAnswered) {
-                    initialAnswers = savedAnswers;
-                    const lastAnsweredIndex = savedAnswers.findLastIndex((a: any) => a !== null);
-                    initialIndex = lastAnsweredIndex >= 0 ? lastAnsweredIndex + 1 : 0;
-                } else {
-                    localStorage.removeItem(progressKey);
+            try {
+                const savedAnswers = JSON.parse(savedProgressJson);
+                 if (Array.isArray(savedAnswers) && savedAnswers.length === questions.length) {
+                    const allAnswered = savedAnswers.every(a => a !== null);
+                    // Only resume if not all questions were answered
+                    if (!allAnswered) {
+                        initialAnswers = savedAnswers;
+                        const lastAnsweredIndex = savedAnswers.findLastIndex((a: any) => a !== null);
+                        initialIndex = lastAnsweredIndex >= 0 ? lastAnsweredIndex + 1 : 0;
+                    } else {
+                        // If all were answered, it means the quiz was finished. Start fresh.
+                        localStorage.removeItem(progressKey);
+                    }
                 }
+            } catch (e) {
+                // If parsing fails, start a fresh quiz.
+                 localStorage.removeItem(progressKey);
             }
         }
     } else {
@@ -115,18 +122,18 @@ export function QuizView({ quiz, userId, onBack }: QuizViewProps) {
     setCurrentQuestionIndex(initialIndex);
     setIsFinished(false);
     setIsMounted(true);
-  }, [quiz, userId, getProgressKey]);
+  }, [quiz.questions, getProgressKey, quiz.id]);
 
   useEffect(() => {
       startQuiz(true); // Attempt to resume on initial load
-  }, [quiz, userId, startQuiz]);
+  }, [quiz, startQuiz]);
 
 
   useEffect(() => {
     if (isMounted && !isFinished && selectedAnswers.length > 0) {
       localStorage.setItem(getProgressKey(quiz.id), JSON.stringify(selectedAnswers));
     }
-  }, [selectedAnswers, quiz.id, isMounted, isFinished, userId, getProgressKey]);
+  }, [selectedAnswers, quiz.id, isMounted, isFinished, getProgressKey]);
   
   const currentQuestion = shuffledQuestions[currentQuestionIndex];
   const selectedAnswer = selectedAnswers[currentQuestionIndex];
