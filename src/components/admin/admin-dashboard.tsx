@@ -24,7 +24,8 @@ import {
   SidebarMenuButton,
   SidebarProvider,
   SidebarTrigger,
-  SidebarInset
+  SidebarInset,
+  useSidebar
 } from '@/components/ui/sidebar';
 
 interface AdminDashboardProps {
@@ -37,10 +38,16 @@ type AdminView = 'stats' | 'management';
 export function AdminDashboard({ currentUser, onLogout }: AdminDashboardProps) {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [view, setView] = useState<AdminView>('stats');
+  const { setOpenMobile } = useSidebar();
 
   const handleBack = () => {
     setSelectedUser(null);
   };
+  
+  const handleViewChange = (newView: AdminView) => {
+    setView(newView);
+    setOpenMobile(false); // Close mobile sidebar on navigation
+  }
 
   const renderContent = () => {
     if (selectedUser) {
@@ -94,13 +101,13 @@ export function AdminDashboard({ currentUser, onLogout }: AdminDashboardProps) {
             <SidebarContent>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton onClick={() => setView('stats')} isActive={view === 'stats'}>
+                        <SidebarMenuButton onClick={() => handleViewChange('stats')} isActive={view === 'stats'}>
                             <BarChart3 />
                             User stats
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
-                        <SidebarMenuButton onClick={() => setView('management')} isActive={view === 'management'}>
+                        <SidebarMenuButton onClick={() => handleViewChange('management')} isActive={view === 'management'}>
                             <Group />
                            Users management
                         </SidebarMenuButton>
@@ -111,7 +118,7 @@ export function AdminDashboard({ currentUser, onLogout }: AdminDashboardProps) {
         <SidebarInset>
             <div className="p-4 sm:p-6 md:p-8 flex items-center gap-4">
                  <SidebarTrigger className="md:hidden"/>
-                 <h1 className="text-2xl font-bold text-primary">Dashboard</h1>
+                 <h1 className="text-2xl font-bold"><span className="text-primary">Admin</span> Dashboard</h1>
             </div>
             <main className="flex-1 overflow-y-auto">
                {renderContent()}
