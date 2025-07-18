@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { CheckCircle, XCircle, RefreshCw, Circle, CheckCircle2 } from "lucide-react";
+import { CheckCircle, XCircle, RefreshCw, Circle, CheckCircle2, ArrowLeft } from "lucide-react";
 import { JapaneseText } from "./japanese-text";
 import {
   AlertDialog,
@@ -25,6 +25,7 @@ import { Alert, AlertDescription } from "./ui/alert";
 interface QuizViewProps {
   quiz: Quiz;
   userId: string;
+  onBack?: () => void;
 }
 
 const shuffleArray = <T,>(array: T[]): T[] => {
@@ -37,7 +38,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   return newArray;
 };
 
-export function QuizView({ quiz, userId }: QuizViewProps) {
+export function QuizView({ quiz, userId, onBack }: QuizViewProps) {
   const [shuffledQuestions, setShuffledQuestions] = useState<QuizQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<(string | null)[]>([]);
@@ -83,39 +84,49 @@ export function QuizView({ quiz, userId }: QuizViewProps) {
   }, [quiz.id, score, shuffledQuestions.length, userId]);
 
 
-  useEffect(() => {
+  const startQuiz = useCallback((resume = false) => {
     const questions = shuffleArray(quiz.questions);
     setShuffledQuestions(questions);
     
     const progressKey = getProgressKey(quiz.id);
-    const savedProgressJson = localStorage.getItem(progressKey);
-
     let initialAnswers = Array(questions.length).fill(null);
     let initialIndex = 0;
 
-    if (savedProgressJson) {
-      const savedAnswers = JSON.parse(savedProgressJson);
-      if (Array.isArray(savedAnswers) && savedAnswers.length === questions.length) {
-        initialAnswers = savedAnswers;
-        const lastAnsweredIndex = savedAnswers.findLastIndex((a: any) => a !== null);
-        initialIndex = lastAnsweredIndex >= 0 ? lastAnsweredIndex + 1 : 0;
-        
-        if (initialIndex >= questions.length && savedAnswers.every((a: any) => a !== null)) {
-          setIsFinished(true); // Auto-finish if all were answered
+    if (resume) {
+        const savedProgressJson = localStorage.getItem(progressKey);
+        if (savedProgressJson) {
+            const savedAnswers = JSON.parse(savedProgressJson);
+            if (Array.isArray(savedAnswers) && savedAnswers.length === questions.length) {
+                const allAnswered = savedAnswers.every(a => a !== null);
+                if (!allAnswered) {
+                    initialAnswers = savedAnswers;
+                    const lastAnsweredIndex = savedAnswers.findLastIndex((a: any) => a !== null);
+                    initialIndex = lastAnsweredIndex >= 0 ? lastAnsweredIndex + 1 : 0;
+                } else {
+                    localStorage.removeItem(progressKey);
+                }
+            }
         }
-      }
+    } else {
+        localStorage.removeItem(progressKey);
     }
     
     setSelectedAnswers(initialAnswers);
     setCurrentQuestionIndex(initialIndex);
+    setIsFinished(false);
     setIsMounted(true);
-  }, [quiz, userId]);
+  }, [quiz, userId, getProgressKey]);
+
+  useEffect(() => {
+      startQuiz(true); // Attempt to resume on initial load
+  }, [quiz, userId, startQuiz]);
+
 
   useEffect(() => {
     if (isMounted && !isFinished && selectedAnswers.length > 0) {
       localStorage.setItem(getProgressKey(quiz.id), JSON.stringify(selectedAnswers));
     }
-  }, [selectedAnswers, quiz.id, isMounted, isFinished, userId]);
+  }, [selectedAnswers, quiz.id, isMounted, isFinished, userId, getProgressKey]);
   
   const currentQuestion = shuffledQuestions[currentQuestionIndex];
   const selectedAnswer = selectedAnswers[currentQuestionIndex];
@@ -135,24 +146,11 @@ export function QuizView({ quiz, userId }: QuizViewProps) {
     }
   };
 
-  const startQuiz = useCallback(() => {
-    const questions = shuffleArray(quiz.questions);
-    setShuffledQuestions(questions);
-    
-    const initialAnswers = Array(questions.length).fill(null);
-    setSelectedAnswers(initialAnswers);
-    localStorage.setItem(getProgressKey(quiz.id), JSON.stringify(initialAnswers));
-
-    setCurrentQuestionIndex(0);
-    setIsFinished(false);
-  }, [quiz, getProgressKey]);
-
   const restartQuiz = () => {
-    localStorage.removeItem(getProgressKey(quiz.id));
     if (quiz.id === 'ai-generated') {
        sessionStorage.removeItem(`ai-generated-quiz_${userId}`);
     }
-    startQuiz();
+    startQuiz(false); // Start fresh, don't resume
   };
 
   const progress = isFinished ? 100 : ((currentQuestionIndex) / shuffledQuestions.length) * 100;
@@ -177,10 +175,18 @@ export function QuizView({ quiz, userId }: QuizViewProps) {
           <CardContent className="flex flex-col items-center gap-4">
             <p className="text-4xl font-bold text-primary">{score} / {shuffledQuestions.length}</p>
             <p className="text-2xl font-semibold text-muted-foreground">({percentage.toFixed(0)}%)</p>
-            <Button onClick={restartQuiz} className="mt-4">
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Start Over
-            </Button>
+            <div className="flex gap-2 mt-4">
+                <Button onClick={restartQuiz} variant="outline">
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Take Again
+                </Button>
+                {onBack && (
+                     <Button onClick={onBack}>
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Return to Quizzes
+                     </Button>
+                )}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -299,5 +305,3 @@ export function QuizView({ quiz, userId }: QuizViewProps) {
     </div>
   );
 }
-
-    

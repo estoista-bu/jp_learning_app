@@ -313,6 +313,7 @@ export default function AppPage() {
                   selectedQuiz={selectedQuiz}
                   animation={animation}
                   onNavigate={handleNavigateGrammar}
+                  onQuizFinished={handleBackGrammar}
                   userId={currentUser.id}
                 />
               )}

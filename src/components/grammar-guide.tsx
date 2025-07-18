@@ -21,10 +21,11 @@ interface GrammarGuideProps {
     selectedQuiz: Quiz | null;
     animation: 'in' | 'out' | null;
     onNavigate: (view: GrammarView, data?: GrammarLesson | Quiz) => void;
+    onQuizFinished: () => void;
     userId: string;
 }
 
-export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animation, onNavigate, userId }: GrammarGuideProps) {
+export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animation, onNavigate, onQuizFinished, userId }: GrammarGuideProps) {
   const [lessonProgress, setLessonProgress] = useState(0);
 
   useEffect(() => {
@@ -45,7 +46,7 @@ export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animat
       case "quizzes":
          return <QuizList onSelectQuiz={(quiz) => onNavigate("quiz", quiz)} userId={userId} />;
       case "quiz":
-        return selectedQuiz ? <QuizView quiz={selectedQuiz} userId={userId} /> : null;
+        return selectedQuiz ? <QuizView quiz={selectedQuiz} userId={userId} onBack={onQuizFinished} /> : null;
       case "checker":
         return <GrammarChecker />;
       case "main":
@@ -122,5 +123,3 @@ export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animat
     </div>
   );
 }
-
-    
