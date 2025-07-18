@@ -104,9 +104,6 @@ export function QuizView({ quiz, userId, onBack }: QuizViewProps) {
                         initialAnswers = savedAnswers;
                         const lastAnsweredIndex = savedAnswers.findLastIndex((a: any) => a !== null);
                         initialIndex = lastAnsweredIndex >= 0 ? lastAnsweredIndex + 1 : 0;
-                    } else {
-                        // If all were answered, it means the quiz was finished. Start fresh.
-                        localStorage.removeItem(progressKey);
                     }
                 }
             } catch (e) {
@@ -156,6 +153,7 @@ export function QuizView({ quiz, userId, onBack }: QuizViewProps) {
   const restartQuiz = () => {
     if (quiz.id === 'ai-generated') {
        sessionStorage.removeItem(`ai-generated-quiz_${userId}`);
+       localStorage.removeItem(getProgressKey(quiz.id));
     }
     startQuiz(false); // Start fresh, don't resume
   };

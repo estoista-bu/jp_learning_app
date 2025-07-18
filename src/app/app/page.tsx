@@ -120,21 +120,22 @@ export default function AppPage() {
         if (storedAiQuiz) {
             const progressKey = `quiz-progress-ai-generated_${currentUser.id}`;
             const progress = JSON.parse(localStorage.getItem(progressKey) || "[]");
+            // A quiz is in progress if there's a record and at least one question is unanswered (null)
             const isFinished = progress.length > 0 && progress.every((a: any) => a !== null);
+            
             if (!isFinished) {
                setSelectedQuiz(JSON.parse(storedAiQuiz));
                setGrammarView('quiz');
                setAnimation('in');
-               return;
+               return; // Resume the quiz
+            } else {
+               // If finished, clear it out and show the generator
+               sessionStorage.removeItem(`ai-generated-quiz_${currentUser.id}`);
+               localStorage.removeItem(progressKey);
             }
         }
         setGrammarView('ai-quiz-generator');
         setSelectedQuiz(null);
-        if (currentUser) {
-          sessionStorage.removeItem(`ai-generated-quiz_${currentUser.id}`);
-          localStorage.removeItem(`quiz-progress-ai-generated_${currentUser.id}`);
-        }
-
       } else {
          setGrammarView(view);
       }
