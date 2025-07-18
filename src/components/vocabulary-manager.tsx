@@ -119,7 +119,7 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
             <div className="grid gap-4">
                <Card>
                 <div className="flex items-center justify-between p-4">
-                  <Link href={`/deck/${selectedKana}`} className="flex-1">
+                  <Link href={`/app/deck/${selectedKana}`} className="flex-1">
                     <div className="flex items-center gap-2">
                       <Book className="h-5 w-5 text-primary" />
                       <p className="font-semibold">Kana Practice</p>
@@ -166,7 +166,7 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
-                    <Link href={`/deck/${deck.id}`} className="block">
+                    <Link href={`/app/deck/${deck.id}`} className="block">
                       <CardHeader className="p-4 pb-2">
                         <CardTitle className="flex items-center gap-2 text-base">
                           <Book className="h-5 w-5 text-primary" />
