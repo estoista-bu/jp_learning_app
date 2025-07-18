@@ -18,9 +18,25 @@ export function QuizList({ onSelectQuiz, userId }: QuizListProps) {
   useEffect(() => {
     const quizzesWithScores = allQuizzes.map((quiz) => {
       const storedScore = localStorage.getItem(`quiz-highscore-${quiz.id}_${userId}`);
+      const progressJson = localStorage.getItem(`quiz-progress-${quiz.id}_${userId}`);
+      
+      let inProgress = false;
+      if (progressJson) {
+        try {
+          const progress = JSON.parse(progressJson);
+          // A quiz is in progress if there's a record and at least one question is unanswered (null)
+          if (Array.isArray(progress) && progress.some(a => a === null)) {
+            inProgress = true;
+          }
+        } catch (e) {
+          // Ignore if JSON is invalid
+        }
+      }
+
       return {
         ...quiz,
         score: storedScore ? parseInt(storedScore, 10) : null,
+        inProgress: inProgress,
       };
     });
     setQuizzes(quizzesWithScores);
@@ -44,8 +60,13 @@ export function QuizList({ onSelectQuiz, userId }: QuizListProps) {
                 className="flex items-center justify-between w-full p-4 rounded-lg bg-card hover:bg-muted transition-colors text-left"
                 >
                 <div className="flex flex-col flex-1 pr-4">
-                    <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-2 flex-wrap">
                         {quiz.title}
+                        {quiz.inProgress && (
+                           <Badge variant="outline" className="text-xs border-amber-500 text-amber-600">
+                                In Progress
+                           </Badge>
+                        )}
                         {quiz.score !== null && (
                             <Badge variant="secondary" className="text-xs">
                                 High Score: {quiz.score}/{quiz.questions.length}
@@ -72,8 +93,13 @@ export function QuizList({ onSelectQuiz, userId }: QuizListProps) {
                 className="flex items-center justify-between w-full p-4 rounded-lg bg-card hover:bg-muted transition-colors text-left"
                 >
                 <div className="flex flex-col flex-1 pr-4">
-                    <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-2 flex-wrap">
                         {quiz.title}
+                         {quiz.inProgress && (
+                           <Badge variant="outline" className="text-xs border-amber-500 text-amber-600">
+                                In Progress
+                           </Badge>
+                        )}
                         {quiz.score !== null && (
                             <Badge variant="secondary" className="text-xs">
                                 High Score: {quiz.score}/{quiz.questions.length}

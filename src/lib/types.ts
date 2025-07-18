@@ -44,6 +44,7 @@ export type Quiz = {
   level: "N5" | "N4" | "AI";
   questions: QuizQuestion[];
   score?: number | null;
+  inProgress?: boolean;
 };
 
 export type UserRole = "user" | "admin";
