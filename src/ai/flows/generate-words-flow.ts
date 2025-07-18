@@ -23,15 +23,17 @@ const generateWordsPrompt = ai.definePrompt({
   prompt: `You are an expert Japanese language teacher creating a vocabulary list for a student.
 The student is creating a flashcard deck with the title: "{{deckName}}".
 
-Your task is to generate exactly {{numWords}} relevant Japanese vocabulary words related to this topic.
+Your task is to generate relevant Japanese vocabulary words related to this topic.
 
-IMPORTANT: The student's deck already contains the following words. Do NOT generate any of these words.
+The student's deck already contains the following words. You MUST NOT generate any of these words.
 Existing words:
 {{#each existingWords}}
 - {{this}}
 {{/each}}
 
-Please provide {{numWords}} new, unique vocabulary words. For each word, provide the standard Japanese writing (with Kanji), the reading in hiragana, and the English meaning.
+For each new, unique vocabulary word, provide the standard Japanese writing (with Kanji), the reading in hiragana, and the English meaning.
+
+VERY IMPORTANT: Generate exactly {{numWords}} words. Do not generate more or less than this amount.
 `,
 });
 
