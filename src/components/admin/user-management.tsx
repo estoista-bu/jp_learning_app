@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from '@/hooks/use-toast';
@@ -70,6 +69,7 @@ export function UserManagement({
   const [isGroupFormOpen, setIsGroupFormOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const [deletingGroup, setDeletingGroup] = useState<Group | null>(null);
 
   const { toast } = useToast();
   const userForm = useForm({ resolver: zodResolver(userFormSchema), defaultValues: { username: '', password: '', role: 'user' as const } });
@@ -103,6 +103,12 @@ export function UserManagement({
     setView('group-detail');
   }
 
+  const handleGroupDelete = (e: React.MouseEvent, group: Group) => {
+    e.stopPropagation();
+    setDeletingGroup(group);
+  };
+
+
   if (view === 'group-detail' && selectedGroup) {
     return (
       <GroupDetailView 
@@ -121,85 +127,107 @@ export function UserManagement({
     <div className="p-4 space-y-6">
       <Dialog open={isUserFormOpen} onOpenChange={setIsUserFormOpen}>
         <Dialog open={isGroupFormOpen} onOpenChange={(open) => { if (!open) setEditingGroup(null); setIsGroupFormOpen(open); }}>
-            <header className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">User Management</h2>
-              <div className="flex gap-2">
-                <Button onClick={() => { groupForm.reset(); setIsGroupFormOpen(true); }}>
-                  <PlusCircle className="mr-2 h-4 w-4" /> New Group
-                </Button>
-                <DialogTrigger asChild>
-                  <Button>
-                    <PlusCircle className="mr-2 h-4 w-4" /> New User
-                  </Button>
-                </DialogTrigger>
-              </div>
-            </header>
-
-            <section>
-                <h3 className="text-xl font-semibold mb-2">Groups</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {groups.map(group => (
-                        <div key={group.id} onClick={() => openGroupDetails(group)} className="cursor-pointer">
-                            <Card className="flex flex-col h-full hover:bg-muted transition-colors">
-                               <CardHeader>
-                                   <CardTitle className="flex justify-between items-center">
-                                       <span>{group.name}</span>
-                                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => handleEditGroup(e, group)}>
-                                           <Edit className="h-4 w-4" />
-                                       </Button>
-                                   </CardTitle>
-                                   <CardDescription>{group.description}</CardDescription>
-                               </CardHeader>
-                               <CardContent className="flex-grow flex items-end">
-                                    <p className="text-xs text-muted-foreground">
-                                        {users.filter(u => u.groups?.includes(group.id)).length} member(s)
-                                    </p>
-                               </CardContent>
-                            </Card>
-                        </div>
-                    ))}
-                    {groups.length === 0 && <p className="text-muted-foreground">No groups created yet.</p>}
+            <AlertDialog open={!!deletingGroup} onOpenChange={(open) => { if (!open) setDeletingGroup(null);}}>
+                <header className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">User Management</h2>
+                <div className="flex gap-2">
+                    <Button onClick={() => { groupForm.reset(); setIsGroupFormOpen(true); }}>
+                    <PlusCircle className="mr-2 h-4 w-4" /> New Group
+                    </Button>
+                    <DialogTrigger asChild>
+                    <Button>
+                        <PlusCircle className="mr-2 h-4 w-4" /> New User
+                    </Button>
+                    </DialogTrigger>
                 </div>
-            </section>
-            
-            <section>
-               <h3 className="text-xl font-semibold mb-2">All Users</h3>
-                <Card>
-                    <ScrollArea className="h-72">
-                        <CardContent className="p-4">
-                          {users.map(user => (
-                              <div key={user.id} className="flex justify-between items-center p-2 hover:bg-muted rounded-md">
-                                  <div>
-                                      <p className="font-semibold">{user.username}</p>
-                                      <p className="text-xs text-muted-foreground">{groups.filter(g => user.groups?.includes(g.id)).map(g => g.name).join(', ') || 'No groups'}</p>
-                                  </div>
-                                  <AlertDialog>
-                                      <AlertDialogTrigger asChild>
-                                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeletingUser(user)}>
-                                              <Trash2 className="h-4 w-4"/>
-                                          </Button>
-                                      </AlertDialogTrigger>
-                                      <AlertDialogContent>
-                                          <AlertDialogHeader>
-                                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                          <AlertDialogDescription>
-                                              This will permanently delete the user <span className="font-bold">{deletingUser?.username}</span>.
-                                          </AlertDialogDescription>
-                                          </AlertDialogHeader>
-                                          <AlertDialogFooter>
-                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                          <AlertDialogAction onClick={() => {onUserDelete(deletingUser!.id); setDeletingUser(null)}}>Delete</AlertDialogAction>
-                                          </AlertDialogFooter>
-                                      </AlertDialogContent>
-                                  </AlertDialog>
-                              </div>
-                          ))}
-                           {users.length === 0 && <p className="text-muted-foreground text-center">No manageable users found.</p>}
-                        </CardContent>
-                    </ScrollArea>
-                </Card>
-            </section>
-            
+                </header>
+
+                <section>
+                    <h3 className="text-xl font-semibold mb-2">Groups</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {groups.map(group => (
+                            <div key={group.id} onClick={() => openGroupDetails(group)} className="cursor-pointer">
+                                <Card className="flex flex-col h-full hover:bg-muted transition-colors">
+                                <CardHeader>
+                                    <CardTitle className="flex justify-between items-center">
+                                        <span>{group.name}</span>
+                                        <div className="flex items-center">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => handleEditGroup(e, group)}>
+                                                <Edit className="h-4 w-4" />
+                                            </Button>
+                                            <AlertDialogTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={(e) => handleGroupDelete(e, group)}>
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                        </div>
+                                    </CardTitle>
+                                    <CardDescription>{group.description}</CardDescription>
+                                </CardHeader>
+                                <CardContent className="flex-grow flex items-end">
+                                        <p className="text-xs text-muted-foreground">
+                                            {users.filter(u => u.groups?.includes(group.id)).length} member(s)
+                                        </p>
+                                </CardContent>
+                                </Card>
+                            </div>
+                        ))}
+                        {groups.length === 0 && <p className="text-muted-foreground">No groups created yet.</p>}
+                    </div>
+                </section>
+                
+                <section>
+                <h3 className="text-xl font-semibold mb-2">All Users</h3>
+                    <Card>
+                        <ScrollArea className="h-72">
+                            <CardContent className="p-4">
+                            {users.map(user => (
+                                <div key={user.id} className="flex justify-between items-center p-2 hover:bg-muted rounded-md">
+                                    <div>
+                                        <p className="font-semibold">{user.username}</p>
+                                        <p className="text-xs text-muted-foreground">{groups.filter(g => user.groups?.includes(g.id)).map(g => g.name).join(', ') || 'No groups'}</p>
+                                    </div>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeletingUser(user)}>
+                                                <Trash2 className="h-4 w-4"/>
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This will permanently delete the user <span className="font-bold">{deletingUser?.username}</span>.
+                                            </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => {onUserDelete(deletingUser!.id); setDeletingUser(null)}}>Delete</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
+                            ))}
+                            {users.length === 0 && <p className="text-muted-foreground text-center">No manageable users found.</p>}
+                            </CardContent>
+                        </ScrollArea>
+                    </Card>
+                </section>
+                
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Group: {deletingGroup?.name}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will permanently delete the group and all associated decks. Users will be unassigned from this group. This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => onGroupDelete(deletingGroup!.id)}>Confirm Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>{editingGroup ? 'Edit Group' : 'Create New Group'}</DialogTitle>
@@ -208,18 +236,18 @@ export function UserManagement({
                     <form onSubmit={groupForm.handleSubmit(handleGroupSubmit)} className="space-y-4">
                         <FormField control={groupForm.control} name="name" render={({ field }) => (
                             <FormItem>
-                                <FormLabel htmlFor="group-name">Group Name</FormLabel>
+                                <FormLabel>Group Name</FormLabel>
                                 <FormControl>
-                                    <Input id="group-name" {...field} />
+                                    <Input {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )} />
                         <FormField control={groupForm.control} name="description" render={({ field }) => (
                             <FormItem>
-                                <FormLabel htmlFor="group-desc">Description</FormLabel>
+                                <FormLabel>Description</FormLabel>
                                 <FormControl>
-                                    <Input id="group-desc" {...field} />
+                                    <Input {...field} />
                                 </FormControl>
                                  <FormMessage />
                             </FormItem>
@@ -243,7 +271,7 @@ export function UserManagement({
               <FormItem>
                 <FormLabel>Username</FormLabel>
                  <FormControl>
-                    <Input id="username" {...field} />
+                    <Input {...field} />
                  </FormControl>
                 <FormMessage />
               </FormItem>
@@ -252,7 +280,7 @@ export function UserManagement({
               <FormItem>
                 <FormLabel>Password</FormLabel>
                  <FormControl>
-                    <Input id="password" type="password" {...field} />
+                    <Input type="password" {...field} />
                  </FormControl>
                 <FormMessage />
               </FormItem>

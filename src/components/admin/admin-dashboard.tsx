@@ -154,7 +154,7 @@ function AdminDashboardContent({ currentUser, onLogout }: AdminDashboardProps) {
         return (
             <div className="p-4">
                 <h2 className="text-2xl font-bold mb-4">User Statistics</h2>
-                <UserList onSelectUser={setSelectedUser} users={users} />
+                <UserList onSelectUser={setSelectedUser} users={users.filter(u => u.role !== 'admin')} />
             </div>
         );
       case 'management':
@@ -172,7 +172,7 @@ function AdminDashboardContent({ currentUser, onLogout }: AdminDashboardProps) {
           />
         );
       default:
-        return <UserList onSelectUser={setSelectedUser} users={users} />;
+        return <UserList onSelectUser={setSelectedUser} users={users.filter(u => u.role !== 'admin')} />;
     }
   };
 
