@@ -87,7 +87,8 @@ export function UserManagement({
     groupForm.reset();
   }
   
-  const handleEditGroup = (group: Group) => {
+  const handleEditGroup = (e: React.MouseEvent, group: Group) => {
+    e.stopPropagation();
     setEditingGroup(group);
     groupForm.reset({ name: group.name, description: group.description });
     setIsGroupFormOpen(true);
@@ -132,18 +133,24 @@ export function UserManagement({
                 <h3 className="text-xl font-semibold mb-2">Groups</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {groups.map(group => (
-                        <Card key={group.id} className="flex flex-col">
+                        <Card 
+                            key={group.id} 
+                            className="flex flex-col cursor-pointer hover:bg-muted transition-colors"
+                            onClick={() => openGroupDetails(group)}
+                        >
                            <CardHeader>
                                <CardTitle className="flex justify-between items-center">
                                    <span>{group.name}</span>
-                                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditGroup(group)}>
+                                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => handleEditGroup(e, group)}>
                                        <Edit className="h-4 w-4" />
                                    </Button>
                                </CardTitle>
                                <CardDescription>{group.description}</CardDescription>
                            </CardHeader>
                            <CardContent className="flex-grow flex items-end">
-                               <Button variant="outline" className="w-full" onClick={() => openGroupDetails(group)}>Manage Members</Button>
+                                <p className="text-xs text-muted-foreground">
+                                    {users.filter(u => u.groups?.includes(group.id)).length} member(s)
+                                </p>
                            </CardContent>
                         </Card>
                     ))}
@@ -160,7 +167,7 @@ export function UserManagement({
                               <div key={user.id} className="flex justify-between items-center p-2 hover:bg-muted rounded-md">
                                   <div>
                                       <p className="font-semibold">{user.username}</p>
-                                      <p className="text-xs text-muted-foreground">{user.groups?.join(', ') || 'No groups'}</p>
+                                      <p className="text-xs text-muted-foreground">{groups.filter(g => user.groups?.includes(g.id)).map(g => g.name).join(', ') || 'No groups'}</p>
                                   </div>
                                   <AlertDialog>
                                       <AlertDialogTrigger asChild>
