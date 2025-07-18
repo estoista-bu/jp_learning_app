@@ -13,7 +13,7 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,7 +42,7 @@ const MASTERY_THRESHOLD = 10;
 
 interface VocabularyManagerProps {
   decks: Deck[];
-  onSaveDeck: (deckData: Omit<Deck, "id" | "category">, id?: string) => void;
+  onSaveDeck: (deckData: Omit<Deck, "id" | "category" | "groupId">, id?: string) => void;
   onRemoveDeck: (id: string) => void;
   userId: string;
 }
@@ -71,7 +71,7 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck, userId }: V
     setIsFormOpen(open);
   };
   
-  const handleSaveDeck = (deckData: Omit<Deck, "id" | "category">, id?: string) => {
+  const handleSaveDeck = (deckData: Omit<Deck, "id" | "category" | "groupId">, id?: string) => {
     onSaveDeck(deckData, id);
     setIsFormOpen(false);
     setEditingDeck(null);
@@ -120,28 +120,31 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck, userId }: V
           <div className="flex-1 p-4 pt-2 overflow-y-auto">
             <div className="grid gap-4">
                <Card>
-                <div className="flex items-center justify-between p-4">
-                  <Link href={`/app/deck/${selectedKana}`} className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <Book className="h-5 w-5 text-primary" />
-                      <p className="font-semibold">Kana Practice</p>
-                    </div>
-                  </Link>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="ml-4">
-                        {selectedKana === "hiragana" ? "Hiragana" : "Katakana"}
-                        <ChevronDown className="h-4 w-4 ml-2" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                       <DropdownMenuRadioGroup value={selectedKana} onValueChange={(value) => setSelectedKana(value as KanaSelection)}>
-                          <DropdownMenuRadioItem value="hiragana">Hiragana</DropdownMenuRadioItem>
-                          <DropdownMenuRadioItem value="katakana">Katakana</DropdownMenuRadioItem>
-                        </DropdownMenuRadioGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                  <CardHeader className="p-4 flex flex-row items-center justify-between">
+                     <Link href={`/app/deck/${selectedKana}`} className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <Book className="h-5 w-5 text-primary" />
+                        <div>
+                          <CardTitle className="text-base">Kana Practice</CardTitle>
+                          <CardDescription className="text-xs">{decks.find(d => d.id === selectedKana)?.description}</CardDescription>
+                        </div>
+                      </div>
+                     </Link>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="ml-4">
+                          {selectedKana === "hiragana" ? "Hiragana" : "Katakana"}
+                          <ChevronDown className="h-4 w-4 ml-2" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                         <DropdownMenuRadioGroup value={selectedKana} onValueChange={(value) => setSelectedKana(value as KanaSelection)}>
+                            <DropdownMenuRadioItem value="hiragana">Hiragana</DropdownMenuRadioItem>
+                            <DropdownMenuRadioItem value="katakana">Katakana</DropdownMenuRadioItem>
+                          </DropdownMenuRadioGroup>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </CardHeader>
               </Card>
 
               {userDecks.map((deck) => {
@@ -171,22 +174,27 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck, userId }: V
                         </DropdownMenu>
                       </div>
                     )}
-                    <Link href={`/app/deck/${deck.id}`} className="block">
-                      <CardHeader className="p-4 pb-2">
-                        <CardTitle className="flex items-center gap-2 text-base">
-                          {getDeckIcon(deck)}
-                          <span>{deck.name}</span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-4 pt-0">
-                         <div className="space-y-1">
-                            <div className="flex justify-between items-center">
-                                <p className="text-xs text-muted-foreground">Mastery</p>
-                                <span className="text-xs text-muted-foreground font-mono">{masteryRate.toFixed(0)}%</span>
+                    <Link href={`/app/deck/${deck.id}`} className="block h-full">
+                     <div className="flex flex-col h-full">
+                        <CardHeader className="p-4 pb-2">
+                          <div className="flex items-center gap-2">
+                            {getDeckIcon(deck)}
+                            <div>
+                              <CardTitle className="text-base">{deck.name}</CardTitle>
+                              {deck.description && <CardDescription className="text-xs mt-1">{deck.description}</CardDescription>}
                             </div>
-                            <Progress value={masteryRate} className="h-2 w-full" />
-                         </div>
-                      </CardContent>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="p-4 pt-0 mt-auto">
+                           <div className="space-y-1">
+                              <div className="flex justify-between items-center">
+                                  <p className="text-xs text-muted-foreground">Mastery</p>
+                                  <span className="text-xs text-muted-foreground font-mono">{masteryRate.toFixed(0)}%</span>
+                              </div>
+                              <Progress value={masteryRate} className="h-2 w-full" />
+                           </div>
+                        </CardContent>
+                      </div>
                     </Link>
                   </Card>
                 )})}
@@ -198,7 +206,7 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck, userId }: V
           <DialogHeader>
             <DialogTitle className="font-headline">{editingDeck ? "Edit Deck" : "Create New Deck"}</DialogTitle>
             <DialogDescription>
-              {editingDeck ? "Update the name of your deck." : "Create a new deck to organize your vocabulary."}
+              {editingDeck ? "Update the name and description of your deck." : "Create a new deck to organize your vocabulary."}
             </DialogDescription>
           </DialogHeader>
           <DeckForm onSaveDeck={handleSaveDeck} deckToEdit={editingDeck} />

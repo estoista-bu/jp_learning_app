@@ -15,14 +15,16 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import type { Deck } from "@/lib/types";
 
 const formSchema = z.object({
   name: z.string().min(1, "Deck name is required."),
+  description: z.string().optional(),
 });
 
-type DeckFormData = Omit<Deck, "id">;
+type DeckFormData = Omit<Deck, "id" | "category" | "groupId">;
 
 interface DeckFormProps {
   onSaveDeck: (data: DeckFormData, id?: string) => void;
@@ -31,24 +33,29 @@ interface DeckFormProps {
 
 export function DeckForm({ onSaveDeck, deckToEdit }: DeckFormProps) {
   const { toast } = useToast();
-  const form = useForm<DeckFormData>({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      description: "",
     },
   });
 
   useEffect(() => {
     if (deckToEdit) {
-      form.reset(deckToEdit);
+      form.reset({
+        name: deckToEdit.name,
+        description: deckToEdit.description || "",
+      });
     } else {
       form.reset({
         name: "",
+        description: "",
       });
     }
   }, [deckToEdit, form]);
 
-  function onSubmit(values: DeckFormData) {
+  function onSubmit(values: z.infer<typeof formSchema>) {
     onSaveDeck(values, deckToEdit?.id);
     toast({
       title: "Success!",
@@ -73,6 +80,19 @@ export function DeckForm({ onSaveDeck, deckToEdit }: DeckFormProps) {
             </FormItem>
           )}
         />
+         <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description (Optional)</FormLabel>
+              <FormControl>
+                <Textarea placeholder="What is this deck about?" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <Button
           type="submit"
           className="w-full font-bold bg-primary hover:bg-primary/90 text-primary-foreground"
@@ -84,5 +104,3 @@ export function DeckForm({ onSaveDeck, deckToEdit }: DeckFormProps) {
     </Form>
   );
 }
-
-    
