@@ -3,11 +3,11 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, BookCopy, Brain, Percent, Trophy, BarChart2 } from 'lucide-react';
+import { BookCopy, Brain, Percent, Trophy, BarChart2 } from 'lucide-react';
 import { allDecks as initialDecks } from '@/data/decks';
 import { allWords } from '@/data/words';
 import { quizzes as allProvidedQuizzes } from '@/data/quizzes';
-import type { Deck, VocabularyWord, Quiz } from '@/lib/types';
+import type { Deck } from '@/lib/types';
 import { ScrollArea } from './ui/scroll-area';
 
 interface QuizResult {
@@ -17,6 +17,17 @@ interface QuizResult {
   timestamp: string;
 }
 
+interface QuizRates {
+    total: number;
+    correct: number;
+    dailyCorrect: number;
+    dailyTotal: number;
+    weeklyCorrect: number;
+    weeklyTotal: number;
+    monthlyCorrect: number;
+    monthlyTotal: number;
+}
+
 interface MemoryTestResults {
     [wordId: string]: 'known' | 'unknown';
 }
@@ -24,9 +35,9 @@ interface MemoryTestResults {
 export function StatsPage() {
     const [deckStats, setDeckStats] = useState<{ name: string; wordCount: number; isCustom: boolean }[]>([]);
     const [knownWordsRate, setKnownWordsRate] = useState(0);
-    const [quizStats, setQuizStats] = useState({
-        provided: { total: 0, correct: 0, daily: 0, weekly: 0, monthly: 0 },
-        ai: { total: 0, correct: 0, daily: 0, weekly: 0, monthly: 0 }
+    const [quizStats, setQuizStats] = useState<{ provided: QuizRates; ai: QuizRates }>({
+        provided: { total: 0, correct: 0, dailyCorrect: 0, dailyTotal: 0, weeklyCorrect: 0, weeklyTotal: 0, monthlyCorrect: 0, monthlyTotal: 0 },
+        ai: { total: 0, correct: 0, dailyCorrect: 0, dailyTotal: 0, weeklyCorrect: 0, weeklyTotal: 0, monthlyCorrect: 0, monthlyTotal: 0 }
     });
     const [quizMastery, setQuizMastery] = useState(0);
 
@@ -57,18 +68,29 @@ export function StatsPage() {
         const oneWeek = 7 * oneDay;
         const oneMonth = 30 * oneDay;
 
-        const calculateRates = (results: QuizResult[]) => {
-            let total = 0, correct = 0, daily = 0, weekly = 0, monthly = 0;
-            results.forEach(r => {
-                total += r.total;
-                correct += r.score;
+        const calculateRates = (results: QuizResult[]): QuizRates => {
+            return results.reduce((acc, r) => {
+                acc.total += r.total;
+                acc.correct += r.score;
                 const timestamp = new Date(r.timestamp);
                 const diff = now.getTime() - timestamp.getTime();
-                if (diff < oneMonth) monthly += r.score;
-                if (diff < oneWeek) weekly += r.score;
-                if (diff < oneDay) daily += r.score;
+                if (diff < oneMonth) {
+                    acc.monthlyCorrect += r.score;
+                    acc.monthlyTotal += r.total;
+                }
+                if (diff < oneWeek) {
+                    acc.weeklyCorrect += r.score;
+                    acc.weeklyTotal += r.total;
+                }
+                if (diff < oneDay) {
+                    acc.dailyCorrect += r.score;
+                    acc.dailyTotal += r.total;
+                }
+                return acc;
+            }, { 
+                total: 0, correct: 0, dailyCorrect: 0, dailyTotal: 0, 
+                weeklyCorrect: 0, weeklyTotal: 0, monthlyCorrect: 0, monthlyTotal: 0 
             });
-            return { total, correct, daily, weekly, monthly };
         };
 
         const providedResults: QuizResult[] = JSON.parse(localStorage.getItem('quizResults_provided') || '[]');
@@ -153,9 +175,9 @@ export function StatsPage() {
                             </CardHeader>
                             <CardContent className="text-sm space-y-2">
                                 <p className="flex justify-between"><strong>Total Rate:</strong> <span className="font-mono">{formatRate(quizStats.provided.correct, quizStats.provided.total)}</span></p>
-                                <p className="flex justify-between"><strong>Monthly Correct:</strong> <span className="font-mono">{quizStats.provided.monthly}</span></p>
-                                <p className="flex justify-between"><strong>Weekly Correct:</strong> <span className="font-mono">{quizStats.provided.weekly}</span></p>
-                                <p className="flex justify-between"><strong>Daily Correct:</strong> <span className="font-mono">{quizStats.provided.daily}</span></p>
+                                <p className="flex justify-between"><strong>Monthly Rate:</strong> <span className="font-mono">{formatRate(quizStats.provided.monthlyCorrect, quizStats.provided.monthlyTotal)}</span></p>
+                                <p className="flex justify-between"><strong>Weekly Rate:</strong> <span className="font-mono">{formatRate(quizStats.provided.weeklyCorrect, quizStats.provided.weeklyTotal)}</span></p>
+                                <p className="flex justify-between"><strong>Daily Rate:</strong> <span className="font-mono">{formatRate(quizStats.provided.dailyCorrect, quizStats.provided.dailyTotal)}</span></p>
                             </CardContent>
                         </Card>
                          <Card>
@@ -167,9 +189,9 @@ export function StatsPage() {
                             </CardHeader>
                             <CardContent className="text-sm space-y-2">
                                 <p className="flex justify-between"><strong>Total Rate:</strong> <span className="font-mono">{formatRate(quizStats.ai.correct, quizStats.ai.total)}</span></p>
-                                <p className="flex justify-between"><strong>Monthly Correct:</strong> <span className="font-mono">{quizStats.ai.monthly}</span></p>
-                                <p className="flex justify-between"><strong>Weekly Correct:</strong> <span className="font-mono">{quizStats.ai.weekly}</span></p>
-                                <p className="flex justify-between"><strong>Daily Correct:</strong> <span className="font-mono">{quizStats.ai.daily}</span></p>
+                                <p className="flex justify-between"><strong>Monthly Rate:</strong> <span className="font-mono">{formatRate(quizStats.ai.monthlyCorrect, quizStats.ai.monthlyTotal)}</span></p>
+                                <p className="flex justify-between"><strong>Weekly Rate:</strong> <span className="font-mono">{formatRate(quizStats.ai.weeklyCorrect, quizStats.ai.weeklyTotal)}</span></p>
+                                <p className="flex justify-between"><strong>Daily Rate:</strong> <span className="font-mono">{formatRate(quizStats.ai.dailyCorrect, quizStats.ai.dailyTotal)}</span></p>
                             </CardContent>
                         </Card>
                          <Card className="col-span-1 md:col-span-2">
