@@ -23,7 +23,7 @@ const generateWordsPrompt = ai.definePrompt({
   prompt: `You are an expert Japanese language teacher creating a vocabulary list for a student.
 The student is creating a flashcard deck with the title: "{{deckName}}".
 
-Your task is to generate {{numWords}} relevant Japanese vocabulary words related to this topic.
+Your task is to generate exactly {{numWords}} relevant Japanese vocabulary words related to this topic.
 
 IMPORTANT: The student's deck already contains the following words. Do NOT generate any of these words.
 Existing words:
@@ -46,7 +46,9 @@ const generateWordsFlow = ai.defineFlow(
     if (!output) {
       throw new Error('No output from word generation flow');
     }
-    return output;
+    // Enforce the exact number of words requested, as the AI might generate slightly more or less.
+    const trimmedWords = output.words.slice(0, input.numWords);
+    return { words: trimmedWords };
   }
 );
 
