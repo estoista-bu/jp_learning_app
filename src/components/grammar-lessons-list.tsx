@@ -9,19 +9,19 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 
 interface GrammarLessonsListProps {
   onSelectLesson: (lesson: GrammarLesson) => void;
+  userId: string;
 }
 
-export function GrammarLessonsList({ onSelectLesson }: GrammarLessonsListProps) {
+export function GrammarLessonsList({ onSelectLesson, userId }: GrammarLessonsListProps) {
   const [lessons, setLessons] = useState<GrammarLesson[]>([]);
 
   useEffect(() => {
-    // This effect runs on the client-side, so `localStorage` is available.
     const lessonsWithStatus = allLessons.map((lesson) => ({
       ...lesson,
-      isRead: !!localStorage.getItem(`lesson-read-${lesson.title}`),
+      isRead: !!localStorage.getItem(`lesson-read-${lesson.title}_${userId}`),
     }));
     setLessons(lessonsWithStatus);
-  }, []);
+  }, [userId]);
 
   const n5Lessons = lessons.filter(l => l.level === "N5");
   const n4Lessons = lessons.filter(l => l.level === "N4");
@@ -82,3 +82,5 @@ export function GrammarLessonsList({ onSelectLesson }: GrammarLessonsListProps) 
     </div>
   );
 }
+
+    

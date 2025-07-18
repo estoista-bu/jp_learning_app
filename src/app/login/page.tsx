@@ -8,14 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import type { UserRole } from '@/lib/types';
+import { users } from '@/lib/users';
 import Link from 'next/link';
-
-// Temporary user database
-const users = {
-  user: { password: 'password', role: 'user' as UserRole },
-  admin: { password: 'adminpass', role: 'admin' as UserRole },
-};
 
 export default function LoginPage() {
   const router = useRouter();
@@ -29,12 +23,12 @@ export default function LoginPage() {
     setIsLoading(true);
 
     setTimeout(() => {
-      const user = users[username as keyof typeof users];
+      const user = users.find(u => u.username === username);
 
       if (user && user.password === password) {
         // In a real app, you would use a secure session/token method.
         // For this demo, we'll use localStorage.
-        localStorage.setItem('userRole', user.role);
+        localStorage.setItem('userId', user.id);
         toast({
           title: 'Login Successful',
           description: `Welcome back, ${username}!`,
@@ -70,7 +64,7 @@ export default function LoginPage() {
               <Input
                 id="username"
                 type="text"
-                placeholder="user"
+                placeholder="user or admin"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -82,7 +76,7 @@ export default function LoginPage() {
               <Input
                 id="password"
                 type="password"
-                placeholder="password"
+                placeholder="password or adminpass"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -103,3 +97,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+    

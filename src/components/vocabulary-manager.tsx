@@ -39,15 +39,16 @@ import {
 import { Progress } from "./ui/progress";
 
 type KanaSelection = "hiragana" | "katakana";
-const MASTERY_THRESHOLD = 10; // Number of correct guesses to master a word
+const MASTERY_THRESHOLD = 10;
 
 interface VocabularyManagerProps {
   decks: Deck[];
   onSaveDeck: (deckData: Omit<Deck, "id" | "category">, id?: string) => void;
   onRemoveDeck: (id: string) => void;
+  userId: string;
 }
 
-export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: VocabularyManagerProps) {
+export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck, userId }: VocabularyManagerProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingDeck, setEditingDeck] = useState<Deck | null>(null);
   const [deletingDeck, setDeletingDeck] = useState<Deck | null>(null);
@@ -55,9 +56,9 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
   const [masteryStats, setMasteryStats] = useState<Record<string, { correct: number }>>({});
 
   useEffect(() => {
-    const storedMasteryStats = JSON.parse(localStorage.getItem('wordMasteryStats') || '{}');
+    const storedMasteryStats = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
     setMasteryStats(storedMasteryStats);
-  }, []);
+  }, [userId]);
 
   const handleOpenForm = (deck: Deck | null) => {
     setEditingDeck(deck);
@@ -90,7 +91,7 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
   const userDecks = combinedDecks.filter(deck => !decks.some(d => d.id === deck.id)).concat(decks);
 
   const getMasteryRate = (deckId: string) => {
-    const wordsForDeck: VocabularyWord[] = JSON.parse(localStorage.getItem(`words_${deckId}`) || "[]");
+    const wordsForDeck: VocabularyWord[] = JSON.parse(localStorage.getItem(`words_${deckId}_${userId}`) || "[]");
     const wordList = wordsForDeck.length > 0 ? wordsForDeck : initialWords.filter(w => w.deckId === deckId);
     
     if (wordList.length === 0) return 0;
@@ -186,7 +187,6 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
           </div>
         </div>
 
-        {/* Form Dialog */}
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="font-headline">{editingDeck ? "Edit Deck" : "Create New Deck"}</DialogTitle>
@@ -198,7 +198,6 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deletingDeck} onOpenChange={() => setDeletingDeck(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -217,3 +216,5 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck }: Vocabular
     </div>
   );
 }
+
+    

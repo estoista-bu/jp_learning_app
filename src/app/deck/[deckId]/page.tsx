@@ -22,11 +22,13 @@ import {
 } from "@/components/ui/sheet";
 import { VocabularyForm } from "@/components/vocabulary-form";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 type VocabularyFormData = Omit<VocabularyWord, "id" | "deckId">;
 type DeckViewMode = "select" | "view" | "test" | "list";
 
 export default function DeckPage({ params: paramsProp }: { params: { deckId: string } }) {
+  const router = useRouter();
   const params = use(paramsProp);
   const { deckId } = params;
   const { toast } = useToast();
@@ -41,10 +43,22 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
   const [mode, setMode] = useState<DeckViewMode>("select");
   const [previousMode, setPreviousMode] = useState<DeckViewMode>("select");
   const [initialCardIndex, setInitialCardIndex] = useState(0);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
+    const storedUserId = localStorage.getItem("userId");
+    if (!storedUserId) {
+      router.push('/login');
+      return;
+    }
+    setUserId(storedUserId);
     setIsMounted(true);
-    const userDecks: Deck[] = JSON.parse(localStorage.getItem("userDecks") || "[]");
+  }, [router]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const userDecks: Deck[] = JSON.parse(localStorage.getItem(`userDecks_${userId}`) || "[]");
     const combinedDecks = [...initialDecks, ...userDecks];
     const currentDeck = combinedDecks.find((d) => d.id === deckId) || null;
     setDeck(currentDeck);
@@ -53,7 +67,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     
     if (currentDeck) {
       let loadedWords: VocabularyWord[] = [];
-      const storedUserWords = JSON.parse(localStorage.getItem(`words_${deckId}`) || "[]");
+      const storedUserWords = JSON.parse(localStorage.getItem(`words_${deckId}_${userId}`) || "[]");
       if (storedUserWords.length > 0) {
         loadedWords = storedUserWords;
         setIsUserDeck(true);
@@ -68,28 +82,27 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
       setWords(loadedWords);
       setShuffledWords([...loadedWords].sort(() => Math.random() - 0.5));
     }
-  }, [deckId]);
+  }, [deckId, userId]);
   
   useEffect(() => {
-    if (isMounted && isUserDeck) {
-      localStorage.setItem(`words_${deckId}`, JSON.stringify(words));
+    if (isMounted && isUserDeck && userId) {
+      localStorage.setItem(`words_${deckId}_${userId}`, JSON.stringify(words));
     }
      setShuffledWords([...words]);
-  }, [words, deckId, isUserDeck, isMounted]);
+  }, [words, deckId, isUserDeck, isMounted, userId]);
 
 
   const handleSaveWords = (wordsData: VocabularyFormData[], idToEdit?: string) => {
+    if (!userId) return;
     let newWords: VocabularyWord[] = [...words];
 
     if (idToEdit) {
-      // Editing a single word
       newWords = words.map((w) => (w.id === idToEdit ? { ...w, ...wordsData[0] } : w));
       toast({
         title: "Success!",
         description: `The word "${wordsData[0].japanese}" has been updated.`,
       });
     } else {
-      // Adding one or more new words
       const wordsToAdd = wordsData.map(data => ({
         ...data,
         id: `${Date.now()}-${Math.random()}`,
@@ -106,9 +119,9 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
 
     if (!isUserDeck) {
         setIsUserDeck(true);
-        const userDecks: Deck[] = JSON.parse(localStorage.getItem("userDecks") || "[]");
+        const userDecks: Deck[] = JSON.parse(localStorage.getItem(`userDecks_${userId}`) || "[]");
         if (!userDecks.some(d => d.id === deckId) && deck) {
-            localStorage.setItem("userDecks", JSON.stringify([...userDecks, deck]));
+            localStorage.setItem(`userDecks_${userId}`, JSON.stringify([...userDecks, deck]));
         }
     }
 
@@ -130,11 +143,10 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
   };
 
   const handleSelectWordFromList = (word: VocabularyWord) => {
-    // Find the index in the *shuffled* array to maintain order
     const index = shuffledWords.findIndex(w => w.id === word.id);
     if (index !== -1) {
       setInitialCardIndex(index);
-      setPreviousMode(mode); // Coming from 'list'
+      setPreviousMode(mode);
       setMode('view');
     }
   }
@@ -146,7 +158,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
         [newShuffledWords[i], newShuffledWords[j]] = [newShuffledWords[j], newShuffledWords[i]];
     }
     setShuffledWords(newShuffledWords);
-    setInitialCardIndex(0); // Go to the first card of the new shuffled order
+    setInitialCardIndex(0);
   };
 
 
@@ -157,7 +169,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
 
   const handleBack = () => {
     setMode(previousMode);
-    setPreviousMode('select'); // Reset for next navigation
+    setPreviousMode('select');
   }
   
   const handleFormOpenChange = (open: boolean) => {
@@ -170,7 +182,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
   const isKanaDeck = deck?.category === 'kana';
 
   const renderContent = () => {
-    if (!isMounted) {
+    if (!isMounted || !userId) {
       return (
         <div className="p-4 text-center">
             <p className="text-lg font-semibold text-muted-foreground">Loading...</p>
@@ -199,7 +211,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
       case "view":
         return <FlashcardViewer words={shuffledWords} isKana={isKanaDeck} onEdit={handleEditWord} onRemove={handleRemoveWord} onShuffle={handleShuffle} startIndex={initialCardIndex} />;
       case "test":
-        return <MemoryTestViewer words={words} isKana={isKanaDeck} />;
+        return <MemoryTestViewer words={words} isKana={isKanaDeck} userId={userId} />;
        case "list":
         return <VocabularyListViewer words={shuffledWords} onEdit={handleEditWord} onRemove={handleRemoveWord} onSelectWord={handleSelectWordFromList} />;
       case "select":
@@ -240,7 +252,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
             <Sheet open={isFormOpen} onOpenChange={handleFormOpenChange}>
                 <header className="flex items-center justify-between p-4 border-b sticky top-0 bg-background/95 backdrop-blur-sm z-10">
                     {mode === 'select' ? (
-                       <Link href="/" passHref>
+                       <Link href="/app" passHref>
                         <Button variant="ghost" size="icon" className="w-8 h-8">
                             <ArrowLeft className="h-4 w-4" />
                             <span className="sr-only">Back to Decks</span>
@@ -292,3 +304,5 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     </div>
   );
 }
+
+    

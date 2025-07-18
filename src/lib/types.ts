@@ -1,5 +1,4 @@
 
-
 import { z } from 'zod';
 
 export type VocabularyWord = {
@@ -46,15 +45,14 @@ export type Quiz = {
   score?: number | null;
 };
 
-export type JapaneseTextSegment = {
-  text: string;
-  furigana?: string;
-};
-
-export type JapaneseText = JapaneseTextSegment[];
-
 export type UserRole = "user" | "admin";
 
+export type User = {
+  id: string;
+  username: string;
+  password?: string; // Should be handled securely on a server
+  role: UserRole;
+}
 
 // Schema for AI Grammar Checker Input
 export const GrammarCheckInputSchema = z.object({
@@ -173,3 +171,5 @@ export const QuizGenerationOutputSchema = z.object({
   questions: z.array(QuizQuestionSchema)
 });
 export type QuizGenerationOutput = z.infer<typeof QuizGenerationOutputSchema>;
+
+    

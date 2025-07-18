@@ -9,22 +9,22 @@ import { Badge } from "@/components/ui/badge";
 
 interface QuizListProps {
   onSelectQuiz: (quiz: Quiz) => void;
+  userId: string;
 }
 
-export function QuizList({ onSelectQuiz }: QuizListProps) {
+export function QuizList({ onSelectQuiz, userId }: QuizListProps) {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
 
   useEffect(() => {
-    // This effect runs on the client-side, so `localStorage` is available.
     const quizzesWithScores = allQuizzes.map((quiz) => {
-      const storedScore = localStorage.getItem(`quiz-highscore-${quiz.id}`);
+      const storedScore = localStorage.getItem(`quiz-highscore-${quiz.id}_${userId}`);
       return {
         ...quiz,
         score: storedScore ? parseInt(storedScore, 10) : null,
       };
     });
     setQuizzes(quizzesWithScores);
-  }, []);
+  }, [userId]);
 
   const n5Quizzes = quizzes.filter(q => q.level === "N5");
   const n4Quizzes = quizzes.filter(q => q.level === "N4");
@@ -90,3 +90,5 @@ export function QuizList({ onSelectQuiz }: QuizListProps) {
     </div>
   );
 }
+
+    

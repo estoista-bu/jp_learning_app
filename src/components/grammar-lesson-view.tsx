@@ -9,15 +9,15 @@ import { ClickableReading } from "./clickable-reading";
 
 interface GrammarLessonViewProps {
   lesson: GrammarLesson;
+  userId: string;
 }
 
-export function GrammarLessonView({ lesson }: GrammarLessonViewProps) {
+export function GrammarLessonView({ lesson, userId }: GrammarLessonViewProps) {
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    // Mark lesson as read in localStorage when the component mounts
-    localStorage.setItem(`lesson-read-${lesson.title}`, "true");
-  }, [lesson.title]);
+    localStorage.setItem(`lesson-read-${lesson.title}_${userId}`, "true");
+  }, [lesson.title, userId]);
 
 
   const handlePlayAudio = (e: React.MouseEvent, text: string, index: number) => {
@@ -82,3 +82,5 @@ export function GrammarLessonView({ lesson }: GrammarLessonViewProps) {
     </div>
   );
 }
+
+    

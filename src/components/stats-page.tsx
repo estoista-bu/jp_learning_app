@@ -33,7 +33,11 @@ interface MemoryTestResults {
     [wordId: string]: 'known' | 'unknown';
 }
 
-export function StatsPage() {
+interface StatsPageProps {
+  userId: string;
+}
+
+export function StatsPage({ userId }: StatsPageProps) {
     const [deckStats, setDeckStats] = useState<{ name: string; wordCount: number; isCustom: boolean }[]>([]);
     const [knownWordsRate, setKnownWordsRate] = useState(0);
     const [quizStats, setQuizStats] = useState<{ provided: QuizRates; ai: QuizRates }>({
@@ -45,19 +49,19 @@ export function StatsPage() {
 
     useEffect(() => {
         // --- Vocabulary Stats ---
-        const userDecks: Deck[] = JSON.parse(localStorage.getItem('userDecks') || '[]');
+        const userDecks: Deck[] = JSON.parse(localStorage.getItem(`userDecks_${userId}`) || '[]');
         const combinedDecks = [...initialDecks, ...userDecks];
         const uniqueDecks = Array.from(new Map(combinedDecks.map(deck => [deck.id, deck])).values());
         
         const calculatedDeckStats = uniqueDecks.map(deck => {
-            const wordsForDeck = JSON.parse(localStorage.getItem(`words_${deck.id}`) || '[]');
+            const wordsForDeck = JSON.parse(localStorage.getItem(`words_${deck.id}_${userId}`) || '[]');
             const wordCount = wordsForDeck.length > 0 ? wordsForDeck.length : allWords.filter(w => w.deckId === deck.id).length;
             const isCustom = userDecks.some(ud => ud.id === deck.id);
             return { name: deck.name, wordCount, isCustom };
         });
         setDeckStats(calculatedDeckStats);
 
-        const memoryResults: MemoryTestResults = JSON.parse(localStorage.getItem('memoryTestResults') || '{}');
+        const memoryResults: MemoryTestResults = JSON.parse(localStorage.getItem(`memoryTestResults_${userId}`) || '{}');
         const totalTracked = Object.keys(memoryResults).length;
         if(totalTracked > 0) {
             const knownCount = Object.values(memoryResults).filter(val => val === 'known').length;
@@ -95,8 +99,8 @@ export function StatsPage() {
             });
         };
 
-        const providedResults: QuizResult[] = JSON.parse(localStorage.getItem('quizResults_provided') || '[]');
-        const aiResults: QuizResult[] = JSON.parse(localStorage.getItem('quizResults_ai') || '[]');
+        const providedResults: QuizResult[] = JSON.parse(localStorage.getItem(`quizResults_provided_${userId}`) || '[]');
+        const aiResults: QuizResult[] = JSON.parse(localStorage.getItem(`quizResults_ai_${userId}`) || '[]');
         
         setQuizStats({
             provided: calculateRates(providedResults),
@@ -108,7 +112,7 @@ export function StatsPage() {
         let userTotalHighScore = 0;
         allProvidedQuizzes.forEach(quiz => {
             totalPossibleScore += quiz.questions.length;
-            const highScore = parseInt(localStorage.getItem(`quiz-highscore-${quiz.id}`) || '0', 10);
+            const highScore = parseInt(localStorage.getItem(`quiz-highscore-${quiz.id}_${userId}`) || '0', 10);
             userTotalHighScore += highScore;
         });
 
@@ -117,13 +121,13 @@ export function StatsPage() {
         }
         
         // --- Lesson Completion ---
-        const readLessonsCount = grammarLessons.filter(lesson => !!localStorage.getItem(`lesson-read-${lesson.title}`)).length;
+        const readLessonsCount = grammarLessons.filter(lesson => !!localStorage.getItem(`lesson-read-${lesson.title}_${userId}`)).length;
         const totalLessons = grammarLessons.length;
         if (totalLessons > 0) {
             setLessonCompletion((readLessonsCount / totalLessons) * 100);
         }
 
-    }, []);
+    }, [userId]);
 
     const formatRate = (correct: number, total: number) => {
         if (total === 0) return '0.0%';
@@ -241,3 +245,5 @@ export function StatsPage() {
         </ScrollArea>
     );
 }
+
+    

@@ -21,30 +21,31 @@ interface GrammarGuideProps {
     selectedQuiz: Quiz | null;
     animation: 'in' | 'out' | null;
     onNavigate: (view: GrammarView, data?: GrammarLesson | Quiz) => void;
+    userId: string;
 }
 
-export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animation, onNavigate }: GrammarGuideProps) {
+export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animation, onNavigate, userId }: GrammarGuideProps) {
   const [lessonProgress, setLessonProgress] = useState(0);
 
   useEffect(() => {
     const readLessons = grammarLessons.filter(lesson => {
-      return localStorage.getItem(`lesson-read-${lesson.title}`);
+      return localStorage.getItem(`lesson-read-${lesson.title}_${userId}`);
     });
     const progress = Math.round((readLessons.length / grammarLessons.length) * 100);
     setLessonProgress(progress);
-  }, [currentView]);
+  }, [currentView, userId]);
 
 
   const renderContent = () => {
     switch (currentView) {
       case "lessons":
-        return <GrammarLessonsList onSelectLesson={(lesson) => onNavigate("lesson", lesson)} />;
+        return <GrammarLessonsList onSelectLesson={(lesson) => onNavigate("lesson", lesson)} userId={userId} />;
       case "lesson":
-        return selectedLesson ? <GrammarLessonView lesson={selectedLesson} /> : null;
+        return selectedLesson ? <GrammarLessonView lesson={selectedLesson} userId={userId} /> : null;
       case "quizzes":
-         return <QuizList onSelectQuiz={(quiz) => onNavigate("quiz", quiz)} />;
+         return <QuizList onSelectQuiz={(quiz) => onNavigate("quiz", quiz)} userId={userId} />;
       case "quiz":
-        return selectedQuiz ? <QuizView quiz={selectedQuiz} /> : null;
+        return selectedQuiz ? <QuizView quiz={selectedQuiz} userId={userId} /> : null;
       case "checker":
         return <GrammarChecker />;
       case "main":
@@ -121,3 +122,5 @@ export function GrammarGuide({ currentView, selectedLesson, selectedQuiz, animat
     </div>
   );
 }
+
+    

@@ -28,13 +28,14 @@ type AnimationDirection = "left" | "right" | "none";
 interface MemoryTestViewerProps {
     words: VocabularyWord[];
     isKana?: boolean;
+    userId: string;
 }
 
 interface WeightedWord extends VocabularyWord {
   weight: number;
 }
 
-export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
+export function MemoryTestViewer({ words, isKana, userId }: MemoryTestViewerProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [animationDirection, setAnimationDirection] = useState<AnimationDirection>("none");
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -45,7 +46,7 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
   const [historyIndex, setHistoryIndex] = useState(-1);
 
   useEffect(() => {
-    const memoryTestData = JSON.parse(localStorage.getItem('memoryTestResults') || '{}');
+    const memoryTestData = JSON.parse(localStorage.getItem(`memoryTestResults_${userId}`) || '{}');
     const initialWords = words.map(word => ({ 
         ...word, 
         weight: memoryTestData[word.id] === 'known' ? 1 : 10 
@@ -53,7 +54,7 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
     setWeightedWords(initialWords);
     setHistory([]);
     setHistoryIndex(-1);
-  }, [words]);
+  }, [words, userId]);
 
   const selectNextWord = useCallback(() => {
     if (weightedWords.length === 0) return null;
@@ -67,7 +68,6 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
             return word;
         }
     }
-    // Fallback in case of floating point inaccuracies
     return weightedWords[weightedWords.length - 1];
   }, [weightedWords]);
 
@@ -87,26 +87,23 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
     
     const currentWord = history[historyIndex];
     
-    // Update last known status
-    const memoryTestData = JSON.parse(localStorage.getItem('memoryTestResults') || '{}');
+    const memoryTestData = JSON.parse(localStorage.getItem(`memoryTestResults_${userId}`) || '{}');
     memoryTestData[currentWord.id] = guessed ? 'known' : 'unknown';
-    localStorage.setItem('memoryTestResults', JSON.stringify(memoryTestData));
+    localStorage.setItem(`memoryTestResults_${userId}`, JSON.stringify(memoryTestData));
 
-    // Update mastery stats for progress bars
     if (guessed) {
-      const masteryStats = JSON.parse(localStorage.getItem('wordMasteryStats') || '{}');
+      const masteryStats = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
       if (!masteryStats[currentWord.id]) {
         masteryStats[currentWord.id] = { correct: 0 };
       }
       masteryStats[currentWord.id].correct += 1;
-      localStorage.setItem('wordMasteryStats', JSON.stringify(masteryStats));
+      localStorage.setItem(`wordMasteryStats_${userId}`, JSON.stringify(masteryStats));
     }
 
 
     setWeightedWords(prevWords => {
         return prevWords.map(w => {
             if (w.id === currentWord.id) {
-                // If guessed correctly, decrease weight (min 1). If incorrect, increase weight.
                 const newWeight = guessed ? Math.max(1, w.weight / 10) : w.weight * 10;
                 return { ...w, weight: newWeight };
             }
@@ -114,7 +111,6 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
         });
     });
 
-    // Automatically move to the next card
     setTimeout(() => goToNext(), 100);
   };
   
@@ -127,7 +123,6 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
       setIsFlipped(false);
 
       if (direction === 'next') {
-        // If we are at the end of history, generate a new word
         if (historyIndex === history.length - 1) {
           const nextWord = selectNextWord();
           if (nextWord) {
@@ -135,10 +130,9 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
             setHistoryIndex(prev => prev + 1);
           }
         } else {
-          // Otherwise, just move forward in history
           setHistoryIndex(prev => prev + 1);
         }
-      } else { // 'prev'
+      } else { 
         if (historyIndex > 0) {
           setHistoryIndex(prev => prev - 1);
         }
@@ -180,7 +174,6 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
           }
           break;
         case 'ArrowRight':
-          // Allow right arrow to navigate forward in history, but not past the end
           if (canGoForward) {
             goToNext();
           }
@@ -319,3 +312,5 @@ export function MemoryTestViewer({ words, isKana }: MemoryTestViewerProps) {
     </div>
   );
 }
+
+    

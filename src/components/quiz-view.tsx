@@ -24,6 +24,7 @@ import { Alert, AlertDescription } from "./ui/alert";
 
 interface QuizViewProps {
   quiz: Quiz;
+  userId: string;
 }
 
 const shuffleArray = <T,>(array: T[]): T[] => {
@@ -36,14 +37,14 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   return newArray;
 };
 
-export function QuizView({ quiz }: QuizViewProps) {
+export function QuizView({ quiz, userId }: QuizViewProps) {
   const [shuffledQuestions, setShuffledQuestions] = useState<QuizQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<(string | null)[]>([]);
   const [isFinished, setIsFinished] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   
-  const getProgressKey = (quizId: string) => `quiz-progress-${quizId}`;
+  const getProgressKey = (quizId: string) => `quiz-progress-${quizId}_${userId}`;
 
   const score = useMemo(() => {
     return selectedAnswers.reduce((acc, answer, index) => {
@@ -55,32 +56,31 @@ export function QuizView({ quiz }: QuizViewProps) {
   const finishQuiz = useCallback((saveScore = true) => {
     if (saveScore) {
        if (quiz.id === 'ai-generated') {
-          const results = JSON.parse(localStorage.getItem('quizResults_ai') || '[]');
+          const results = JSON.parse(localStorage.getItem(`quizResults_ai_${userId}`) || '[]');
           results.push({
               score,
               total: shuffledQuestions.length,
               timestamp: new Date().toISOString(),
           });
-          localStorage.setItem('quizResults_ai', JSON.stringify(results));
+          localStorage.setItem(`quizResults_ai_${userId}`, JSON.stringify(results));
        } else {
-          const storageKey = `quiz-highscore-${quiz.id}`;
+          const storageKey = `quiz-highscore-${quiz.id}_${userId}`;
           const currentHighScore = parseInt(localStorage.getItem(storageKey) || "0", 10);
           if (score > currentHighScore) {
               localStorage.setItem(storageKey, score.toString());
           }
-          // Store results for stats page
-          const results = JSON.parse(localStorage.getItem('quizResults_provided') || '[]');
+          const results = JSON.parse(localStorage.getItem(`quizResults_provided_${userId}`) || '[]');
           results.push({
               id: quiz.id,
               score,
               total: shuffledQuestions.length,
               timestamp: new Date().toISOString(),
           });
-          localStorage.setItem('quizResults_provided', JSON.stringify(results));
+          localStorage.setItem(`quizResults_provided_${userId}`, JSON.stringify(results));
        }
     }
     setIsFinished(true);
-  }, [quiz.id, score, shuffledQuestions.length]);
+  }, [quiz.id, score, shuffledQuestions.length, userId]);
 
 
   useEffect(() => {
@@ -95,7 +95,6 @@ export function QuizView({ quiz }: QuizViewProps) {
 
     if (savedProgressJson) {
       const savedAnswers = JSON.parse(savedProgressJson);
-      // Ensure saved progress matches current quiz length
       if (Array.isArray(savedAnswers) && savedAnswers.length === questions.length) {
         initialAnswers = savedAnswers;
         const lastAnsweredIndex = savedAnswers.findLastIndex((a: any) => a !== null);
@@ -110,14 +109,13 @@ export function QuizView({ quiz }: QuizViewProps) {
     setSelectedAnswers(initialAnswers);
     setCurrentQuestionIndex(initialIndex);
     setIsMounted(true);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quiz]);
+  }, [quiz, userId]);
 
   useEffect(() => {
     if (isMounted && !isFinished && selectedAnswers.length > 0) {
       localStorage.setItem(getProgressKey(quiz.id), JSON.stringify(selectedAnswers));
     }
-  }, [selectedAnswers, quiz.id, isMounted, isFinished]);
+  }, [selectedAnswers, quiz.id, isMounted, isFinished, userId]);
   
   const currentQuestion = shuffledQuestions[currentQuestionIndex];
   const selectedAnswer = selectedAnswers[currentQuestionIndex];
@@ -147,12 +145,12 @@ export function QuizView({ quiz }: QuizViewProps) {
 
     setCurrentQuestionIndex(0);
     setIsFinished(false);
-  }, [quiz]);
+  }, [quiz, getProgressKey]);
 
   const restartQuiz = () => {
     localStorage.removeItem(getProgressKey(quiz.id));
     if (quiz.id === 'ai-generated') {
-       sessionStorage.removeItem('ai-generated-quiz');
+       sessionStorage.removeItem(`ai-generated-quiz_${userId}`);
     }
     startQuiz();
   };
@@ -255,8 +253,8 @@ export function QuizView({ quiz }: QuizViewProps) {
                   className={cn(
                     "w-full justify-start h-auto py-3 text-left whitespace-normal text-foreground",
                     "hover:text-foreground",
-                    hasAnswered && isCorrect && "bg-green-200 border-green-500 text-green-900 hover:bg-green-200 dark:bg-green-900/60 dark:border-green-700 dark:text-green-200",
-                    hasAnswered && !isCorrect && isSelected && "bg-red-200 border-red-500 text-red-900 hover:bg-red-200 dark:bg-red-900/60 dark:border-red-700 dark:text-red-200",
+                    hasAnswered && isCorrect && "bg-green-600 border-green-700 text-green-50 hover:bg-green-600 dark:bg-green-800/80 dark:border-green-700 dark:text-green-100",
+                    hasAnswered && !isCorrect && isSelected && "bg-red-600 border-red-700 text-red-50 hover:bg-red-600 dark:bg-red-800/80 dark:border-red-700 dark:text-red-100",
                     !hasAnswered && "hover:bg-accent/10"
                   )}
                   onClick={() => handleSelectAnswer(option)}
@@ -274,8 +272,8 @@ export function QuizView({ quiz }: QuizViewProps) {
                         isInteractive={!hasAnswered}
                       />
                   </span>
-                  {hasAnswered && isCorrect && <CheckCircle className="ml-4 h-5 w-5 text-green-600 dark:text-green-400"/>}
-                  {hasAnswered && !isCorrect && isSelected && <XCircle className="ml-4 h-5 w-5 text-red-600 dark:text-red-400"/>}
+                  {hasAnswered && isCorrect && <CheckCircle className="ml-4 h-5 w-5 text-green-200 dark:text-green-300"/>}
+                  {hasAnswered && !isCorrect && isSelected && <XCircle className="ml-4 h-5 w-5 text-red-200 dark:text-red-300"/>}
                 </Button>
               );
             })}
@@ -301,3 +299,5 @@ export function QuizView({ quiz }: QuizViewProps) {
     </div>
   );
 }
+
+    

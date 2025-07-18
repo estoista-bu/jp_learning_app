@@ -5,9 +5,8 @@ import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VocabularyManager } from "@/components/vocabulary-manager";
 import { GrammarGuide } from "@/components/grammar-guide";
-import { BookOpen, Milestone, ArrowLeft, Search, User, Wand2, BarChart, LogOut } from "lucide-react";
-import type { Deck, GrammarLesson, Quiz, UserRole } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { BookOpen, Milestone, ArrowLeft, Users, LogOut, BarChart } from "lucide-react";
+import type { Deck, GrammarLesson, Quiz, User, UserRole } from "@/lib/types";
 import { allDecks as initialDecks } from "@/data/decks";
 import { DictionarySearch } from "@/components/dictionary-search";
 import {
@@ -15,8 +14,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -24,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { AiQuizGenerator } from "@/components/ai-quiz-generator";
 import { StatsPage } from "@/components/stats-page";
 import { useRouter } from "next/navigation";
+import { AdminDashboard } from "@/components/admin/admin-dashboard";
 
 type AppView = "vocabulary" | "grammar" | "stats";
 type GrammarView = "main" | "lessons" | "lesson" | "quizzes" | "quiz" | "checker" | "ai-quiz-generator";
@@ -35,28 +33,29 @@ export default function AppPage() {
   const [vocabularyView, setVocabularyView] = useState<VocabularyView>("decks");
   const [decks, setDecks] = useState<Deck[]>([]);
   const [isMounted, setIsMounted] = useState(false);
-  const [userRole, setUserRole] = useState<UserRole>("user");
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
 
   useEffect(() => {
-    // In a real app, this would be a check against a session on the server.
-    const storedRole = localStorage.getItem("userRole");
-    if (!storedRole) {
+    const storedUserId = localStorage.getItem("userId");
+    if (!storedUserId) {
       router.push('/login');
       return;
     }
     
+    // In a real app, you'd fetch user data. Here we simulate it.
+    const { users } = require('@/lib/users');
+    const user = users.find((u: User) => u.id === storedUserId) || null;
+    setCurrentUser(user);
+
     setIsMounted(true);
     try {
-      const storedDecks = localStorage.getItem("userDecks");
+      const storedDecks = localStorage.getItem(`userDecks_${user?.id}`);
       if (storedDecks) {
         setDecks(JSON.parse(storedDecks));
       }
-      if (storedRole && (storedRole === 'user' || storedRole === 'admin')) {
-        setUserRole(storedRole as UserRole);
-      }
-      // Load AI quiz from session storage if it exists
-      const storedAiQuiz = sessionStorage.getItem('ai-generated-quiz');
+      
+      const storedAiQuiz = sessionStorage.getItem(`ai-generated-quiz_${user?.id}`);
       if (storedAiQuiz) {
         setSelectedQuiz(JSON.parse(storedAiQuiz));
       }
@@ -66,14 +65,12 @@ export default function AppPage() {
   }, [router]);
 
   useEffect(() => {
-    if (isMounted) {
-      localStorage.setItem("userDecks", JSON.stringify(decks));
-      localStorage.setItem("userRole", userRole);
+    if (isMounted && currentUser) {
+      localStorage.setItem(`userDecks_${currentUser.id}`, JSON.stringify(decks));
     }
-  }, [decks, userRole, isMounted]);
+  }, [decks, currentUser, isMounted]);
 
 
-  // State for Grammar Guide
   const [grammarView, setGrammarView] = useState<GrammarView>("main");
   const [selectedLesson, setSelectedLesson] = useState<GrammarLesson | null>(null);
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
@@ -98,10 +95,10 @@ export default function AppPage() {
   const handleNavigateGrammar = (view: GrammarView, data: GrammarLesson | Quiz | null = null) => {
     setAnimation('out');
     setTimeout(() => {
-      if (view === "ai-quiz-generator") {
-        const storedAiQuiz = sessionStorage.getItem('ai-generated-quiz');
+      if (view === "ai-quiz-generator" && currentUser) {
+        const storedAiQuiz = sessionStorage.getItem(`ai-generated-quiz_${currentUser.id}`);
         if (storedAiQuiz) {
-            const progressKey = `quiz-progress-ai-generated`;
+            const progressKey = `quiz-progress-ai-generated_${currentUser.id}`;
             const progress = JSON.parse(localStorage.getItem(progressKey) || "[]");
             const isFinished = progress.length > 0 && progress.every((a: any) => a !== null);
             if (!isFinished) {
@@ -111,11 +108,12 @@ export default function AppPage() {
                return;
             }
         }
-        // If no unfinished quiz, go to generator
         setGrammarView('ai-quiz-generator');
         setSelectedQuiz(null);
-        sessionStorage.removeItem('ai-generated-quiz');
-        localStorage.removeItem('quiz-progress-ai-generated');
+        if (currentUser) {
+          sessionStorage.removeItem(`ai-generated-quiz_${currentUser.id}`);
+          localStorage.removeItem(`quiz-progress-ai-generated_${currentUser.id}`);
+        }
 
       } else {
          setGrammarView(view);
@@ -126,8 +124,8 @@ export default function AppPage() {
         setSelectedQuiz(null);
       } else if (view === "quiz" && data) {
         const quizData = data as Quiz;
-        if (quizData.id === 'ai-generated') {
-          sessionStorage.setItem('ai-generated-quiz', JSON.stringify(quizData));
+        if (quizData.id === 'ai-generated' && currentUser) {
+          sessionStorage.setItem(`ai-generated-quiz_${currentUser.id}`, JSON.stringify(quizData));
         }
         setSelectedQuiz(quizData);
         setSelectedLesson(null);
@@ -160,7 +158,7 @@ export default function AppPage() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('userRole');
+    localStorage.removeItem('userId');
     router.push('/login');
   };
 
@@ -184,19 +182,18 @@ export default function AppPage() {
     }
   };
   
-  const allUserDecks = [
-    ...initialDecks.filter(d => d.category === 'user'),
-    ...decks
-  ];
-
   const showSubHeader = grammarView !== 'main' && currentView === 'grammar';
 
-  if (!isMounted) {
+  if (!isMounted || !currentUser) {
     return (
         <div className="flex items-center justify-center min-h-screen">
             {/* You can add a loading spinner here */}
         </div>
     );
+  }
+
+  if (currentUser.role === 'admin') {
+    return <AdminDashboard currentUser={currentUser} onLogout={handleLogout} />;
   }
 
   return (
@@ -212,17 +209,12 @@ export default function AppPage() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="w-8 h-8">
-                    <User className="h-5 w-5" />
+                    <Users className="h-5 w-5" />
                     <span className="sr-only">Open user menu</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Account Role</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup value={userRole} onValueChange={(value) => setUserRole(value as UserRole)}>
-                    <DropdownMenuRadioItem value="user">User</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="admin">Admin</DropdownMenuRadioItem>
-                  </DropdownMenuRadioGroup>
+                  <DropdownMenuLabel>Hi, {currentUser.username}!</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                    <DropdownMenuItem onSelect={handleLogout}>
                       <LogOut className="mr-2 h-4 w-4" />
@@ -264,6 +256,7 @@ export default function AppPage() {
                         decks={decks}
                         onSaveDeck={saveDeck}
                         onRemoveDeck={removeDeck}
+                        userId={currentUser.id}
                     />
                 </TabsContent>
                 <TabsContent value="dictionary" className="flex-1 overflow-y-auto">
@@ -291,6 +284,7 @@ export default function AppPage() {
               {grammarView === 'ai-quiz-generator' ? (
                 <AiQuizGenerator
                   onQuizGenerated={(quiz) => handleNavigateGrammar('quiz', quiz)}
+                  userId={currentUser.id}
                 />
               ) : (
                 <GrammarGuide
@@ -299,16 +293,18 @@ export default function AppPage() {
                   selectedQuiz={selectedQuiz}
                   animation={animation}
                   onNavigate={handleNavigateGrammar}
-                  data-testid="grammar-guide"
+                  userId={currentUser.id}
                 />
               )}
             </div>
           )}
            {currentView === 'stats' && (
-             <StatsPage />
+             <StatsPage userId={currentUser.id} />
           )}
         </main>
       </div>
     </div>
   );
 }
+
+    

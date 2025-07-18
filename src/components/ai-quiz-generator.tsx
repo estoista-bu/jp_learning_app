@@ -23,9 +23,10 @@ import { Alert, AlertDescription } from './ui/alert';
 
 interface AiQuizGeneratorProps {
     onQuizGenerated: (quiz: Quiz) => void;
+    userId: string;
 }
 
-export function AiQuizGenerator({ onQuizGenerated }: AiQuizGeneratorProps) {
+export function AiQuizGenerator({ onQuizGenerated, userId }: AiQuizGeneratorProps) {
   const [numQuestions, setNumQuestions] = useState(5);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -34,7 +35,7 @@ export function AiQuizGenerator({ onQuizGenerated }: AiQuizGeneratorProps) {
   const [selectedDeckId, setSelectedDeckId] = useState<string>('none');
 
   useEffect(() => {
-    const userDecks: Deck[] = JSON.parse(localStorage.getItem("userDecks") || "[]");
+    const userDecks: Deck[] = JSON.parse(localStorage.getItem(`userDecks_${userId}`) || "[]");
     const initialUserDecks = initialDecks.filter(d => d.category === 'user');
     
     // Combine and remove duplicates
@@ -42,7 +43,7 @@ export function AiQuizGenerator({ onQuizGenerated }: AiQuizGeneratorProps) {
     const uniqueDecks = Array.from(new Map(combined.map(deck => [deck.id, deck])).values());
 
     setAllDecks(uniqueDecks);
-  }, []);
+  }, [userId]);
 
   const handleGenerateQuiz = async () => {
     setIsLoading(true);
@@ -56,9 +57,7 @@ export function AiQuizGenerator({ onQuizGenerated }: AiQuizGeneratorProps) {
         if (selectedDeck) {
           deckName = selectedDeck.name;
           
-          // Try to load words from localStorage first (for user-modified decks)
-          let wordsForDeck = JSON.parse(localStorage.getItem(`words_${selectedDeckId}`) || "[]");
-          // If empty, fall back to initial words data (for default decks)
+          let wordsForDeck = JSON.parse(localStorage.getItem(`words_${selectedDeckId}_${userId}`) || "[]");
           if(wordsForDeck.length === 0) {
             const { allWords: initialWords } = await import('@/data/words');
             wordsForDeck = initialWords.filter(word => word.deckId === selectedDeckId);
@@ -156,3 +155,5 @@ export function AiQuizGenerator({ onQuizGenerated }: AiQuizGeneratorProps) {
     </div>
   );
 }
+
+    
