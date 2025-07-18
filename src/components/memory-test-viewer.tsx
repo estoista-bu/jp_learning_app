@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/chart";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "./ui/scroll-area";
 
 
 type AnimationDirection = "left" | "right" | "none";
@@ -241,13 +242,16 @@ export function MemoryTestViewer({ words, isKana, userId }: MemoryTestViewerProp
                         <CardTitle className="text-sm">Debug: Word Probability</CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
-                    <div className="h-40 w-full">
-                        <ChartContainer config={{
-                            probability: {
-                                label: "Probability",
-                                color: "hsl(var(--primary))",
-                            },
-                        }}>
+                    <ScrollArea className="h-40 w-full">
+                        <ChartContainer
+                            config={{
+                                probability: {
+                                    label: "Probability",
+                                    color: "hsl(var(--primary))",
+                                },
+                            }}
+                            className="h-[500px]"
+                        >
                             <BarChart
                                 data={chartData}
                                 layout="vertical"
@@ -280,7 +284,7 @@ export function MemoryTestViewer({ words, isKana, userId }: MemoryTestViewerProp
                                 </Bar>
                             </BarChart>
                         </ChartContainer>
-                    </div>
+                    </ScrollArea>
                     </CardContent>
                 </Card>
             </div>
@@ -312,5 +316,3 @@ export function MemoryTestViewer({ words, isKana, userId }: MemoryTestViewerProp
     </div>
   );
 }
-
-    
