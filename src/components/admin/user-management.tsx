@@ -114,7 +114,7 @@ export function UserManagement({
       <GroupDetailView 
         group={selectedGroup} 
         allUsers={users}
-        groupDecks={groupDecks.filter(d => d.groupId === selectedGroup.id)}
+        allDecks={groupDecks}
         onBack={() => setView('main')}
         onGroupUpdate={onGroupUpdate}
         onAssignUserToGroup={onAssignUserToGroup}
