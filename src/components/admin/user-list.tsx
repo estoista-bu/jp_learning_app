@@ -16,8 +16,9 @@ export function UserList({ onSelectUser }: UserListProps) {
 
   useEffect(() => {
     // In a real app, this would be an API call.
-    // We filter out the password for security, even in this simulation.
-    const safeUsers = allUsers.map(({ password, ...rest }) => rest);
+    // We filter out the password for security and also filter out admin users.
+    const nonAdminUsers = allUsers.filter(user => user.role !== 'admin');
+    const safeUsers = nonAdminUsers.map(({ password, ...rest }) => rest);
     setUsers(safeUsers as User[]);
   }, []);
 
