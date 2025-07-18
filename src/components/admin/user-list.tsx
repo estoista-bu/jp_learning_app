@@ -4,8 +4,7 @@
 import { useState, useEffect } from "react";
 import type { User } from "@/lib/types";
 import { users as allUsers } from "@/lib/users";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card } from "@/components/ui/card";
 import { ChevronRight } from "lucide-react";
 
 interface UserListProps {
@@ -23,30 +22,23 @@ export function UserList({ onSelectUser }: UserListProps) {
   }, []);
 
   return (
-    <ScrollArea className="flex-1">
-      <div className="p-4 space-y-2">
-        <div className="px-2">
-          <h2 className="text-lg font-semibold">Users</h2>
-          <p className="text-sm text-muted-foreground">Select a user to view their stats.</p>
-        </div>
-        {users.map((user) => (
-          <Card 
-            key={user.id} 
-            className="cursor-pointer hover:bg-muted"
-            onClick={() => onSelectUser(user)}
-          >
-            <div className="p-4 flex justify-between items-center">
-              <div>
-                <p className="font-semibold">{user.username}</p>
-                <p className="text-xs text-muted-foreground uppercase">{user.role}</p>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+    <div className="space-y-2">
+      <p className="text-sm text-muted-foreground px-2">Select a user to view their detailed statistics.</p>
+      {users.map((user) => (
+        <Card 
+          key={user.id} 
+          className="cursor-pointer hover:bg-muted"
+          onClick={() => onSelectUser(user)}
+        >
+          <div className="p-4 flex justify-between items-center">
+            <div>
+              <p className="font-semibold">{user.username}</p>
+              <p className="text-xs text-muted-foreground uppercase">{user.role}</p>
             </div>
-          </Card>
-        ))}
-      </div>
-    </ScrollArea>
+            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+          </div>
+        </Card>
+      ))}
+    </div>
   );
 }
-
-    
