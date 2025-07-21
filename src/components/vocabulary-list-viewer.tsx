@@ -28,9 +28,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { MoreHorizontal, Star } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ScrollArea } from "./ui/scroll-area";
 import { ClickableReading } from "./clickable-reading";
+import { Badge } from "./ui/badge";
+import { cn } from "@/lib/utils";
 
 interface VocabularyListViewerProps {
   words: VocabularyWord[];
@@ -41,8 +43,31 @@ interface VocabularyListViewerProps {
   masteryThreshold: number;
 }
 
+interface WeightedWord extends VocabularyWord {
+  weight: number;
+}
+
 export function VocabularyListViewer({ words, onEdit, onRemove, onSelectWord, masteryStats, masteryThreshold }: VocabularyListViewerProps) {
   const [deletingWord, setDeletingWord] = useState<VocabularyWord | null>(null);
+
+  const weightedAndSortedWords = useMemo(() => {
+    const weighted = words.map(word => {
+      const stats = masteryStats[word.id] || { correct: 0, incorrect: 0 };
+      const weight = Math.max(1, 1 + (stats.incorrect * 2) - stats.correct);
+      return { ...word, weight };
+    });
+    return weighted.sort((a, b) => b.weight - a.weight);
+  }, [words, masteryStats]);
+
+  const getWeightCategory = (weight: number): { label: 'Low' | 'Moderate' | 'High'; className: string } => {
+    if (weight >= 100) {
+      return { label: 'High', className: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300' };
+    }
+    if (weight >= 10) {
+      return { label: 'Moderate', className: 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300' };
+    }
+    return { label: 'Low', className: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' };
+  };
 
   const handleConfirmRemove = (id: string) => {
     onRemove(id);
@@ -57,6 +82,7 @@ export function VocabularyListViewer({ words, onEdit, onRemove, onSelectWord, ma
             <TableRow>
               <TableHead>Japanese</TableHead>
               <TableHead>Meaning</TableHead>
+              <TableHead className="w-[100px]">Weight</TableHead>
               <TableHead className="w-[80px] text-center">
                  <Star className="h-4 w-4 inline-block" />
               </TableHead>
@@ -64,14 +90,20 @@ export function VocabularyListViewer({ words, onEdit, onRemove, onSelectWord, ma
             </TableRow>
           </TableHeader>
           <TableBody>
-            {words.map((word) => {
+            {weightedAndSortedWords.map((word) => {
               const isMastered = (masteryStats[word.id]?.correct || 0) >= masteryThreshold;
+              const weightCategory = getWeightCategory(word.weight);
               return (
               <TableRow key={word.id} onClick={() => onSelectWord(word)} className="cursor-pointer">
                 <TableCell className="font-medium">
                   <ClickableReading japanese={word.japanese} reading={word.reading} />
                 </TableCell>
                 <TableCell>{word.meaning}</TableCell>
+                <TableCell>
+                  <Badge variant="outline" className={cn("border-transparent", weightCategory.className)}>
+                    {weightCategory.label}
+                  </Badge>
+                </TableCell>
                 <TableCell className="text-center">
                   {isMastered && <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 inline-block" />}
                 </TableCell>
