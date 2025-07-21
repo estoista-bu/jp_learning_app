@@ -8,6 +8,11 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import * as wanakana from 'wanakana';
 import { ArrowRight } from "lucide-react";
+import { Progress } from "./ui/progress";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "./ui/card";
+import { Checkbox } from "./ui/checkbox";
+import { Label } from "./ui/label";
+import { ScrollArea } from "./ui/scroll-area";
 
 type AnswerStatus = "idle" | "correct" | "incorrect";
 
@@ -27,6 +32,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [inputValue, setInputValue] = useState('');
   const [answerStatus, setAnswerStatus] = useState<AnswerStatus>('idle');
+  const [showStats, setShowStats] = useState(false);
   
   const inputRef = useRef<HTMLInputElement>(null);
   const nextButtonRef = useRef<HTMLButtonElement>(null);
@@ -43,18 +49,17 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
   }, [words, userId]);
   
   useEffect(() => {
-    if (answerStatus === 'idle' && inputRef.current) {
+    if (inputRef.current) {
+      if (answerStatus === 'idle') {
         wanakana.bind(inputRef.current, { IMEMode: 'toHiragana' });
         inputRef.current.focus();
-    } else if (answerStatus !== 'idle' && nextButtonRef.current) {
-        nextButtonRef.current.focus();
+      } else {
+         wanakana.unbind(inputRef.current);
+      }
     }
-    
-    return () => {
-        if (inputRef.current) {
-            wanakana.unbind(inputRef.current);
-        }
-    }
+     if (answerStatus !== 'idle' && nextButtonRef.current) {
+         nextButtonRef.current.focus();
+     }
   }, [historyIndex, answerStatus]);
 
   const selectNextWord = useCallback(() => {
@@ -113,9 +118,10 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
     }
     
     if (guessed) {
-       masteryStats[currentWord.id].correct += 1;
+       masteryStats[currentWord.id].correct = (masteryStats[currentWord.id].correct || 0) + 1;
     } else {
        masteryStats[currentWord.id].correct = Math.max(0, (masteryStats[currentWord.id].correct || 0) - 1);
+       masteryStats[currentWord.id].incorrect = (masteryStats[currentWord.id].incorrect || 0) + 1;
     }
     localStorage.setItem(`wordMasteryStats_${userId}`, JSON.stringify(masteryStats));
 
@@ -153,7 +159,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
   const handleDontKnow = () => {
     if (answerStatus !== 'idle') return;
     const incorrectAnswer = "---";
-    checkAnswer(incorrectAnswer);
+    handleGuess(false, incorrectAnswer);
   }
 
   const currentWord = historyIndex >= 0 ? history[historyIndex] : null;
@@ -169,6 +175,8 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
     if (answerStatus === 'incorrect') return 'border-red-600 focus-visible:ring-red-600';
     return 'border-input';
   }
+  
+  const maxWeight = Math.max(...weightedWords.map(w => w.weight), 1);
 
 
   return (
@@ -215,12 +223,40 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
                     </Button>
                  )}
             </div>
+            
+            {showStats && (
+                <Card className="w-full max-w-md animate-in fade-in">
+                    <CardHeader>
+                        <CardTitle>Word Weights</CardTitle>
+                        <CardDescription>
+                            Higher weights mean a word is more likely to appear next.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <ScrollArea className="h-48">
+                            <div className="space-y-4">
+                                {weightedWords.sort((a, b) => b.weight - a.weight).map(word => (
+                                    <div key={word.id}>
+                                        <div className="flex justify-between text-sm mb-1">
+                                            <span className="truncate pr-2">{word.japanese}</span>
+                                            <span className="font-mono text-muted-foreground">{word.weight.toFixed(2)}</span>
+                                        </div>
+                                        <Progress value={(word.weight / maxWeight) * 100} />
+                                    </div>
+                                ))}
+                            </div>
+                        </ScrollArea>
+                    </CardContent>
+                </Card>
+            )}
+
         </div>
         
         <footer className="flex items-center justify-between p-4 border-t">
-            <p className="text-sm text-muted-foreground w-1/3">
-                {/* Placeholder for future use */}
-            </p>
+             <div className="w-1/3 flex items-center space-x-2">
+                <Checkbox id="show-stats" checked={showStats} onCheckedChange={(checked) => setShowStats(!!checked)} />
+                <Label htmlFor="show-stats" className="text-sm font-medium">Stats</Label>
+            </div>
             <p className="text-sm text-muted-foreground w-1/3 text-center">
                 Test: {historyIndex + 1}
             </p>
