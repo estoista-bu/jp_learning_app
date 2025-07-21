@@ -112,7 +112,7 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
 
 
   const handleGuess = useCallback((guessed: boolean) => {
-    if (!currentWord) return; // Removed status check to allow update after processing
+    if (!currentWord || status !== 'idle') return;
     
     setSessionTotal(prev => prev + 1);
     if (guessed) {
@@ -147,7 +147,7 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
             return w;
         });
     });
-  }, [currentWord, userId]);
+  }, [currentWord, userId, status]);
 
   const checkAnswer = useCallback((spokenText: string) => {
     if (!currentWord) return;
@@ -303,7 +303,7 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
       </div>
       
       <div className="min-h-[120px]">
-        {transcript && (
+        {transcript && (status === 'correct' || status === 'incorrect') && (
           <div className="space-y-4 animate-in fade-in">
             <div className={cn(
               "p-4 rounded-lg text-center",
