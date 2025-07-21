@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import * as wanakana from 'wanakana';
+import { ArrowRight } from "lucide-react";
 
-type AnimationDirection = "left" | "right" | "none";
 type AnswerStatus = "idle" | "correct" | "incorrect";
 
 interface MemoryTestViewerProps {
@@ -125,8 +125,6 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
     });
 
     setAnswerStatus(guessed ? 'correct' : 'incorrect');
-
-    setTimeout(() => goToNext(), guessed ? 800 : 2000);
   };
   
   const checkAnswer = (e: React.FormEvent) => {
@@ -189,6 +187,11 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
                         {currentWord.reading}
                     </div>
                  )}
+                 {answerStatus !== 'idle' && (
+                    <Button type="button" onClick={goToNext} className="w-full mt-4">
+                        Next <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                 )}
             </form>
         </div>
         
@@ -200,9 +203,11 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
                 Test: {historyIndex + 1}
             </p>
             <div className="w-1/3 flex justify-end">
-                <Button onClick={() => handleGuess(false)} variant="outline" disabled={answerStatus !== 'idle'}>
-                   I don't know
-                </Button>
+                {answerStatus === 'idle' && (
+                    <Button onClick={() => handleGuess(false)} variant="outline" disabled={answerStatus !== 'idle'}>
+                       I don't know
+                    </Button>
+                )}
             </div>
         </footer>
     </div>
