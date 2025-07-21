@@ -246,7 +246,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
                     </CardHeader>
                     <CardContent>
                         <ScrollArea className="h-48">
-                            <div className="space-y-4">
+                            <div className="space-y-4 pr-3">
                                 {weightedWords.sort((a, b) => b.weight - a.weight).map(word => (
                                     <div key={word.id}>
                                         <div className="flex justify-between text-sm mb-1">
