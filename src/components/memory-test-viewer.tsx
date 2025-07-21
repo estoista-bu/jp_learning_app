@@ -136,7 +136,9 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
     if (e.key === 'Enter') {
       e.preventDefault();
       if (answerStatus === 'idle') {
-        checkAnswer(e.currentTarget.value);
+        const value = e.currentTarget.value;
+        setInputValue(value); // Sync state with the final input value
+        checkAnswer(value);
       } else {
         goToNext();
       }
@@ -144,8 +146,11 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
   };
 
   const handleDontKnow = () => {
-    // Set input to something incorrect to ensure handleGuess(false) is called
-    checkAnswer("---");
+    if (answerStatus !== 'idle') return;
+    // Set input to something guaranteed to be incorrect
+    const incorrectAnswer = "---";
+    setInputValue(incorrectAnswer);
+    checkAnswer(incorrectAnswer);
   }
 
   const currentWord = historyIndex >= 0 ? history[historyIndex] : null;
