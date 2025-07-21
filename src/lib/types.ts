@@ -67,6 +67,7 @@ export type Group = {
 export type WordMasteryStats = {
   correct: number;
   incorrect: number;
+  weight?: number;
 };
 
 

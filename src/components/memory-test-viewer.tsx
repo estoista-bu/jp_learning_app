@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import type { VocabularyWord } from "@/lib/types";
+import type { VocabularyWord, WordMasteryStats } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,11 @@ type AnswerStatus = "idle" | "correct" | "incorrect";
 
 interface WeightedWord extends VocabularyWord {
   weight: number;
+}
+
+interface MemoryTestViewerProps {
+  words: VocabularyWord[];
+  userId: string;
 }
 
 export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
@@ -52,15 +57,12 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
   }, [sessionCorrect, sessionTotal, userId]);
 
   useEffect(() => {
-    // We get mastery stats to weight the words, but don't use the old memoryTestResults
-    const masteryStats = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
+    const masteryStats: Record<string, WordMasteryStats> = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
     const initialWords = words.map(word => {
-        const stats = masteryStats[word.id] || { correct: 0, incorrect: 0 };
-        // Simple weighting: more incorrect answers = higher weight
-        const weight = 1 + (stats.incorrect * 2) - stats.correct;
+        const stats = masteryStats[word.id] || {};
         return { 
             ...word, 
-            weight: Math.max(1, weight) // ensure weight is at least 1
+            weight: stats.weight ?? 1 // Default weight to 1 if not present
         };
     });
     setWeightedWords(initialWords);
@@ -151,25 +153,27 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
     }
 
     // This part updates word-specific stats for future test weighting
-    const masteryStats = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
+    const masteryStats: Record<string, WordMasteryStats> = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
     if (!masteryStats[currentWord.id]) {
-      masteryStats[currentWord.id] = { correct: 0, incorrect: 0 };
+      masteryStats[currentWord.id] = { correct: 0, incorrect: 0, weight: 1 };
     }
     
+    let currentWeight = masteryStats[currentWord.id].weight ?? 1;
+
     if (guessed) {
        masteryStats[currentWord.id].correct = (masteryStats[currentWord.id].correct || 0) + 1;
+       currentWeight = currentWeight / 8;
     } else {
-       masteryStats[currentWord.id].correct = Math.max(0, (masteryStats[currentWord.id].correct || 0) - 1);
        masteryStats[currentWord.id].incorrect = (masteryStats[currentWord.id].incorrect || 0) + 1;
+       currentWeight = currentWeight * 10;
     }
+    masteryStats[currentWord.id].weight = currentWeight;
     localStorage.setItem(`wordMasteryStats_${userId}`, JSON.stringify(masteryStats));
 
     setWeightedWords(prevWords => {
         return prevWords.map(w => {
             if (w.id === currentWord.id) {
-                const stats = masteryStats[w.id];
-                const newWeight = 1 + (stats.incorrect * 2) - stats.correct;
-                return { ...w, weight: Math.max(1, newWeight) };
+                return { ...w, weight: currentWeight };
             }
             return w;
         });

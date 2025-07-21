@@ -43,18 +43,13 @@ interface VocabularyListViewerProps {
   masteryThreshold: number;
 }
 
-interface WeightedWord extends VocabularyWord {
-  weight: number;
-}
-
 export function VocabularyListViewer({ words, onEdit, onRemove, onSelectWord, masteryStats, masteryThreshold }: VocabularyListViewerProps) {
   const [deletingWord, setDeletingWord] = useState<VocabularyWord | null>(null);
 
   const weightedAndSortedWords = useMemo(() => {
     const weighted = words.map(word => {
-      const stats = masteryStats[word.id] || { correct: 0, incorrect: 0 };
-      const weight = Math.max(1, 1 + (stats.incorrect * 2) - stats.correct);
-      return { ...word, weight };
+      const stats = masteryStats[word.id] || { correct: 0, incorrect: 0, weight: 1 };
+      return { ...word, weight: stats.weight ?? 1 };
     });
     return weighted.sort((a, b) => b.weight - a.weight);
   }, [words, masteryStats]);
