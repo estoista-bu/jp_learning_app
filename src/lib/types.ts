@@ -64,6 +64,12 @@ export type Group = {
   description: string;
 }
 
+export type WordMasteryStats = {
+  correct: number;
+  incorrect: number;
+};
+
+
 // Schema for AI Grammar Checker Input
 export const GrammarCheckInputSchema = z.object({
   text: z.string().describe('The Japanese text to be checked for grammatical errors.'),

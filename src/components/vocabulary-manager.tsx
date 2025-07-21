@@ -22,7 +22,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
-import type { Deck, VocabularyWord } from "@/lib/types";
+import type { Deck, VocabularyWord, WordMasteryStats } from "@/lib/types";
 import { DeckForm } from "@/components/deck-form";
 import { allWords as initialWords } from "@/data/words";
 import {
@@ -52,7 +52,7 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck, userId }: V
   const [editingDeck, setEditingDeck] = useState<Deck | null>(null);
   const [deletingDeck, setDeletingDeck] = useState<Deck | null>(null);
   const [selectedKana, setSelectedKana] = useState<KanaSelection>("hiragana");
-  const [masteryStats, setMasteryStats] = useState<Record<string, { correct: number }>>({});
+  const [masteryStats, setMasteryStats] = useState<Record<string, WordMasteryStats>>({});
 
   useEffect(() => {
     const storedMasteryStats = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');

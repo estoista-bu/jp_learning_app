@@ -97,27 +97,32 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
   }, [historyIndex, history.length, selectNextWord]);
 
   
-  const handleGuess = (guessed: boolean) => {
+  const handleGuess = (guessed: boolean, answer: string) => {
     if (historyIndex < 0) return;
     
     const currentWord = history[historyIndex];
+    setInputValue(answer);
     
-    // Save overall result
     const memoryTestData = JSON.parse(localStorage.getItem(`memoryTestResults_${userId}`) || '{}');
     memoryTestData[currentWord.id] = guessed ? 'known' : 'unknown';
     localStorage.setItem(`memoryTestResults_${userId}`, JSON.stringify(memoryTestData));
 
-    // Save mastery stats
     const masteryStats = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
     if (!masteryStats[currentWord.id]) {
-      masteryStats[currentWord.id] = { correct: 0 };
+      masteryStats[currentWord.id] = { correct: 0, incorrect: 0 };
     }
-    if(guessed) {
+    
+    if (guessed) {
        masteryStats[currentWord.id].correct += 1;
+    } else {
+        masteryStats[currentWord.id].incorrect = (masteryStats[currentWord.id].incorrect || 0) + 1;
+        if (masteryStats[currentWord.id].incorrect >= 2) {
+            masteryStats[currentWord.id].correct = Math.max(0, masteryStats[currentWord.id].correct - 1);
+            masteryStats[currentWord.id].incorrect = 0; // Reset incorrect counter
+        }
     }
     localStorage.setItem(`wordMasteryStats_${userId}`, JSON.stringify(masteryStats));
 
-    // Update weights for this session
     setWeightedWords(prevWords => {
         return prevWords.map(w => {
             if (w.id === currentWord.id) {
@@ -134,16 +139,15 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
   const checkAnswer = (answer: string) => {
     if (answerStatus !== 'idle' || !currentWord) return;
     const isCorrect = wanakana.toHiragana(answer.trim()) === currentWord.reading;
-    handleGuess(isCorrect);
+    handleGuess(isCorrect, answer);
   };
   
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
+      const answer = e.currentTarget.value;
       if (answerStatus === 'idle') {
-        const value = e.currentTarget.value;
-        setInputValue(value);
-        checkAnswer(value);
+        checkAnswer(answer);
       } else {
         goToNext();
       }
@@ -152,9 +156,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
 
   const handleDontKnow = () => {
     if (answerStatus !== 'idle') return;
-    // Set input to something guaranteed to be incorrect
     const incorrectAnswer = "---";
-    setInputValue(incorrectAnswer);
     checkAnswer(incorrectAnswer);
   }
 
