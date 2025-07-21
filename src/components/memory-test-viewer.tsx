@@ -115,11 +115,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
     if (guessed) {
        masteryStats[currentWord.id].correct += 1;
     } else {
-        masteryStats[currentWord.id].incorrect = (masteryStats[currentWord.id].incorrect || 0) + 1;
-        if (masteryStats[currentWord.id].incorrect >= 2) {
-            masteryStats[currentWord.id].correct = Math.max(0, masteryStats[currentWord.id].correct - 1);
-            masteryStats[currentWord.id].incorrect = 0; // Reset incorrect counter
-        }
+       masteryStats[currentWord.id].correct = Math.max(0, (masteryStats[currentWord.id].correct || 0) - 1);
     }
     localStorage.setItem(`wordMasteryStats_${userId}`, JSON.stringify(masteryStats));
 
