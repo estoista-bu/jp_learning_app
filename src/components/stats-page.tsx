@@ -3,14 +3,26 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookCopy, Brain, Percent, Trophy, BarChart2, GraduationCap } from 'lucide-react';
+import { BookCopy, Brain, Percent, Trophy, BarChart2, GraduationCap, RefreshCw } from 'lucide-react';
 import { allDecks as initialDecks } from '@/data/decks';
 import { allWords } from '@/data/words';
 import { quizzes as allProvidedQuizzes } from '@/data/quizzes';
 import { grammarLessons } from '@/data/lessons';
 import type { Deck } from '@/lib/types';
 import { ScrollArea } from './ui/scroll-area';
-import { Progress } from './ui/progress';
+import { Button } from './ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from '@/hooks/use-toast';
 
 interface QuizResult {
   id?: string;
@@ -44,6 +56,8 @@ export function StatsPage({ userId }: StatsPageProps) {
     });
     const [quizMastery, setQuizMastery] = useState(0);
     const [lessonCompletion, setLessonCompletion] = useState(0);
+    const [key, setKey] = useState(Date.now()); // Used to force re-render
+    const { toast } = useToast();
 
     useEffect(() => {
         // --- Vocabulary Stats ---
@@ -136,7 +150,35 @@ export function StatsPage({ userId }: StatsPageProps) {
             setLessonCompletion((readLessonsCount / totalLessons) * 100);
         }
 
-    }, [userId]);
+    }, [userId, key]);
+
+    const handleResetStats = () => {
+        // Clear all relevant keys from localStorage
+        localStorage.removeItem(`cumulative_score_${userId}`);
+        localStorage.removeItem(`cumulative_total_${userId}`);
+        localStorage.removeItem(`pronunciation_score_${userId}`);
+        localStorage.removeItem(`pronunciation_total_${userId}`);
+        localStorage.removeItem(`quizResults_provided_${userId}`);
+        localStorage.removeItem(`quizResults_ai_${userId}`);
+        localStorage.removeItem(`wordMasteryStats_${userId}`);
+        
+        allProvidedQuizzes.forEach(quiz => {
+            localStorage.removeItem(`quiz-highscore-${quiz.id}_${userId}`);
+            localStorage.removeItem(`quiz-progress-${quiz.id}_${userId}`);
+        });
+
+        grammarLessons.forEach(lesson => {
+            localStorage.removeItem(`lesson-read-${lesson.title}_${userId}`);
+        });
+
+        // Force a re-render of the component to show the cleared stats
+        setKey(Date.now());
+
+        toast({
+            title: "Stats Reset",
+            description: "All your progress data has been cleared.",
+        });
+    };
 
     const formatRate = (correct: number, total: number) => {
         if (total === 0) return '0.0%';
@@ -153,6 +195,28 @@ export function StatsPage({ userId }: StatsPageProps) {
     return (
         <ScrollArea className="flex-1">
             <div className="p-4 space-y-6">
+                 <div className="flex justify-end">
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm">
+                                <RefreshCw className="mr-2 h-4 w-4" />
+                                Reset All Stats
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete all of your quiz scores, test results, lesson progress, and word mastery data.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleResetStats}>Confirm Reset</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </div>
                 {/* Vocabulary Section */}
                 <section>
                     <h2 className="text-xl font-headline font-bold text-primary mb-2">Vocabulary Stats</h2>
