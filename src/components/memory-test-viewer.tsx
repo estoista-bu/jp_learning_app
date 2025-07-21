@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -127,14 +126,28 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
     setAnswerStatus(guessed ? 'correct' : 'incorrect');
   };
   
-  const checkAnswer = (e: React.FormEvent) => {
-    e.preventDefault();
+  const checkAnswer = (answer: string) => {
     if (answerStatus !== 'idle' || !currentWord) return;
-
-    const isCorrect = wanakana.toHiragana(inputValue.trim()) === currentWord.reading;
+    const isCorrect = wanakana.toHiragana(answer.trim()) === currentWord.reading;
     handleGuess(isCorrect);
   };
   
+  const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (answerStatus === 'idle') {
+        checkAnswer(e.currentTarget.value);
+      } else {
+        goToNext();
+      }
+    }
+  };
+
+  const handleDontKnow = () => {
+    // Set input to something incorrect to ensure handleGuess(false) is called
+    checkAnswer("---");
+  }
+
   const currentWord = historyIndex >= 0 ? history[historyIndex] : null;
 
   const getBackgroundColor = () => {
@@ -167,7 +180,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
                  <p className="text-muted-foreground">Loading test...</p>
             )}
             
-            <form onSubmit={checkAnswer} className="w-full max-w-sm">
+            <div className="w-full max-w-sm">
                  <Input
                     ref={inputRef}
                     type="text"
@@ -175,6 +188,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
                     placeholder="Enter reading..."
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
+                    onKeyUp={handleKeyUp}
                     disabled={answerStatus !== 'idle'}
                     className={cn(
                         "h-16 text-center text-3xl font-japanese tracking-widest",
@@ -192,7 +206,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
                         Next <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                  )}
-            </form>
+            </div>
         </div>
         
         <footer className="flex items-center justify-between p-4 border-t">
@@ -204,7 +218,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
             </p>
             <div className="w-1/3 flex justify-end">
                 {answerStatus === 'idle' && (
-                    <Button onClick={() => handleGuess(false)} variant="outline" disabled={answerStatus !== 'idle'}>
+                    <Button onClick={handleDontKnow} variant="outline" disabled={answerStatus !== 'idle'}>
                        I don't know
                     </Button>
                 )}
