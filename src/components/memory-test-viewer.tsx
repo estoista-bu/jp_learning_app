@@ -156,14 +156,14 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
   const currentWord = historyIndex >= 0 ? history[historyIndex] : null;
 
   const getBackgroundColor = () => {
-    if (answerStatus === 'correct') return 'bg-green-100 dark:bg-green-900/50';
-    if (answerStatus === 'incorrect') return 'bg-red-100 dark:bg-red-900/50';
+    if (answerStatus === 'correct') return 'bg-green-200 dark:bg-green-900';
+    if (answerStatus === 'incorrect') return 'bg-red-200 dark:bg-red-900';
     return 'bg-background';
   }
   
   const getInputBorderColor = () => {
-    if (answerStatus === 'correct') return 'border-green-500 focus-visible:ring-green-500';
-    if (answerStatus === 'incorrect') return 'border-red-500 focus-visible:ring-red-500';
+    if (answerStatus === 'correct') return 'border-green-600 focus-visible:ring-green-600';
+    if (answerStatus === 'incorrect') return 'border-red-600 focus-visible:ring-red-600';
     return 'border-input';
   }
 
@@ -202,7 +202,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
                     )}
                  />
                  {answerStatus === 'incorrect' && currentWord && (
-                    <div className="mt-2 text-center text-lg font-semibold text-red-600 dark:text-red-400 animate-in fade-in">
+                    <div className="mt-2 text-center text-lg font-semibold text-red-700 dark:text-red-400 animate-in fade-in">
                         {currentWord.reading}
                     </div>
                  )}
