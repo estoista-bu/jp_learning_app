@@ -2,19 +2,23 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { VocabularyWord } from '@/lib/types';
+import type { VocabularyWord, WordMasteryStats } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Mic, MicOff, ArrowRight, RefreshCw, XCircle, CheckCircle, ServerCrash } from 'lucide-react';
-import { Progress } from './ui/progress';
 import { cn } from '@/lib/utils';
+
+interface WeightedWord extends VocabularyWord {
+  weight: number;
+}
 
 interface SpeechTestViewerProps {
   words: VocabularyWord[];
+  userId: string;
 }
 
-type TestStatus = 'idle' | 'listening' | 'processing' | 'correct' | 'incorrect' | 'finished' | 'error';
+type TestStatus = 'idle' | 'listening' | 'processing' | 'correct' | 'incorrect' | 'error';
 
 // Helper to get the SpeechRecognition object, handling browser prefixes
 const getSpeechRecognition = () => {
@@ -24,16 +28,111 @@ const getSpeechRecognition = () => {
   return null;
 };
 
-export function SpeechTestViewer({ words }: SpeechTestViewerProps) {
-  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
+  const [weightedWords, setWeightedWords] = useState<WeightedWord[]>([]);
+  const [currentWord, setCurrentWord] = useState<WeightedWord | null>(null);
   const [status, setStatus] = useState<TestStatus>('idle');
   const [transcript, setTranscript] = useState('');
-  const [score, setScore] = useState(0);
+  const [sessionCorrect, setSessionCorrect] = useState(0);
+  const [sessionTotal, setSessionTotal] = useState(0);
   const [isSupported, setIsSupported] = useState(true);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const nextButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const masteryStats: Record<string, WordMasteryStats> = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
+    const initialWords = words.map(word => {
+        const stats = masteryStats[word.id] || { correct: 0, incorrect: 0, weight: 1 };
+        return { 
+            ...word, 
+            weight: stats.weight ?? 1 // Default weight to 1 if not present
+        };
+    });
+    setWeightedWords(initialWords);
+    setCurrentWord(null);
+  }, [words, userId]);
+
+  const selectNextWord = useCallback(() => {
+    if (weightedWords.length === 0) return null;
+
+    const totalWeight = weightedWords.reduce((sum, word) => sum + word.weight, 0);
+    let random = Math.random() * totalWeight;
+    
+    for (const word of weightedWords) {
+        random -= word.weight;
+        if (random <= 0) {
+            return word;
+        }
+    }
+    // Fallback in case of floating point issues
+    return weightedWords[weightedWords.length - 1];
+  }, [weightedWords]);
+
+  useEffect(() => {
+    if (weightedWords.length > 0 && !currentWord) {
+      const firstWord = selectNextWord();
+      if (firstWord) {
+        setCurrentWord(firstWord);
+      }
+    }
+  }, [weightedWords, currentWord, selectNextWord]);
   
-  const currentWord = words[currentWordIndex];
+  const goToNext = useCallback(() => {
+    const nextWord = selectNextWord();
+    if (nextWord) {
+        setCurrentWord(nextWord);
+    } else {
+        setCurrentWord(null);
+    }
+    setTranscript('');
+    setStatus('idle');
+  }, [selectNextWord]);
+  
+   useEffect(() => {
+     if (status !== 'idle' && nextButtonRef.current) {
+         nextButtonRef.current.focus();
+     }
+  }, [status]);
+
+
+  const handleGuess = (guessed: boolean) => {
+    if (!currentWord || status !== 'listening') return;
+    
+    setSessionTotal(prev => prev + 1);
+    if (guessed) {
+      setSessionCorrect(prev => prev + 1);
+      setStatus('correct');
+    } else {
+      setStatus('incorrect');
+    }
+
+    const masteryStats: Record<string, WordMasteryStats> = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
+    if (!masteryStats[currentWord.id]) {
+      masteryStats[currentWord.id] = { correct: 0, incorrect: 0, weight: 1 };
+    }
+    
+    let currentWeight = masteryStats[currentWord.id].weight ?? 1;
+
+    if (guessed) {
+       masteryStats[currentWord.id].correct = (masteryStats[currentWord.id].correct || 0) + 1;
+       currentWeight = currentWeight / 8;
+    } else {
+       masteryStats[currentWord.id].incorrect = (masteryStats[currentWord.id].incorrect || 0) + 1;
+       currentWeight = currentWeight * 10;
+    }
+    masteryStats[currentWord.id].weight = currentWeight;
+    localStorage.setItem(`wordMasteryStats_${userId}`, JSON.stringify(masteryStats));
+
+    setWeightedWords(prevWords => {
+        return prevWords.map(w => {
+            if (w.id === currentWord.id) {
+                return { ...w, weight: currentWeight };
+            }
+            return w;
+        });
+    });
+  };
 
   const checkAnswer = useCallback((spokenText: string) => {
     if (!currentWord) return;
@@ -42,13 +141,8 @@ export function SpeechTestViewer({ words }: SpeechTestViewerProps) {
     const normalizedReading = currentWord.reading.replace(/\s/g, '');
     const normalizedJapanese = currentWord.japanese.replace(/\s/g, '');
 
-    if (normalizedSpoken === normalizedReading || normalizedSpoken === normalizedJapanese) {
-      setStatus('correct');
-      setScore(s => s + 1);
-    } else {
-      setStatus('incorrect');
-    }
-  }, [currentWord]);
+    handleGuess(normalizedSpoken === normalizedReading || normalizedSpoken === normalizedJapanese);
+  }, [currentWord, handleGuess]);
 
 
   useEffect(() => {
@@ -80,8 +174,6 @@ export function SpeechTestViewer({ words }: SpeechTestViewerProps) {
     };
     
     const handleEnd = () => {
-        // Only set back to idle if we were in the listening state.
-        // This prevents overriding 'correct' or 'incorrect' statuses.
         setStatus(currentStatus => currentStatus === 'listening' ? 'idle' : currentStatus);
     };
 
@@ -111,21 +203,13 @@ export function SpeechTestViewer({ words }: SpeechTestViewerProps) {
     }
   };
 
-  const handleNextWord = () => {
-    if (currentWordIndex < words.length - 1) {
-      setCurrentWordIndex(i => i + 1);
-      setStatus('idle');
-      setTranscript('');
-    } else {
-      setStatus('finished');
-    }
-  };
 
   const handleRestart = () => {
-    setCurrentWordIndex(0);
-    setScore(0);
+    setSessionCorrect(0);
+    setSessionTotal(0);
     setStatus('idle');
     setTranscript('');
+    goToNext();
   };
 
   if (!isSupported) {
@@ -142,28 +226,6 @@ export function SpeechTestViewer({ words }: SpeechTestViewerProps) {
     );
   }
 
-  if (status === 'finished') {
-    return (
-      <div className="p-4 flex-1 flex flex-col items-center justify-center text-center space-y-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Test Complete!</CardTitle>
-            <CardDescription>You scored</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-4xl font-bold text-primary">{score} / {words.length}</p>
-            <p className="text-2xl font-semibold text-muted-foreground">({((score / words.length) * 100).toFixed(0)}%)</p>
-            <Button onClick={handleRestart} className="mt-6">
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Test Again
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-
   if (!currentWord) {
      return (
         <div className="p-4 flex-1 flex items-center justify-center">
@@ -171,15 +233,26 @@ export function SpeechTestViewer({ words }: SpeechTestViewerProps) {
         </div>
      );
   }
+  
+  const handleKeyUp = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (status === 'correct' || status === 'incorrect') {
+        goToNext();
+      }
+    }
+  };
 
   return (
-    <div className="flex flex-col w-full h-full p-4 space-y-4">
+    <div className="flex flex-col w-full h-full p-4 space-y-4" onKeyUp={handleKeyUp}>
       <div className="space-y-2">
         <div className="flex justify-between items-center text-sm text-muted-foreground">
-          <p>Word {currentWordIndex + 1} of {words.length}</p>
-          <p>Score: {score}</p>
+           <Button onClick={handleRestart} variant="outline" size="sm">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Reset Score
+            </Button>
+          <p>Session Score: {sessionCorrect} / {sessionTotal}</p>
         </div>
-        <Progress value={(currentWordIndex / words.length) * 100} />
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6">
@@ -225,8 +298,8 @@ export function SpeechTestViewer({ words }: SpeechTestViewerProps) {
             </div>
             
             {(status === 'correct' || status === 'incorrect') && (
-              <Button onClick={handleNextWord} className="w-full">
-                {currentWordIndex === words.length - 1 ? 'Finish Test' : 'Next'}
+              <Button ref={nextButtonRef} onClick={goToNext} className="w-full">
+                Next
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             )}

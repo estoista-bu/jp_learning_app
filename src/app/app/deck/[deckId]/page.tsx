@@ -244,9 +244,9 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
                     masteryThreshold={MASTERY_THRESHOLD}
                 />;
       case "test":
-        return <MemoryTestViewer words={words} isKana={isKanaDeck} userId={userId} />;
+        return <MemoryTestViewer words={words} userId={userId} />;
        case "speech":
-        return <SpeechTestViewer words={shuffledWords} />;
+        return <SpeechTestViewer words={words} userId={userId} />;
        case "list":
         return <VocabularyListViewer 
                     words={shuffledWords} 
