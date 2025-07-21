@@ -28,7 +28,6 @@ interface MemoryTestViewerProps {
 export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
   const [weightedWords, setWeightedWords] = useState<WeightedWord[]>([]);
   const [currentWord, setCurrentWord] = useState<WeightedWord | null>(null);
-  const [seenWords, setSeenWords] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [answerStatus, setAnswerStatus] = useState<AnswerStatus>('idle');
   const [showStats, setShowStats] = useState(false);
@@ -66,41 +65,30 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
         };
     });
     setWeightedWords(initialWords);
-    setSeenWords([]);
     setCurrentWord(null);
   }, [words, userId]);
   
   const selectNextWord = useCallback(() => {
     if (weightedWords.length === 0) return null;
 
-    // Filter for words not yet seen in this cycle
-    let availableWords = weightedWords.filter(w => !seenWords.includes(w.id));
-
-    // If all words have been seen, reset the seen list and use all words
-    if (availableWords.length === 0) {
-        setSeenWords([]);
-        availableWords = weightedWords;
-    }
-
-    const totalWeight = availableWords.reduce((sum, word) => sum + word.weight, 0);
+    const totalWeight = weightedWords.reduce((sum, word) => sum + word.weight, 0);
     let random = Math.random() * totalWeight;
     
-    for (const word of availableWords) {
+    for (const word of weightedWords) {
         random -= word.weight;
         if (random <= 0) {
             return word;
         }
     }
     // Fallback in case of floating point issues
-    return availableWords[availableWords.length - 1];
-  }, [weightedWords, seenWords]);
+    return weightedWords[weightedWords.length - 1];
+  }, [weightedWords]);
 
   useEffect(() => {
     if (weightedWords.length > 0 && !currentWord) {
       const firstWord = selectNextWord();
       if (firstWord) {
         setCurrentWord(firstWord);
-        setSeenWords([firstWord.id]);
         setIsEnterLocked(true); // Lock on initial load
       }
     }
@@ -119,7 +107,6 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
     const nextWord = selectNextWord();
     if (nextWord) {
         setCurrentWord(nextWord);
-        setSeenWords(prev => [...prev, nextWord.id]);
     } else {
         // Handle case where all words are exhausted or no words are available
         setCurrentWord(null);
@@ -194,7 +181,10 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
     if (e.key === 'Enter') {
       if (answerStatus === 'idle' && !isEnterLocked) {
         e.preventDefault();
-        checkAnswer(e.currentTarget.value);
+        checkAnswer(inputValue);
+      } else if (answerStatus !== 'idle') {
+        e.preventDefault();
+        goToNext();
       }
     }
   };
@@ -221,7 +211,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
 
 
   return (
-    <div className={cn("flex flex-col w-full h-full transition-colors duration-300", getBackgroundColor())}>
+    <div className={cn("flex flex-col w-full h-full transition-colors duration-300", getBackgroundColor())} onKeyUp={handleKeyUp}>
         <div className="flex-1 flex flex-col items-center justify-center p-4 overflow-hidden space-y-8">
             {currentWord ? (
             <div
@@ -245,7 +235,6 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
                     placeholder="Enter reading..."
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    onKeyUp={handleKeyUp}
                     disabled={answerStatus !== 'idle'}
                     className={cn(
                         "h-16 text-center text-3xl font-japanese tracking-widest",
@@ -312,3 +301,5 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
     </div>
   );
 }
+
+    
