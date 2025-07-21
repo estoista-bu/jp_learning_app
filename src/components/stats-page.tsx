@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookCopy, Brain, Percent, Trophy, BarChart2, GraduationCap } from 'lucide-react';
+import { BookCopy, Brain, Percent, Trophy, BarChart2, GraduationCap, MicVocal } from 'lucide-react';
 import { allDecks as initialDecks } from '@/data/decks';
 import { allWords } from '@/data/words';
 import { quizzes as allProvidedQuizzes } from '@/data/quizzes';
@@ -35,7 +35,8 @@ interface StatsPageProps {
 
 export function StatsPage({ userId }: StatsPageProps) {
     const [deckStats, setDeckStats] = useState<{ name: string; wordCount: number; isCustom: boolean }[]>([]);
-    const [knownWordsRate, setKnownWordsRate] = useState(0);
+    const [memoryRate, setMemoryRate] = useState(0);
+    const [pronunciationRate, setPronunciationRate] = useState(0);
     const [quizStats, setQuizStats] = useState<{ provided: QuizRates; ai: QuizRates }>({
         provided: { total: 0, correct: 0, dailyCorrect: 0, dailyTotal: 0, weeklyCorrect: 0, weeklyTotal: 0, monthlyCorrect: 0, monthlyTotal: 0 },
         ai: { total: 0, correct: 0, dailyCorrect: 0, dailyTotal: 0, weeklyCorrect: 0, weeklyTotal: 0, monthlyCorrect: 0, monthlyTotal: 0 }
@@ -57,21 +58,23 @@ export function StatsPage({ userId }: StatsPageProps) {
         });
         setDeckStats(calculatedDeckStats);
 
-        // --- New Known Words Rate Logic ---
+        // --- Memory Test Rate ---
         const memoryScore = parseInt(localStorage.getItem(`cumulative_score_${userId}`) || '0', 10);
         const memoryTotal = parseInt(localStorage.getItem(`cumulative_total_${userId}`) || '0', 10);
-        const pronunciationScore = parseInt(localStorage.getItem(`pronunciation_score_${userId}`) || '0', 10);
-        const pronunciationTotal = parseInt(localStorage.getItem(`pronunciation_total_${userId}`) || '0', 10);
-        
-        const totalCorrect = memoryScore + pronunciationScore;
-        const totalAttempted = memoryTotal + pronunciationTotal;
-
-        if (totalAttempted > 0) {
-            setKnownWordsRate((totalCorrect / totalAttempted) * 100);
+        if (memoryTotal > 0) {
+            setMemoryRate((memoryScore / memoryTotal) * 100);
         } else {
-            setKnownWordsRate(0);
+            setMemoryRate(0);
         }
 
+        // --- Pronunciation Test Rate ---
+        const pronunciationScore = parseInt(localStorage.getItem(`pronunciation_score_${userId}`) || '0', 10);
+        const pronunciationTotal = parseInt(localStorage.getItem(`pronunciation_total_${userId}`) || '0', 10);
+        if (pronunciationTotal > 0) {
+            setPronunciationRate((pronunciationScore / pronunciationTotal) * 100);
+        } else {
+            setPronunciationRate(0);
+        }
 
         // --- Quiz Stats ---
         const now = new Date();
@@ -172,16 +175,28 @@ export function StatsPage({ userId }: StatsPageProps) {
                                 <p className="text-xs text-muted-foreground mt-2">* Custom deck</p>
                             </CardContent>
                         </Card>
-                        <Card>
+                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-base">
                                     <Brain className="h-5 w-5 text-accent" />
-                                    <span>Known Words Rate</span>
+                                    <span>Recall Rate</span>
                                 </CardTitle>
-                                <CardDescription>Cumulative score from Memory &amp; Speech Tests.</CardDescription>
+                                <CardDescription>Cumulative score from Memory Tests.</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-3xl font-bold text-center">{knownWordsRate.toFixed(1)}<span className="text-lg">%</span></p>
+                                <p className="text-3xl font-bold text-center">{memoryRate.toFixed(1)}<span className="text-lg">%</span></p>
+                            </CardContent>
+                        </Card>
+                         <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-base">
+                                    <MicVocal className="h-5 w-5 text-accent" />
+                                    <span>Pronunciation Rate</span>
+                                </CardTitle>
+                                <CardDescription>Cumulative score from Speech Tests.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-3xl font-bold text-center">{pronunciationRate.toFixed(1)}<span className="text-lg">%</span></p>
                             </CardContent>
                         </Card>
                     </div>
