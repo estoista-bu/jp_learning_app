@@ -182,22 +182,18 @@ export function StatsPage({ userId }: StatsPageProps) {
                                     <Brain className="h-5 w-5 text-accent" />
                                     <span>Test Performance</span>
                                 </CardTitle>
-                                <CardDescription>Cumulative scores from your practice tests.</CardDescription>
+                                <CardDescription>Cumulative scores from practice.</CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div>
-                                    <div className="flex justify-between items-center text-sm">
-                                        <span>Recall Rate</span>
-                                        <span className="font-bold">{memoryRate.toFixed(1)}%</span>
+                            <CardContent>
+                               <div className="grid grid-cols-2 gap-4 text-center">
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">Recall Rate</p>
+                                        <p className="text-3xl font-bold text-primary">{memoryRate.toFixed(1)}<span className="text-lg">%</span></p>
                                     </div>
-                                    <Progress value={memoryRate} className="h-2 mt-1" />
-                                </div>
-                                <div>
-                                    <div className="flex justify-between items-center text-sm">
-                                        <span>Pronunciation Rate</span>
-                                        <span className="font-bold">{pronunciationRate.toFixed(1)}%</span>
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">Pronunciation Rate</p>
+                                        <p className="text-3xl font-bold text-primary">{pronunciationRate.toFixed(1)}<span className="text-lg">%</span></p>
                                     </div>
-                                    <Progress value={pronunciationRate} className="h-2 mt-1" />
                                 </div>
                             </CardContent>
                         </Card>
