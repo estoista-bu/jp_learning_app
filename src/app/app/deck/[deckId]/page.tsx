@@ -3,7 +3,7 @@
 
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus, Eye, BrainCircuit, ListChecks } from "lucide-react";
+import { ArrowLeft, Plus, Eye, BrainCircuit, ListChecks, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { allDecks as initialDecks } from "@/data/decks";
@@ -12,6 +12,7 @@ import type { Deck, VocabularyWord, User, UserRole, WordMasteryStats } from "@/l
 import { FlashcardViewer } from "@/components/flashcard-viewer";
 import { MemoryTestViewer } from "@/components/memory-test-viewer";
 import { VocabularyListViewer } from "@/components/vocabulary-list-viewer";
+import { SpeechTestViewer } from "@/components/speech-test-viewer";
 import {
   Sheet,
   SheetContent,
@@ -25,7 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
 type VocabularyFormData = Omit<VocabularyWord, "id" | "deckId">;
-type DeckViewMode = "select" | "view" | "test" | "list";
+type DeckViewMode = "select" | "view" | "test" | "list" | "speech";
 const MASTERY_THRESHOLD = 10;
 
 export default function DeckPage({ params: paramsProp }: { params: { deckId: string } }) {
@@ -244,6 +245,8 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
                 />;
       case "test":
         return <MemoryTestViewer words={words} isKana={isKanaDeck} userId={userId} />;
+       case "speech":
+        return <SpeechTestViewer words={shuffledWords} />;
        case "list":
         return <VocabularyListViewer 
                     words={shuffledWords} 
@@ -256,24 +259,33 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
       case "select":
       default:
         return (
-          <div className="flex-1 flex flex-col items-center justify-center p-4 gap-4 md:flex-row">
-            <Card onClick={() => handleSetMode('view')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
-              <Eye className="h-10 w-10 mx-auto text-primary mb-2"/>
-              <h2 className="text-lg font-bold">View Each</h2>
-              <p className="text-sm text-muted-foreground">Review cards one by one.</p>
-            </Card>
-            <Card onClick={() => handleSetMode('list')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
-               <ListChecks className="h-10 w-10 mx-auto text-primary/80 mb-2"/>
-              <h2 className="text-lg font-bold">View as List</h2>
-              <p className="text-sm text-muted-foreground">See all words at once.</p>
-            </Card>
-            {userRole !== 'admin' && (
-              <Card onClick={() => handleSetMode('test')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
-                 <BrainCircuit className="h-10 w-10 mx-auto text-accent mb-2"/>
-                <h2 className="text-lg font-bold">Memory Test</h2>
-                <p className="text-sm text-muted-foreground">Test your recall.</p>
-              </Card>
-            )}
+          <div className="flex-1 flex flex-col items-center justify-center p-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                <Card onClick={() => handleSetMode('view')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
+                <Eye className="h-10 w-10 mx-auto text-primary mb-2"/>
+                <h2 className="text-lg font-bold">View Each</h2>
+                <p className="text-sm text-muted-foreground">Review cards one by one.</p>
+                </Card>
+                <Card onClick={() => handleSetMode('list')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
+                <ListChecks className="h-10 w-10 mx-auto text-primary/80 mb-2"/>
+                <h2 className="text-lg font-bold">View as List</h2>
+                <p className="text-sm text-muted-foreground">See all words at once.</p>
+                </Card>
+                {userRole !== 'admin' && (
+                <Card onClick={() => handleSetMode('test')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
+                    <BrainCircuit className="h-10 w-10 mx-auto text-accent mb-2"/>
+                    <h2 className="text-lg font-bold">Memory Test</h2>
+                    <p className="text-sm text-muted-foreground">Test your recall.</p>
+                </Card>
+                )}
+                {userRole !== 'admin' && (
+                <Card onClick={() => handleSetMode('speech')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
+                    <Mic className="h-10 w-10 mx-auto text-accent mb-2"/>
+                    <h2 className="text-lg font-bold">Speech Test</h2>
+                    <p className="text-sm text-muted-foreground">Test your pronunciation.</p>
+                </Card>
+                )}
+            </div>
           </div>
         );
     }
@@ -283,9 +295,12 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     if (mode === "select") return deck?.name || "...";
     if (mode === "view") return "View Each";
     if (mode === "test") return "Memory Test";
+    if (mode === "speech") return "Speech Test";
     if (mode === "list") return "Word List";
     return deck?.name || "...";
   }
+
+  const canAddWords = !isKanaDeck && mode !== 'test' && mode !== 'speech';
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-800">
@@ -309,7 +324,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
                         {getHeaderTitle()}
                     </h1>
                     
-                    {!isKanaDeck && mode !== 'test' ? (
+                    {canAddWords ? (
                         <SheetTrigger asChild>
                             <Button variant="outline" size="icon" className="w-8 h-8">
                                 <Plus className="h-4 w-4" />
@@ -345,3 +360,5 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     </div>
   );
 }
+
+    
