@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -28,6 +29,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
   const [answerStatus, setAnswerStatus] = useState<AnswerStatus>('idle');
   
   const inputRef = useRef<HTMLInputElement>(null);
+  const nextButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const memoryTestData = JSON.parse(localStorage.getItem(`memoryTestResults_${userId}`) || '{}');
@@ -41,16 +43,19 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
   }, [words, userId]);
   
   useEffect(() => {
-    if (inputRef.current) {
+    if (answerStatus === 'idle' && inputRef.current) {
         wanakana.bind(inputRef.current, { IMEMode: 'toHiragana' });
         inputRef.current.focus();
+    } else if (answerStatus !== 'idle' && nextButtonRef.current) {
+        nextButtonRef.current.focus();
     }
+    
     return () => {
         if (inputRef.current) {
             wanakana.unbind(inputRef.current);
         }
     }
-  }, [historyIndex]);
+  }, [historyIndex, answerStatus]);
 
   const selectNextWord = useCallback(() => {
     if (weightedWords.length === 0) return null;
@@ -137,7 +142,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
       e.preventDefault();
       if (answerStatus === 'idle') {
         const value = e.currentTarget.value;
-        setInputValue(value); // Sync state with the final input value
+        setInputValue(value);
         checkAnswer(value);
       } else {
         goToNext();
@@ -207,7 +212,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
                     </div>
                  )}
                  {answerStatus !== 'idle' && (
-                    <Button type="button" onClick={goToNext} className="w-full mt-4">
+                    <Button ref={nextButtonRef} type="button" onClick={goToNext} className="w-full mt-4">
                         Next <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                  )}
