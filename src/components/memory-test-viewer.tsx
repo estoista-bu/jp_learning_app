@@ -130,7 +130,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
      }
   }, [answerStatus]);
   
-  const handleGuess = (guessed: boolean, answer: string) => {
+  const handleGuess = useCallback((guessed: boolean, answer: string) => {
     if (!currentWord || answerStatus !== 'idle') return;
     
     setInputValue(answer);
@@ -169,7 +169,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
     });
 
     setAnswerStatus(guessed ? 'correct' : 'incorrect');
-  };
+  }, [currentWord, userId, answerStatus]);
   
   const checkAnswer = (answer: string) => {
     if (answerStatus !== 'idle' || !currentWord) return;
