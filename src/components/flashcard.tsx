@@ -247,29 +247,32 @@ export function Flashcard({
         {/* Back of the card */}
         <Card className="absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col items-center justify-between overflow-hidden">
            {editButtons}
-           <div className="w-full flex justify-end p-2">
-            <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={handlePlayAudio} 
-                disabled={isPlaying}
-                className="h-9 w-9 text-muted-foreground hover:text-accent"
-                aria-label="Play pronunciation"
-              >
-                {isPlaying ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Volume2 className="h-5 w-5" />
-                )}
-              </Button>
-           </div>
+           <div className="w-full h-12"></div>
            
-           <CardContent className="p-4 text-center flex flex-col items-center justify-center flex-grow">
-             <p className="font-body text-3xl font-semibold text-accent break-all">
-               {word.reading}
-             </p>
-             <p className="text-muted-foreground mt-1 text-lg">{getRomaji(word.reading)}</p>
-             <p className="text-muted-foreground mt-4 text-xl">{word.meaning}</p>
+           <CardContent className="p-4 text-center flex-grow w-full">
+            <div className="flex items-center justify-center relative">
+              <div className="flex-1">
+                <p className="font-body text-3xl font-semibold text-accent break-all">
+                  {word.reading}
+                </p>
+                <p className="text-muted-foreground mt-1 text-lg">{getRomaji(word.reading)}</p>
+                <p className="text-muted-foreground mt-4 text-xl">{word.meaning}</p>
+              </div>
+              <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={handlePlayAudio} 
+                  disabled={isPlaying}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 h-9 w-9 text-muted-foreground hover:text-accent"
+                  aria-label="Play pronunciation"
+                >
+                  {isPlaying ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Volume2 className="h-5 w-5" />
+                  )}
+                </Button>
+            </div>
            </CardContent>
 
            {memoryTestControls}
