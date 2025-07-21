@@ -57,6 +57,7 @@ export function VocabularyListViewer({ words, onEdit, onRemove, onSelectWord, ma
             <TableRow>
               <TableHead>Japanese</TableHead>
               <TableHead>Meaning</TableHead>
+              <TableHead className="w-[80px] text-center">Mastery</TableHead>
               <TableHead className="text-right w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -66,12 +67,12 @@ export function VocabularyListViewer({ words, onEdit, onRemove, onSelectWord, ma
               return (
               <TableRow key={word.id} onClick={() => onSelectWord(word)} className="cursor-pointer">
                 <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    {isMastered && <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />}
-                    <ClickableReading japanese={word.japanese} reading={word.reading} />
-                  </div>
+                  <ClickableReading japanese={word.japanese} reading={word.reading} />
                 </TableCell>
                 <TableCell>{word.meaning}</TableCell>
+                <TableCell className="text-center">
+                  {isMastered && <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 inline-block" />}
+                </TableCell>
                 <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
