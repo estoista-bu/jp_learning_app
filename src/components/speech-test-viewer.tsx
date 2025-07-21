@@ -114,6 +114,7 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
   const handleGuess = useCallback((guessed: boolean) => {
     if (!currentWord || status !== 'idle') return;
     
+    // Update session stats
     setSessionTotal(prev => prev + 1);
     if (guessed) {
       setSessionCorrect(prev => prev + 1);
@@ -122,6 +123,7 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
       setStatus('incorrect');
     }
 
+    // This part updates word-specific stats for future test weighting
     const masteryStats: Record<string, WordMasteryStats> = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
     if (!masteryStats[currentWord.id]) {
       masteryStats[currentWord.id] = { correct: 0, incorrect: 0, weight: 1 };
