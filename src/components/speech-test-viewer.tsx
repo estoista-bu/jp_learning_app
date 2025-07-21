@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { VocabularyWord, WordMasteryStats } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Mic, MicOff, ArrowRight, RefreshCw, XCircle, CheckCircle, ServerCrash } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -39,6 +39,21 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const nextButtonRef = useRef<HTMLButtonElement>(null);
+
+  // This effect runs when the component unmounts (e.g., user clicks back)
+  useEffect(() => {
+    return () => {
+      if (sessionTotal > 0) {
+        // Read existing cumulative scores
+        const prevScore = parseInt(localStorage.getItem(`pronunciation_score_${userId}`) || '0', 10);
+        const prevSum = parseInt(localStorage.getItem(`pronunciation_total_${userId}`) || '0', 10);
+
+        // Add current session's score and save
+        localStorage.setItem(`pronunciation_score_${userId}`, (prevScore + sessionCorrect).toString());
+        localStorage.setItem(`pronunciation_total_${userId}`, (prevSum + sessionTotal).toString());
+      }
+    };
+  }, [sessionCorrect, sessionTotal, userId]);
 
   useEffect(() => {
     const masteryStats: Record<string, WordMasteryStats> = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
@@ -96,8 +111,8 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
   }, [status]);
 
 
-  const handleGuess = (guessed: boolean) => {
-    if (!currentWord || status !== 'listening') return;
+  const handleGuess = useCallback((guessed: boolean) => {
+    if (!currentWord) return; // Removed status check to allow update after processing
     
     setSessionTotal(prev => prev + 1);
     if (guessed) {
@@ -132,7 +147,7 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
             return w;
         });
     });
-  };
+  }, [currentWord, userId]);
 
   const checkAnswer = useCallback((spokenText: string) => {
     if (!currentWord) return;
@@ -170,11 +185,15 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
 
     const handleError = (event: SpeechRecognitionErrorEvent) => {
       console.error('Speech recognition error', event.error);
-      setStatus('error');
+      if (status === 'listening') {
+        setStatus('error');
+      }
     };
     
     const handleEnd = () => {
-        setStatus(currentStatus => currentStatus === 'listening' ? 'idle' : currentStatus);
+        if (status === 'listening') {
+           setStatus('idle');
+        }
     };
 
     recognition.addEventListener('result', handleResult);
@@ -182,12 +201,14 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
     recognition.addEventListener('end', handleEnd);
     
     return () => {
-      recognition.removeEventListener('result', handleResult);
-      recognition.removeEventListener('error', handleError);
-      recognition.removeEventListener('end', handleEnd);
-      recognition.stop();
+      if (recognition) {
+        recognition.removeEventListener('result', handleResult);
+        recognition.removeEventListener('error', handleError);
+        recognition.removeEventListener('end', handleEnd);
+        recognition.stop();
+      }
     };
-  }, [checkAnswer]);
+  }, [checkAnswer, status]);
 
 
   const handleStartListening = () => {
@@ -239,12 +260,14 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
       e.preventDefault();
       if (status === 'correct' || status === 'incorrect') {
         goToNext();
+      } else if (status === 'idle' || status === 'error') {
+        handleStartListening();
       }
     }
   };
 
   return (
-    <div className="flex flex-col w-full h-full p-4 space-y-4" onKeyUp={handleKeyUp}>
+    <div className="flex flex-col w-full h-full p-4 space-y-4" onKeyUp={handleKeyUp} tabIndex={0}>
       <div className="space-y-2">
         <div className="flex justify-between items-center text-sm text-muted-foreground">
            <Button onClick={handleRestart} variant="outline" size="sm">

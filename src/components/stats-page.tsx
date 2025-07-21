@@ -58,11 +58,16 @@ export function StatsPage({ userId }: StatsPageProps) {
         setDeckStats(calculatedDeckStats);
 
         // --- New Known Words Rate Logic ---
-        const cumulativeScore = parseInt(localStorage.getItem(`cumulative_score_${userId}`) || '0', 10);
-        const cumulativeTotal = parseInt(localStorage.getItem(`cumulative_total_${userId}`) || '0', 10);
+        const memoryScore = parseInt(localStorage.getItem(`cumulative_score_${userId}`) || '0', 10);
+        const memoryTotal = parseInt(localStorage.getItem(`cumulative_total_${userId}`) || '0', 10);
+        const pronunciationScore = parseInt(localStorage.getItem(`pronunciation_score_${userId}`) || '0', 10);
+        const pronunciationTotal = parseInt(localStorage.getItem(`pronunciation_total_${userId}`) || '0', 10);
         
-        if (cumulativeTotal > 0) {
-            setKnownWordsRate((cumulativeScore / cumulativeTotal) * 100);
+        const totalCorrect = memoryScore + pronunciationScore;
+        const totalAttempted = memoryTotal + pronunciationTotal;
+
+        if (totalAttempted > 0) {
+            setKnownWordsRate((totalCorrect / totalAttempted) * 100);
         } else {
             setKnownWordsRate(0);
         }
@@ -173,7 +178,7 @@ export function StatsPage({ userId }: StatsPageProps) {
                                     <Brain className="h-5 w-5 text-accent" />
                                     <span>Known Words Rate</span>
                                 </CardTitle>
-                                <CardDescription>Cumulative score from all Memory Tests.</CardDescription>
+                                <CardDescription>Cumulative score from Memory &amp; Speech Tests.</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <p className="text-3xl font-bold text-center">{knownWordsRate.toFixed(1)}<span className="text-lg">%</span></p>
