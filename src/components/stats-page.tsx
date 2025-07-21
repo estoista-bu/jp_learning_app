@@ -3,13 +3,14 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookCopy, Brain, Percent, Trophy, BarChart2, GraduationCap, MicVocal } from 'lucide-react';
+import { BookCopy, Brain, Percent, Trophy, BarChart2, GraduationCap } from 'lucide-react';
 import { allDecks as initialDecks } from '@/data/decks';
 import { allWords } from '@/data/words';
 import { quizzes as allProvidedQuizzes } from '@/data/quizzes';
 import { grammarLessons } from '@/data/lessons';
 import type { Deck } from '@/lib/types';
 import { ScrollArea } from './ui/scroll-area';
+import { Progress } from './ui/progress';
 
 interface QuizResult {
   id?: string;
@@ -179,24 +180,25 @@ export function StatsPage({ userId }: StatsPageProps) {
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-base">
                                     <Brain className="h-5 w-5 text-accent" />
-                                    <span>Recall Rate</span>
+                                    <span>Test Performance</span>
                                 </CardTitle>
-                                <CardDescription>Cumulative score from Memory Tests.</CardDescription>
+                                <CardDescription>Cumulative scores from your practice tests.</CardDescription>
                             </CardHeader>
-                            <CardContent>
-                                <p className="text-3xl font-bold text-center">{memoryRate.toFixed(1)}<span className="text-lg">%</span></p>
-                            </CardContent>
-                        </Card>
-                         <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-base">
-                                    <MicVocal className="h-5 w-5 text-accent" />
-                                    <span>Pronunciation Rate</span>
-                                </CardTitle>
-                                <CardDescription>Cumulative score from Speech Tests.</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-3xl font-bold text-center">{pronunciationRate.toFixed(1)}<span className="text-lg">%</span></p>
+                            <CardContent className="space-y-4">
+                                <div>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span>Recall Rate</span>
+                                        <span className="font-bold">{memoryRate.toFixed(1)}%</span>
+                                    </div>
+                                    <Progress value={memoryRate} className="h-2 mt-1" />
+                                </div>
+                                <div>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span>Pronunciation Rate</span>
+                                        <span className="font-bold">{pronunciationRate.toFixed(1)}%</span>
+                                    </div>
+                                    <Progress value={pronunciationRate} className="h-2 mt-1" />
+                                </div>
                             </CardContent>
                         </Card>
                     </div>
