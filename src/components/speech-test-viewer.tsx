@@ -6,8 +6,9 @@ import type { VocabularyWord, WordMasteryStats } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { Mic, MicOff, ArrowRight, RefreshCw, XCircle, CheckCircle, ServerCrash } from 'lucide-react';
+import { Mic, MicOff, ArrowRight, RefreshCw, XCircle, CheckCircle, ServerCrash, Volume2, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { textToSpeech } from '@/ai/flows/text-to-speech-flow';
 
 interface WeightedWord extends VocabularyWord {
   weight: number;
@@ -36,9 +37,14 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
   const [sessionCorrect, setSessionCorrect] = useState(0);
   const [sessionTotal, setSessionTotal] = useState(0);
   const [isSupported, setIsSupported] = useState(true);
+  const [audioDataUri, setAudioDataUri] = useState<string | null>(null);
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const nextButtonRef = useRef<HTMLButtonElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
 
   // This effect runs when the component unmounts (e.g., user clicks back)
   useEffect(() => {
@@ -102,6 +108,7 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
     }
     setTranscript('');
     setStatus('idle');
+    setAudioDataUri(null);
   }, [selectNextWord]);
   
    useEffect(() => {
@@ -111,6 +118,19 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
   }, [status]);
 
 
+  const generateAndSetAudio = useCallback(async (text: string) => {
+    setIsGeneratingAudio(true);
+    try {
+        const result = await textToSpeech({ text });
+        setAudioDataUri(result.audioDataUri);
+    } catch (error) {
+        console.error("TTS generation failed", error);
+        setAudioDataUri(null); // Clear on failure
+    } finally {
+        setIsGeneratingAudio(false);
+    }
+  }, []);
+  
   const handleGuess = useCallback((guessed: boolean) => {
     if (!currentWord) return;
     
@@ -122,6 +142,8 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
     } else {
       setStatus('incorrect');
     }
+    
+    generateAndSetAudio(currentWord.reading);
 
     // This part updates word-specific stats for future test weighting
     const masteryStats: Record<string, WordMasteryStats> = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
@@ -149,7 +171,7 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
             return w;
         });
     });
-  }, [currentWord, userId]);
+  }, [currentWord, userId, generateAndSetAudio]);
 
   const checkAnswer = useCallback((spokenText: string) => {
     if (!currentWord) return;
@@ -239,7 +261,14 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
     setSessionTotal(0);
     setStatus('idle');
     setTranscript('');
+    setAudioDataUri(null);
     goToNext();
+  };
+
+  const playAudio = () => {
+    if (audioRef.current) {
+        audioRef.current.play();
+    }
   };
 
   if (!isSupported) {
@@ -312,7 +341,7 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
       </div>
       
       <div className="min-h-[120px]">
-        {transcript && (status === 'correct' || status === 'incorrect') && (
+        {(status === 'correct' || status === 'incorrect') && (
           <div className="space-y-4 animate-in fade-in">
             <div className={cn(
               "p-4 rounded-lg text-center",
@@ -322,11 +351,29 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
               <div className="flex items-center justify-center gap-2 mb-2">
                 {status === 'correct' && <CheckCircle className="h-5 w-5 text-green-600" />}
                 {status === 'incorrect' && <XCircle className="h-5 w-5 text-red-600" />}
-                <p className="text-lg font-semibold">{transcript}</p>
+                <p className="text-lg font-semibold">{transcript || "No speech detected"}</p>
               </div>
-              {status === 'incorrect' && (
-                <p className="text-sm text-muted-foreground">Correct: <span className="font-semibold text-accent">{currentWord.reading}</span></p>
-              )}
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                 <span>Correct:</span>
+                 <span className="font-semibold text-accent">{currentWord.reading}</span>
+                 {isGeneratingAudio ? (
+                    <Button variant="ghost" size="icon" disabled className="h-6 w-6"><Loader2 className="h-4 w-4 animate-spin"/></Button>
+                 ) : audioDataUri ? (
+                    <>
+                     <Button variant="ghost" size="icon" onClick={playAudio} disabled={isPlayingAudio} className="h-6 w-6">
+                       <Volume2 className="h-4 w-4"/>
+                       <span className="sr-only">Play pronunciation</span>
+                     </Button>
+                     <audio 
+                        ref={audioRef} 
+                        src={audioDataUri} 
+                        onPlay={() => setIsPlayingAudio(true)}
+                        onEnded={() => setIsPlayingAudio(false)}
+                        className="hidden"
+                     />
+                    </>
+                 ) : null}
+              </div>
             </div>
             
             {(status === 'correct' || status === 'incorrect') && (
