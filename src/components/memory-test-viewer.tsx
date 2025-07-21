@@ -33,6 +33,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
   const [inputValue, setInputValue] = useState('');
   const [answerStatus, setAnswerStatus] = useState<AnswerStatus>('idle');
   const [showStats, setShowStats] = useState(false);
+  const [isEnterLocked, setIsEnterLocked] = useState(false);
   
   const inputRef = useRef<HTMLInputElement>(null);
   const nextButtonRef = useRef<HTMLButtonElement>(null);
@@ -77,10 +78,20 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
       if (firstWord) {
         setCurrentWord(firstWord);
         setSeenWords([firstWord.id]);
+        setIsEnterLocked(true); // Lock on initial load
       }
     }
   }, [weightedWords, currentWord, selectNextWord]);
   
+  useEffect(() => {
+    if (currentWord) {
+      const timer = setTimeout(() => {
+        setIsEnterLocked(false);
+      }, 200); // 200ms delay to prevent instant enter
+      return () => clearTimeout(timer);
+    }
+  }, [currentWord]);
+
   const goToNext = useCallback(() => {
     const nextWord = selectNextWord();
     if (nextWord) {
@@ -92,6 +103,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
     }
     setInputValue('');
     setAnswerStatus('idle');
+    setIsEnterLocked(true);
   }, [selectNextWord]);
   
   useEffect(() => {
@@ -151,7 +163,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
   
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      if (answerStatus === 'idle') {
+      if (answerStatus === 'idle' && !isEnterLocked) {
         e.preventDefault();
         checkAnswer(e.currentTarget.value);
       }
