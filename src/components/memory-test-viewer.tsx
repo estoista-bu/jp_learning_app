@@ -28,8 +28,8 @@ interface WeightedWord extends VocabularyWord {
 
 export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
   const [weightedWords, setWeightedWords] = useState<WeightedWord[]>([]);
-  const [history, setHistory] = useState<WeightedWord[]>([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [currentWord, setCurrentWord] = useState<WeightedWord | null>(null);
+  const [seenWords, setSeenWords] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [answerStatus, setAnswerStatus] = useState<AnswerStatus>('idle');
   const [showStats, setShowStats] = useState(false);
@@ -44,9 +44,55 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
         weight: memoryTestData[word.id] === 'known' ? 1 : 10 
     }));
     setWeightedWords(initialWords);
-    setHistory([]);
-    setHistoryIndex(-1);
+    setSeenWords([]);
+    setCurrentWord(null);
   }, [words, userId]);
+  
+  const selectNextWord = useCallback(() => {
+    if (weightedWords.length === 0) return null;
+
+    let availableWords = weightedWords;
+    // If all words have been seen, reset the seenWords list
+    if (seenWords.length >= weightedWords.length) {
+      setSeenWords([]);
+    } else {
+      availableWords = weightedWords.filter(w => !seenWords.includes(w.id));
+    }
+
+    const totalWeight = availableWords.reduce((sum, word) => sum + word.weight, 0);
+    let random = Math.random() * totalWeight;
+    
+    for (const word of availableWords) {
+        random -= word.weight;
+        if (random <= 0) {
+            return word;
+        }
+    }
+    return availableWords[availableWords.length - 1];
+  }, [weightedWords, seenWords]);
+
+  useEffect(() => {
+    if (weightedWords.length > 0 && !currentWord) {
+      const firstWord = selectNextWord();
+      if (firstWord) {
+        setCurrentWord(firstWord);
+        setSeenWords([firstWord.id]);
+      }
+    }
+  }, [weightedWords, currentWord, selectNextWord]);
+  
+  const goToNext = useCallback(() => {
+    const nextWord = selectNextWord();
+    if (nextWord) {
+        setCurrentWord(nextWord);
+        setSeenWords(prev => [...prev, nextWord.id]);
+    } else {
+        // Handle case where all words are exhausted or no words are available
+        setCurrentWord(null);
+    }
+    setInputValue('');
+    setAnswerStatus('idle');
+  }, [selectNextWord]);
   
   useEffect(() => {
     if (inputRef.current) {
@@ -60,52 +106,11 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
      if (answerStatus !== 'idle' && nextButtonRef.current) {
          nextButtonRef.current.focus();
      }
-  }, [historyIndex, answerStatus]);
-
-  const selectNextWord = useCallback(() => {
-    if (weightedWords.length === 0) return null;
-
-    const totalWeight = weightedWords.reduce((sum, word) => sum + word.weight, 0);
-    let random = Math.random() * totalWeight;
-    
-    for (const word of weightedWords) {
-        random -= word.weight;
-        if (random <= 0) {
-            return word;
-        }
-    }
-    return weightedWords[weightedWords.length - 1];
-  }, [weightedWords]);
-
-  useEffect(() => {
-    if (weightedWords.length > 0 && history.length === 0) {
-      const firstWord = selectNextWord();
-      if (firstWord) {
-        setHistory([firstWord]);
-        setHistoryIndex(0);
-      }
-    }
-  }, [weightedWords, history, selectNextWord]);
-  
-  const goToNext = useCallback(() => {
-    if (historyIndex === history.length - 1) {
-      const nextWord = selectNextWord();
-      if (nextWord) {
-        setHistory(prev => [...prev, nextWord]);
-        setHistoryIndex(prev => prev + 1);
-      }
-    } else {
-      setHistoryIndex(prev => prev + 1);
-    }
-    setInputValue('');
-    setAnswerStatus('idle');
-  }, [historyIndex, history.length, selectNextWord]);
-
+  }, [answerStatus]);
   
   const handleGuess = (guessed: boolean, answer: string) => {
-    if (historyIndex < 0) return;
+    if (!currentWord) return;
     
-    const currentWord = history[historyIndex];
     setInputValue(answer);
     
     const memoryTestData = JSON.parse(localStorage.getItem(`memoryTestResults_${userId}`) || '{}');
@@ -146,12 +151,9 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
   
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      e.preventDefault();
-      const answer = e.currentTarget.value;
       if (answerStatus === 'idle') {
-        checkAnswer(answer);
-      } else {
-        goToNext();
+        e.preventDefault();
+        checkAnswer(e.currentTarget.value);
       }
     }
   };
@@ -161,8 +163,6 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
     const incorrectAnswer = "---";
     handleGuess(false, incorrectAnswer);
   }
-
-  const currentWord = historyIndex >= 0 ? history[historyIndex] : null;
 
   const getBackgroundColor = () => {
     if (answerStatus === 'correct') return 'bg-green-200 dark:bg-green-900';
@@ -184,7 +184,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
         <div className="flex-1 flex flex-col items-center justify-center p-4 overflow-hidden space-y-8">
             {currentWord ? (
             <div
-                key={`${currentWord.id}-${historyIndex}`}
+                key={`${currentWord.id}`}
                 className="w-full text-center animate-in fade-in"
             >
                 <p className="font-headline text-primary drop-shadow-sm text-7xl md:text-8xl break-all">
@@ -258,7 +258,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
                 <Label htmlFor="show-stats" className="text-sm font-medium">Stats</Label>
             </div>
             <p className="text-sm text-muted-foreground w-1/3 text-center">
-                Test: {historyIndex + 1}
+                Test Progress: {seenWords.length} / {words.length}
             </p>
             <div className="w-1/3 flex justify-end">
                 {answerStatus === 'idle' && (
