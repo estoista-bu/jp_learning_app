@@ -73,12 +73,13 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
   const selectNextWord = useCallback(() => {
     if (weightedWords.length === 0) return null;
 
-    let availableWords = weightedWords;
-    // If all words have been seen, reset the seenWords list
-    if (seenWords.length >= weightedWords.length) {
-      setSeenWords([]);
-    } else {
-      availableWords = weightedWords.filter(w => !seenWords.includes(w.id));
+    // Filter for words not yet seen in this cycle
+    let availableWords = weightedWords.filter(w => !seenWords.includes(w.id));
+
+    // If all words have been seen, reset the seen list and use all words
+    if (availableWords.length === 0) {
+        setSeenWords([]);
+        availableWords = weightedWords;
     }
 
     const totalWeight = availableWords.reduce((sum, word) => sum + word.weight, 0);
@@ -90,6 +91,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
             return word;
         }
     }
+    // Fallback in case of floating point issues
     return availableWords[availableWords.length - 1];
   }, [weightedWords, seenWords]);
 
@@ -273,7 +275,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
                     </CardHeader>
                     <CardContent>
                         <ScrollArea className="h-48">
-                            <div className="space-y-4 pr-3">
+                            <div className="p-4 space-y-4 pr-3">
                                 {weightedWords.sort((a, b) => b.weight - a.weight).map(word => (
                                     <div key={word.id}>
                                         <div className="flex justify-between text-sm mb-1">
