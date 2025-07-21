@@ -58,7 +58,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
   useEffect(() => {
     const masteryStats: Record<string, WordMasteryStats> = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
     const initialWords = words.map(word => {
-        const stats = masteryStats[word.id] || {};
+        const stats = masteryStats[word.id] || { correct: 0, incorrect: 0, weight: 1 };
         return { 
             ...word, 
             weight: stats.weight ?? 1 // Default weight to 1 if not present
@@ -181,7 +181,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
     if (e.key === 'Enter') {
       if (answerStatus === 'idle' && !isEnterLocked) {
         e.preventDefault();
-        checkAnswer(inputValue);
+        checkAnswer(e.currentTarget.value);
       } else if (answerStatus !== 'idle') {
         e.preventDefault();
         goToNext();
@@ -211,7 +211,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
 
 
   return (
-    <div className={cn("flex flex-col w-full h-full transition-colors duration-300", getBackgroundColor())} onKeyUp={handleKeyUp}>
+    <div className={cn("flex flex-col w-full h-full transition-colors duration-300", getBackgroundColor())}>
         <div className="flex-1 flex flex-col items-center justify-center p-4 overflow-hidden space-y-8">
             {currentWord ? (
             <div
@@ -235,6 +235,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
                     placeholder="Enter reading..."
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
+                    onKeyUp={handleKeyUp}
                     disabled={answerStatus !== 'idle'}
                     className={cn(
                         "h-16 text-center text-3xl font-japanese tracking-widest",
@@ -301,5 +302,3 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
     </div>
   );
 }
-
-    
