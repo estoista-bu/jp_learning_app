@@ -32,6 +32,24 @@ export function SpeechTestViewer({ words }: SpeechTestViewerProps) {
   const [isSupported, setIsSupported] = useState(true);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  
+  const currentWord = words[currentWordIndex];
+
+  const checkAnswer = useCallback((spokenText: string) => {
+    if (!currentWord) return;
+    // Normalize by removing spaces which speech recognition sometimes adds
+    const normalizedSpoken = spokenText.replace(/\s/g, '');
+    const normalizedReading = currentWord.reading.replace(/\s/g, '');
+    const normalizedJapanese = currentWord.japanese.replace(/\s/g, '');
+
+    if (normalizedSpoken === normalizedReading || normalizedSpoken === normalizedJapanese) {
+      setStatus('correct');
+      setScore(s => s + 1);
+    } else {
+      setStatus('incorrect');
+    }
+  }, [currentWord]);
+
 
   useEffect(() => {
     const SpeechRecognition = getSpeechRecognition();
@@ -40,53 +58,51 @@ export function SpeechTestViewer({ words }: SpeechTestViewerProps) {
       return;
     }
     
-    const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = 'ja-JP';
+    if (!recognitionRef.current) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'ja-JP';
+        recognitionRef.current = recognition;
+    }
+    
+    const recognition = recognitionRef.current;
 
-    recognition.onstart = () => {
-      setStatus('listening');
-      setTranscript('');
-    };
-
-    recognition.onresult = (event) => {
+    const handleResult = (event: SpeechRecognitionEvent) => {
       const speechResult = event.results[0][0].transcript;
       setTranscript(speechResult);
       checkAnswer(speechResult);
     };
 
-    recognition.onerror = (event) => {
+    const handleError = (event: SpeechRecognitionErrorEvent) => {
       console.error('Speech recognition error', event.error);
       setStatus('error');
     };
-
-    recognition.onend = () => {
-      if (status === 'listening') {
-        setStatus('idle');
-      }
-    };
     
-    recognitionRef.current = recognition;
+    const handleEnd = () => {
+        // Only set back to idle if we were in the listening state.
+        // This prevents overriding 'correct' or 'incorrect' statuses.
+        setStatus(currentStatus => currentStatus === 'listening' ? 'idle' : currentStatus);
+    };
 
+    recognition.addEventListener('result', handleResult);
+    recognition.addEventListener('error', handleError);
+    recognition.addEventListener('end', handleEnd);
+    
     return () => {
+      recognition.removeEventListener('result', handleResult);
+      recognition.removeEventListener('error', handleError);
+      recognition.removeEventListener('end', handleEnd);
       recognition.stop();
     };
-  }, [status]); // Re-create if status changes in an unexpected way
+  }, [checkAnswer]);
 
-  const checkAnswer = (spokenText: string) => {
-    const currentWord = words[currentWordIndex];
-    if (spokenText.trim() === currentWord.reading || spokenText.trim() === currentWord.japanese) {
-      setStatus('correct');
-      setScore(s => s + 1);
-    } else {
-      setStatus('incorrect');
-    }
-  };
 
   const handleStartListening = () => {
     if (recognitionRef.current && (status === 'idle' || status === 'error')) {
       try {
+        setStatus('listening');
+        setTranscript('');
         recognitionRef.current.start();
       } catch(e) {
         console.error("Could not start recognition", e);
@@ -147,7 +163,14 @@ export function SpeechTestViewer({ words }: SpeechTestViewerProps) {
     );
   }
 
-  const currentWord = words[currentWordIndex];
+
+  if (!currentWord) {
+     return (
+        <div className="p-4 flex-1 flex items-center justify-center">
+            <p>Loading...</p>
+        </div>
+     );
+  }
 
   return (
     <div className="flex flex-col w-full h-full p-4 space-y-4">
@@ -222,5 +245,3 @@ export function SpeechTestViewer({ words }: SpeechTestViewerProps) {
     </div>
   );
 }
-
-    
