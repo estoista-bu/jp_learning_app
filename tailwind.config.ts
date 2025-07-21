@@ -21,6 +21,7 @@ export default {
         headline: ['Poppins', 'sans-serif'],
         body: ['"PT Sans"', 'sans-serif'],
         code: ['monospace'],
+        japanese: ['"Hiragino Kaku Gothic ProN"', '"Meiryo"', 'sans-serif'],
       },
       colors: {
         background: 'hsl(var(--background))',

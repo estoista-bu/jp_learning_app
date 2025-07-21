@@ -2,29 +2,14 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { VocabularyWord } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Flashcard } from "@/components/flashcard";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Bar, BarChart, XAxis, YAxis } from "recharts";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  ChartContainer,
-  ChartTooltip as ChartTooltipPrimitive,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { ScrollArea } from "./ui/scroll-area";
-
+import * as wanakana from 'wanakana';
 
 type AnimationDirection = "left" | "right" | "none";
+type AnswerStatus = "idle" | "correct" | "incorrect";
 
 interface MemoryTestViewerProps {
     words: VocabularyWord[];
@@ -36,15 +21,14 @@ interface WeightedWord extends VocabularyWord {
   weight: number;
 }
 
-export function MemoryTestViewer({ words, isKana, userId }: MemoryTestViewerProps) {
-  const [isFlipped, setIsFlipped] = useState(false);
-  const [animationDirection, setAnimationDirection] = useState<AnimationDirection>("none");
-  const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [showStats, setShowStats] = useState(false);
-
+export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
   const [weightedWords, setWeightedWords] = useState<WeightedWord[]>([]);
   const [history, setHistory] = useState<WeightedWord[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [inputValue, setInputValue] = useState('');
+  const [answerStatus, setAnswerStatus] = useState<AnswerStatus>('idle');
+  
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const memoryTestData = JSON.parse(localStorage.getItem(`memoryTestResults_${userId}`) || '{}');
@@ -56,6 +40,18 @@ export function MemoryTestViewer({ words, isKana, userId }: MemoryTestViewerProp
     setHistory([]);
     setHistoryIndex(-1);
   }, [words, userId]);
+  
+  useEffect(() => {
+    if (inputRef.current) {
+        wanakana.bind(inputRef.current, { IMEMode: 'toHiragana' });
+        inputRef.current.focus();
+    }
+    return () => {
+        if (inputRef.current) {
+            wanakana.unbind(inputRef.current);
+        }
+    }
+  }, [historyIndex]);
 
   const selectNextWord = useCallback(() => {
     if (weightedWords.length === 0) return null;
@@ -81,27 +77,43 @@ export function MemoryTestViewer({ words, isKana, userId }: MemoryTestViewerProp
       }
     }
   }, [weightedWords, history, selectNextWord]);
+  
+  const goToNext = useCallback(() => {
+    if (historyIndex === history.length - 1) {
+      const nextWord = selectNextWord();
+      if (nextWord) {
+        setHistory(prev => [...prev, nextWord]);
+        setHistoryIndex(prev => prev + 1);
+      }
+    } else {
+      setHistoryIndex(prev => prev + 1);
+    }
+    setInputValue('');
+    setAnswerStatus('idle');
+  }, [historyIndex, history.length, selectNextWord]);
 
-
+  
   const handleGuess = (guessed: boolean) => {
     if (historyIndex < 0) return;
     
     const currentWord = history[historyIndex];
     
+    // Save overall result
     const memoryTestData = JSON.parse(localStorage.getItem(`memoryTestResults_${userId}`) || '{}');
     memoryTestData[currentWord.id] = guessed ? 'known' : 'unknown';
     localStorage.setItem(`memoryTestResults_${userId}`, JSON.stringify(memoryTestData));
 
-    if (guessed) {
-      const masteryStats = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
-      if (!masteryStats[currentWord.id]) {
-        masteryStats[currentWord.id] = { correct: 0 };
-      }
-      masteryStats[currentWord.id].correct += 1;
-      localStorage.setItem(`wordMasteryStats_${userId}`, JSON.stringify(masteryStats));
+    // Save mastery stats
+    const masteryStats = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
+    if (!masteryStats[currentWord.id]) {
+      masteryStats[currentWord.id] = { correct: 0 };
     }
+    if(guessed) {
+       masteryStats[currentWord.id].correct += 1;
+    }
+    localStorage.setItem(`wordMasteryStats_${userId}`, JSON.stringify(masteryStats));
 
-
+    // Update weights for this session
     setWeightedWords(prevWords => {
         return prevWords.map(w => {
             if (w.id === currentWord.id) {
@@ -112,206 +124,86 @@ export function MemoryTestViewer({ words, isKana, userId }: MemoryTestViewerProp
         });
     });
 
-    setTimeout(() => goToNext(), 100);
+    setAnswerStatus(guessed ? 'correct' : 'incorrect');
+
+    setTimeout(() => goToNext(), guessed ? 800 : 2000);
   };
   
-  const handleNavigation = (direction: 'next' | 'prev') => {
-    if (animationTimeoutRef.current) clearTimeout(animationTimeoutRef.current);
-    
-    setAnimationDirection(direction === 'next' ? 'right' : 'left');
+  const checkAnswer = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (answerStatus !== 'idle' || !currentWord) return;
 
-    animationTimeoutRef.current = setTimeout(() => {
-      setIsFlipped(false);
-
-      if (direction === 'next') {
-        if (historyIndex === history.length - 1) {
-          const nextWord = selectNextWord();
-          if (nextWord) {
-            setHistory(prev => [...prev, nextWord]);
-            setHistoryIndex(prev => prev + 1);
-          }
-        } else {
-          setHistoryIndex(prev => prev + 1);
-        }
-      } else { 
-        if (historyIndex > 0) {
-          setHistoryIndex(prev => prev - 1);
-        }
-      }
-      setAnimationDirection('none');
-    }, 100);
+    const isCorrect = wanakana.toHiragana(inputValue.trim()) === currentWord.reading;
+    handleGuess(isCorrect);
   };
-
-  const goToNext = () => handleNavigation('next');
-  const goToPrevious = () => handleNavigation('prev');
   
-  const canGoForward = historyIndex < history.length - 1;
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (isFlipped) {
-        switch (e.key) {
-          case 'ArrowUp':
-          case 'ArrowDown':
-            e.preventDefault();
-            setIsFlipped(false);
-            break;
-          case 'ArrowLeft':
-            e.preventDefault();
-            handleGuess(false); // Didn't Know
-            break;
-          case 'ArrowRight':
-            e.preventDefault();
-            handleGuess(true); // Knew It
-            break;
-        }
-        return;
-      }
-
-      switch (e.key) {
-        case 'ArrowLeft':
-          if (historyIndex > 0) {
-            goToPrevious();
-          }
-          break;
-        case 'ArrowRight':
-          if (canGoForward) {
-            goToNext();
-          }
-          break;
-        case 'ArrowUp':
-        case 'ArrowDown':
-           e.preventDefault();
-           setIsFlipped(true);
-           break;
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [historyIndex, history.length, isFlipped, canGoForward, goToPrevious, goToNext, handleGuess]);
-
   const currentWord = historyIndex >= 0 ? history[historyIndex] : null;
 
-  const totalWeight = weightedWords.reduce((sum, word) => sum + word.weight, 0);
-  const chartData = weightedWords.map(word => ({
-    name: word.japanese,
-    probability: totalWeight > 0 ? (word.weight / totalWeight) * 100 : 0,
-    weight: word.weight,
-  })).sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+  const getBackgroundColor = () => {
+    if (answerStatus === 'correct') return 'bg-green-100 dark:bg-green-900/50';
+    if (answerStatus === 'incorrect') return 'bg-red-100 dark:bg-red-900/50';
+    return 'bg-background';
+  }
+  
+  const getInputBorderColor = () => {
+    if (answerStatus === 'correct') return 'border-green-500 focus-visible:ring-green-500';
+    if (answerStatus === 'incorrect') return 'border-red-500 focus-visible:ring-red-500';
+    return 'border-input';
+  }
 
-  const formatLabel = (value: number) => {
-    if (value >= 1) {
-      return value.toFixed(0);
-    }
-    return value.toFixed(2);
-  };
 
   return (
-    <div className="flex flex-col w-full h-full">
-        <div className="flex-1 flex flex-col items-center justify-center p-4 overflow-hidden">
+    <div className={cn("flex flex-col w-full h-full transition-colors duration-300", getBackgroundColor())}>
+        <div className="flex-1 flex flex-col items-center justify-center p-4 overflow-hidden space-y-8">
             {currentWord ? (
             <div
                 key={`${currentWord.id}-${historyIndex}`}
-                className={cn(
-                    "w-full h-72",
-                    animationDirection === 'right' && 'animate-slide-out-to-left',
-                    animationDirection === 'left' && 'animate-slide-out-to-right',
-                    animationDirection === 'none' && 'animate-slide-in'
-                )}
+                className="w-full text-center animate-in fade-in"
             >
-                <Flashcard
-                    word={currentWord}
-                    isKana={isKana}
-                    isFlipped={isFlipped}
-                    onFlip={() => setIsFlipped(!isFlipped)}
-                    mode="test"
-                    onGuess={handleGuess}
-                />
+                <p className="font-headline text-primary drop-shadow-sm text-7xl md:text-8xl break-all">
+                  {currentWord.japanese}
+                </p>
+                <p className="text-muted-foreground mt-2 text-xl">{currentWord.meaning}</p>
             </div>
             ) : (
                  <p className="text-muted-foreground">Loading test...</p>
             )}
+            
+            <form onSubmit={checkAnswer} className="w-full max-w-sm">
+                 <Input
+                    ref={inputRef}
+                    type="text"
+                    lang="ja"
+                    placeholder="Enter reading..."
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    disabled={answerStatus !== 'idle'}
+                    className={cn(
+                        "h-16 text-center text-3xl font-japanese tracking-widest",
+                        "transition-colors duration-300",
+                        getInputBorderColor()
+                    )}
+                 />
+                 {answerStatus === 'incorrect' && currentWord && (
+                    <div className="mt-2 text-center text-lg font-semibold text-red-600 dark:text-red-400 animate-in fade-in">
+                        {currentWord.reading}
+                    </div>
+                 )}
+            </form>
         </div>
-
-        {showStats && (
-            <div className="px-4 pb-2">
-                <Card>
-                    <CardHeader className="py-2 px-4">
-                        <CardTitle className="text-sm">Debug: Word Probability</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                    <ScrollArea className="h-40 w-full">
-                        <ChartContainer
-                            config={{
-                                probability: {
-                                    label: "Probability",
-                                    color: "hsl(var(--primary))",
-                                },
-                            }}
-                            className="h-[500px]"
-                        >
-                            <BarChart
-                                data={chartData}
-                                layout="vertical"
-                                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                            >
-                                <XAxis type="number" hide />
-                                <YAxis
-                                    dataKey="name"
-                                    type="category"
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                                    width={60}
-                                />
-                                <ChartTooltipPrimitive
-                                    cursor={{ fill: "hsl(var(--muted))" }}
-                                    content={<ChartTooltipContent
-                                        formatter={(value, name, props) => (
-                                            <>
-                                                <div className="font-medium">{props.payload.name}</div>
-                                                <div className="text-muted-foreground">
-                                                    <p>Weight: {Number(props.payload.weight).toPrecision(3)}</p>
-                                                    <p>Chance: {Number(value).toFixed(2)}%</p>
-                                                </div>
-                                            </>
-                                        )}
-                                    />}
-                                />
-                                <Bar dataKey="probability" radius={4}>
-                                </Bar>
-                            </BarChart>
-                        </ChartContainer>
-                    </ScrollArea>
-                    </CardContent>
-                </Card>
-            </div>
-        )}
         
         <footer className="flex items-center justify-between p-4 border-t">
-            <Button variant="outline" size="icon" onClick={goToPrevious} disabled={historyIndex <= 0}>
-                <ChevronLeft className="h-4 w-4" />
-                <span className="sr-only">Previous word</span>
-            </Button>
-            
-            <div className="flex items-center space-x-4">
-                <p className="text-sm text-muted-foreground">
-                    {historyIndex + 1} / {history.length}
-                </p>
-                <div className="flex items-center space-x-2">
-                    <Checkbox id="stats" checked={showStats} onCheckedChange={(checked) => setShowStats(!!checked)} />
-                    <Label htmlFor="stats" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                        stats
-                    </Label>
-                </div>
+            <p className="text-sm text-muted-foreground w-1/3">
+                {/* Placeholder for future use */}
+            </p>
+            <p className="text-sm text-muted-foreground w-1/3 text-center">
+                Test: {historyIndex + 1}
+            </p>
+            <div className="w-1/3 flex justify-end">
+                <Button onClick={() => handleGuess(false)} variant="outline" disabled={answerStatus !== 'idle'}>
+                   I don't know
+                </Button>
             </div>
-
-            <Button variant="outline" size="icon" onClick={goToNext} disabled={!canGoForward}>
-                <ChevronRight className="h-4 w-4" />
-                <span className="sr-only">Next word</span>
-            </Button>
         </footer>
     </div>
   );
