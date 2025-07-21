@@ -112,7 +112,7 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
 
 
   const handleGuess = useCallback((guessed: boolean) => {
-    if (!currentWord || status !== 'idle') return;
+    if (!currentWord) return;
     
     // Update session stats
     setSessionTotal(prev => prev + 1);
@@ -149,7 +149,7 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
             return w;
         });
     });
-  }, [currentWord, userId, status]);
+  }, [currentWord, userId]);
 
   const checkAnswer = useCallback((spokenText: string) => {
     if (!currentWord) return;
@@ -160,6 +160,13 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
 
     handleGuess(normalizedSpoken === normalizedReading || normalizedSpoken === normalizedJapanese);
   }, [currentWord, handleGuess]);
+  
+  // This effect now correctly links the transcript to the checkAnswer function.
+  useEffect(() => {
+    if (transcript && status === 'processing') {
+      checkAnswer(transcript);
+    }
+  }, [transcript, status, checkAnswer]);
 
 
   useEffect(() => {
@@ -181,8 +188,8 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
 
     const handleResult = (event: SpeechRecognitionEvent) => {
       const speechResult = event.results[0][0].transcript;
+      setStatus('processing');
       setTranscript(speechResult);
-      checkAnswer(speechResult);
     };
 
     const handleError = (event: SpeechRecognitionErrorEvent) => {
@@ -210,7 +217,7 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
         recognition.stop();
       }
     };
-  }, [checkAnswer, status]);
+  }, [status]);
 
 
   const handleStartListening = () => {
