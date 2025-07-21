@@ -57,7 +57,9 @@ export function VocabularyListViewer({ words, onEdit, onRemove, onSelectWord, ma
             <TableRow>
               <TableHead>Japanese</TableHead>
               <TableHead>Meaning</TableHead>
-              <TableHead className="w-[80px] text-center">Mastery</TableHead>
+              <TableHead className="w-[80px] text-center">
+                 <Star className="h-4 w-4 inline-block" />
+              </TableHead>
               <TableHead className="text-right w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
