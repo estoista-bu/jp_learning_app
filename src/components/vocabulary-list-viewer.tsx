@@ -1,7 +1,7 @@
 
 "use client";
 
-import type { VocabularyWord } from "@/lib/types";
+import type { VocabularyWord, WordMasteryStats } from "@/lib/types";
 import {
   Table,
   TableBody,
@@ -27,7 +27,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Star } from "lucide-react";
 import { useState } from "react";
 import { ScrollArea } from "./ui/scroll-area";
 import { ClickableReading } from "./clickable-reading";
@@ -37,9 +37,11 @@ interface VocabularyListViewerProps {
   onEdit: (word: VocabularyWord) => void;
   onRemove: (id: string) => void;
   onSelectWord: (word: VocabularyWord) => void;
+  masteryStats: Record<string, WordMasteryStats>;
+  masteryThreshold: number;
 }
 
-export function VocabularyListViewer({ words, onEdit, onRemove, onSelectWord }: VocabularyListViewerProps) {
+export function VocabularyListViewer({ words, onEdit, onRemove, onSelectWord, masteryStats, masteryThreshold }: VocabularyListViewerProps) {
   const [deletingWord, setDeletingWord] = useState<VocabularyWord | null>(null);
 
   const handleConfirmRemove = (id: string) => {
@@ -59,10 +61,15 @@ export function VocabularyListViewer({ words, onEdit, onRemove, onSelectWord }: 
             </TableRow>
           </TableHeader>
           <TableBody>
-            {words.map((word) => (
+            {words.map((word) => {
+              const isMastered = (masteryStats[word.id]?.correct || 0) >= masteryThreshold;
+              return (
               <TableRow key={word.id} onClick={() => onSelectWord(word)} className="cursor-pointer">
                 <TableCell className="font-medium">
-                  <ClickableReading japanese={word.japanese} reading={word.reading} />
+                  <div className="flex items-center gap-2">
+                    {isMastered && <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />}
+                    <ClickableReading japanese={word.japanese} reading={word.reading} />
+                  </div>
                 </TableCell>
                 <TableCell>{word.meaning}</TableCell>
                 <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
@@ -87,7 +94,7 @@ export function VocabularyListViewer({ words, onEdit, onRemove, onSelectWord }: 
                   </DropdownMenu>
                 </TableCell>
               </TableRow>
-            ))}
+            )})}
           </TableBody>
         </Table>
       </ScrollArea>

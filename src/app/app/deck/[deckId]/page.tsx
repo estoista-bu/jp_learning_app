@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { allDecks as initialDecks } from "@/data/decks";
 import { allWords as initialWords } from "@/data/words";
-import type { Deck, VocabularyWord, User, UserRole } from "@/lib/types";
+import type { Deck, VocabularyWord, User, UserRole, WordMasteryStats } from "@/lib/types";
 import { FlashcardViewer } from "@/components/flashcard-viewer";
 import { MemoryTestViewer } from "@/components/memory-test-viewer";
 import { VocabularyListViewer } from "@/components/vocabulary-list-viewer";
@@ -26,6 +26,7 @@ import { useRouter } from "next/navigation";
 
 type VocabularyFormData = Omit<VocabularyWord, "id" | "deckId">;
 type DeckViewMode = "select" | "view" | "test" | "list";
+const MASTERY_THRESHOLD = 10;
 
 export default function DeckPage({ params: paramsProp }: { params: { deckId: string } }) {
   const router = useRouter();
@@ -45,6 +46,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
   const [initialCardIndex, setInitialCardIndex] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [masteryStats, setMasteryStats] = useState<Record<string, WordMasteryStats>>({});
 
   useEffect(() => {
     const storedUserId = localStorage.getItem("userId");
@@ -64,6 +66,9 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
 
   useEffect(() => {
     if (!userId) return;
+
+    const storedMasteryStats = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
+    setMasteryStats(storedMasteryStats);
 
     const userDecks: Deck[] = JSON.parse(localStorage.getItem(`userDecks_${userId}`) || "[]");
     const groupDecks: Deck[] = JSON.parse(localStorage.getItem('allGroupDecks') || '[]');
@@ -227,11 +232,27 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
 
     switch (mode) {
       case "view":
-        return <FlashcardViewer words={shuffledWords} isKana={isKanaDeck} onEdit={handleEditWord} onRemove={handleRemoveWord} onShuffle={handleShuffle} startIndex={initialCardIndex} />;
+        return <FlashcardViewer 
+                    words={shuffledWords} 
+                    isKana={isKanaDeck} 
+                    onEdit={handleEditWord} 
+                    onRemove={handleRemoveWord} 
+                    onShuffle={handleShuffle} 
+                    startIndex={initialCardIndex}
+                    masteryStats={masteryStats}
+                    masteryThreshold={MASTERY_THRESHOLD}
+                />;
       case "test":
         return <MemoryTestViewer words={words} isKana={isKanaDeck} userId={userId} />;
        case "list":
-        return <VocabularyListViewer words={shuffledWords} onEdit={handleEditWord} onRemove={handleRemoveWord} onSelectWord={handleSelectWordFromList} />;
+        return <VocabularyListViewer 
+                    words={shuffledWords} 
+                    onEdit={handleEditWord} 
+                    onRemove={handleRemoveWord} 
+                    onSelectWord={handleSelectWordFromList} 
+                    masteryStats={masteryStats}
+                    masteryThreshold={MASTERY_THRESHOLD}
+                />;
       case "select":
       default:
         return (

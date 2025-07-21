@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Pencil, Volume2, Loader2,ThumbsUp, ThumbsDown } from "lucide-react";
+import { X, Pencil, Volume2, Loader2,ThumbsUp, ThumbsDown, Star } from "lucide-react";
 import * as wanakana from 'wanakana';
 import { cn } from "@/lib/utils";
 import type { VocabularyWord, SentenceGenerationOutput, Difficulty } from "@/lib/types";
@@ -32,6 +32,7 @@ interface FlashcardProps {
   onFlip: () => void;
   mode?: "view" | "test";
   onGuess?: (guessed: boolean) => void;
+  isMastered?: boolean;
 }
 
 export function Flashcard({ 
@@ -42,7 +43,8 @@ export function Flashcard({
     isFlipped, 
     onFlip,
     mode = "view",
-    onGuess
+    onGuess,
+    isMastered = false,
 }: FlashcardProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [generatedSentence, setGeneratedSentence] = useState<SentenceGenerationOutput | null>(null);
@@ -226,6 +228,11 @@ export function Flashcard({
         {/* Front of the card */}
         <Card className="absolute w-full h-full [backface-visibility:hidden] flex items-center justify-center overflow-hidden">
           {editButtons}
+          {isMastered && mode === 'view' && (
+              <div className="absolute top-2 left-2 z-20">
+                  <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
+              </div>
+          )}
           <CardContent className="p-4 flex items-center justify-center">
             <p className={cn(
               "font-headline text-center text-primary drop-shadow-sm",

@@ -3,7 +3,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Shuffle } from "lucide-react";
-import type { VocabularyWord } from "@/lib/types";
+import type { VocabularyWord, WordMasteryStats } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Flashcard } from "@/components/flashcard";
 import { cn } from "@/lib/utils";
@@ -17,9 +17,11 @@ interface FlashcardViewerProps {
     onRemove: (id: string) => void;
     onShuffle: () => void;
     startIndex?: number;
+    masteryStats: Record<string, WordMasteryStats>;
+    masteryThreshold: number;
 }
 
-export function FlashcardViewer({ words, isKana, onEdit, onRemove, onShuffle, startIndex = 0 }: FlashcardViewerProps) {
+export function FlashcardViewer({ words, isKana, onEdit, onRemove, onShuffle, startIndex = 0, masteryStats, masteryThreshold }: FlashcardViewerProps) {
   const [currentIndex, setCurrentIndex] = useState(startIndex);
   const [isFlipped, setIsFlipped] = useState(false);
   const [animationDirection, setAnimationDirection] = useState<AnimationDirection>("none");
@@ -139,6 +141,7 @@ export function FlashcardViewer({ words, isKana, onEdit, onRemove, onShuffle, st
                     isFlipped={isFlipped}
                     onFlip={() => setIsFlipped(!isFlipped)}
                     mode="view"
+                    isMastered={(masteryStats[currentWord.id]?.correct || 0) >= masteryThreshold}
                 />
             </div>
             ) : null}
