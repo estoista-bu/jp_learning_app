@@ -16,12 +16,6 @@ import { ScrollArea } from "./ui/scroll-area";
 
 type AnswerStatus = "idle" | "correct" | "incorrect";
 
-interface MemoryTestViewerProps {
-    words: VocabularyWord[];
-    isKana?: boolean;
-    userId: string;
-}
-
 interface WeightedWord extends VocabularyWord {
   weight: number;
 }
@@ -34,16 +28,41 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
   const [answerStatus, setAnswerStatus] = useState<AnswerStatus>('idle');
   const [showStats, setShowStats] = useState(false);
   const [isEnterLocked, setIsEnterLocked] = useState(false);
+
+  // New state to track session score
+  const [sessionCorrect, setSessionCorrect] = useState(0);
+  const [sessionTotal, setSessionTotal] = useState(0);
   
   const inputRef = useRef<HTMLInputElement>(null);
   const nextButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    const memoryTestData = JSON.parse(localStorage.getItem(`memoryTestResults_${userId}`) || '{}');
-    const initialWords = words.map(word => ({ 
-        ...word, 
-        weight: memoryTestData[word.id] === 'known' ? 1 : 10 
-    }));
+    // This effect runs when the component unmounts (e.g., user clicks back)
+    return () => {
+      if (sessionTotal > 0) {
+        // Read existing cumulative scores
+        const prevScore = parseInt(localStorage.getItem(`cumulative_score_${userId}`) || '0', 10);
+        const prevSum = parseInt(localStorage.getItem(`cumulative_total_${userId}`) || '0', 10);
+
+        // Add current session's score and save
+        localStorage.setItem(`cumulative_score_${userId}`, (prevScore + sessionCorrect).toString());
+        localStorage.setItem(`cumulative_total_${userId}`, (prevSum + sessionTotal).toString());
+      }
+    };
+  }, [sessionCorrect, sessionTotal, userId]);
+
+  useEffect(() => {
+    // We get mastery stats to weight the words, but don't use the old memoryTestResults
+    const masteryStats = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
+    const initialWords = words.map(word => {
+        const stats = masteryStats[word.id] || { correct: 0, incorrect: 0 };
+        // Simple weighting: more incorrect answers = higher weight
+        const weight = 1 + (stats.incorrect * 2) - stats.correct;
+        return { 
+            ...word, 
+            weight: Math.max(1, weight) // ensure weight is at least 1
+        };
+    });
     setWeightedWords(initialWords);
     setSeenWords([]);
     setCurrentWord(null);
@@ -121,14 +140,17 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
   }, [answerStatus]);
   
   const handleGuess = (guessed: boolean, answer: string) => {
-    if (!currentWord) return;
+    if (!currentWord || answerStatus !== 'idle') return;
     
     setInputValue(answer);
     
-    const memoryTestData = JSON.parse(localStorage.getItem(`memoryTestResults_${userId}`) || '{}');
-    memoryTestData[currentWord.id] = guessed ? 'known' : 'unknown';
-    localStorage.setItem(`memoryTestResults_${userId}`, JSON.stringify(memoryTestData));
+    // Update session stats
+    setSessionTotal(prev => prev + 1);
+    if (guessed) {
+      setSessionCorrect(prev => prev + 1);
+    }
 
+    // This part updates word-specific stats for future test weighting
     const masteryStats = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
     if (!masteryStats[currentWord.id]) {
       masteryStats[currentWord.id] = { correct: 0, incorrect: 0 };
@@ -145,8 +167,9 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
     setWeightedWords(prevWords => {
         return prevWords.map(w => {
             if (w.id === currentWord.id) {
-                const newWeight = guessed ? Math.max(1, w.weight / 10) : w.weight * 10;
-                return { ...w, weight: newWeight };
+                const stats = masteryStats[w.id];
+                const newWeight = 1 + (stats.incorrect * 2) - stats.correct;
+                return { ...w, weight: Math.max(1, newWeight) };
             }
             return w;
         });
@@ -270,7 +293,7 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
                 <Label htmlFor="show-stats" className="text-sm font-medium">Stats</Label>
             </div>
             <p className="text-sm text-muted-foreground w-1/3 text-center">
-                Test Progress: {seenWords.length} / {words.length}
+                Session: {sessionCorrect} / {sessionTotal}
             </p>
             <div className="w-1/3 flex justify-end">
                 {answerStatus === 'idle' && (

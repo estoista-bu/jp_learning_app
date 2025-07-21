@@ -29,10 +29,6 @@ interface QuizRates {
     monthlyTotal: number;
 }
 
-interface MemoryTestResults {
-    [wordId: string]: 'known' | 'unknown';
-}
-
 interface StatsPageProps {
   userId: string;
 }
@@ -61,12 +57,16 @@ export function StatsPage({ userId }: StatsPageProps) {
         });
         setDeckStats(calculatedDeckStats);
 
-        const memoryResults: MemoryTestResults = JSON.parse(localStorage.getItem(`memoryTestResults_${userId}`) || '{}');
-        const totalTracked = Object.keys(memoryResults).length;
-        if(totalTracked > 0) {
-            const knownCount = Object.values(memoryResults).filter(val => val === 'known').length;
-            setKnownWordsRate((knownCount / totalTracked) * 100);
+        // --- New Known Words Rate Logic ---
+        const cumulativeScore = parseInt(localStorage.getItem(`cumulative_score_${userId}`) || '0', 10);
+        const cumulativeTotal = parseInt(localStorage.getItem(`cumulative_total_${userId}`) || '0', 10);
+        
+        if (cumulativeTotal > 0) {
+            setKnownWordsRate((cumulativeScore / cumulativeTotal) * 100);
+        } else {
+            setKnownWordsRate(0);
         }
+
 
         // --- Quiz Stats ---
         const now = new Date();
@@ -173,7 +173,7 @@ export function StatsPage({ userId }: StatsPageProps) {
                                     <Brain className="h-5 w-5 text-accent" />
                                     <span>Known Words Rate</span>
                                 </CardTitle>
-                                <CardDescription>From Memory Test results</CardDescription>
+                                <CardDescription>Cumulative score from all Memory Tests.</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <p className="text-3xl font-bold text-center">{knownWordsRate.toFixed(1)}<span className="text-lg">%</span></p>
@@ -245,5 +245,3 @@ export function StatsPage({ userId }: StatsPageProps) {
         </ScrollArea>
     );
 }
-
-    
