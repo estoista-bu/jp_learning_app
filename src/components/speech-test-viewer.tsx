@@ -139,7 +139,11 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
 
     if (guessed) {
        masteryStats[currentWord.id].correct = (masteryStats[currentWord.id].correct || 0) + 1;
-       currentWeight /= 8;
+       if (currentWeight < 8) {
+         currentWeight = 1;
+       } else {
+         currentWeight /= 8;
+       }
     } else {
        masteryStats[currentWord.id].incorrect = (masteryStats[currentWord.id].incorrect || 0) + 1;
        currentWeight *= 10;

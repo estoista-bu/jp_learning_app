@@ -152,10 +152,14 @@ export function MemoryTestViewer({ words, isKana = false, userId }: MemoryTestVi
 
     if (guessed) {
        masteryStats[currentWord.id].correct = (masteryStats[currentWord.id].correct || 0) + 1;
-       currentWeight = currentWeight / 8;
+       if (currentWeight < 8) {
+         currentWeight = 1;
+       } else {
+         currentWeight /= 8;
+       }
     } else {
        masteryStats[currentWord.id].incorrect = (masteryStats[currentWord.id].incorrect || 0) + 1;
-       currentWeight = currentWeight * 10;
+       currentWeight *= 10;
     }
     masteryStats[currentWord.id].weight = currentWeight;
     localStorage.setItem(`wordMasteryStats_${userId}`, JSON.stringify(masteryStats));
@@ -174,14 +178,22 @@ export function MemoryTestViewer({ words, isKana = false, userId }: MemoryTestVi
   
   const checkAnswer = (answer: string) => {
     if (answerStatus !== 'idle' || !currentWord) return;
-
-    // Convert both the input and the correct reading to Romaji for a flexible comparison
-    // This handles cases like 'arerugii' vs 'arerugi-'
-    const submittedRomaji = wanakana.toRomaji(wanakana.toHiragana(answer.trim()));
-    const correctRomaji = wanakana.toRomaji(currentWord.reading);
     
-    const isCorrect = submittedRomaji === correctRomaji;
-    handleGuess(isCorrect, answer);
+    let submittedAnswer = answer.trim();
+
+    // Special handling for Katakana deck: expect hiragana answer
+    if (isKana && currentWord.deckId === 'katakana') {
+        const isCorrect = wanakana.toHiragana(submittedAnswer) === currentWord.reading;
+        handleGuess(isCorrect, submittedAnswer);
+        return;
+    }
+
+    // General case for other decks
+    const normalizedAnswer = wanakana.toRomaji(wanakana.toHiragana(submittedAnswer));
+    const normalizedReading = wanakana.toRomaji(currentWord.reading);
+    
+    const isCorrect = normalizedAnswer === normalizedReading;
+    handleGuess(isCorrect, submittedAnswer);
   };
   
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
