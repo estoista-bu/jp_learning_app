@@ -54,6 +54,7 @@ interface VocabularyFormProps {
 interface JishoResult {
   japanese: { word?: string; reading?: string }[];
   senses: { english_definitions: string[] }[];
+  jlpt?: string[];
 }
 
 export function VocabularyForm({ onSaveWords, wordToEdit, deckId, deckName, existingWords }: VocabularyFormProps) {
@@ -135,10 +136,6 @@ export function VocabularyForm({ onSaveWords, wordToEdit, deckId, deckName, exis
 
   function onSubmit(values: VocabularyFormData) {
     onSaveWords([values], wordToEdit?.id);
-    toast({
-      title: "Success!",
-      description: `The word "${values.japanese}" has been ${wordToEdit ? 'updated' : 'added'}.`,
-    });
     form.reset();
     setIsSuggestionsOpen(false);
     setAiSuggestions([]);
@@ -300,11 +297,13 @@ export function VocabularyForm({ onSaveWords, wordToEdit, deckId, deckName, exis
                                 <Label htmlFor="numWords">Number of words (1-100)</Label>
                                 <Input
                                     id="numWords"
-                                    type="number"
-                                    min="1"
-                                    max="100"
+                                    type="text"
+                                    inputMode="numeric"
                                     value={numWordsToGenerate}
-                                    onChange={(e) => setNumWordsToGenerate(Math.max(1, Math.min(100, parseInt(e.target.value, 10) || 1)))}
+                                    onChange={(e) => {
+                                        const value = e.target.value.replace(/[^0-9]/g, '');
+                                        setNumWordsToGenerate(Math.max(1, Math.min(100, parseInt(value, 10) || 1)))
+                                    }}
                                     className="mt-2"
                                 />
                            </div>
@@ -363,7 +362,7 @@ export function VocabularyForm({ onSaveWords, wordToEdit, deckId, deckName, exis
         <Button
           type="submit"
           className="w-full font-bold bg-primary hover:bg-primary/90 text-primary-foreground"
-          disabled={form.formState.isSubmitting}
+          disabled={form.formState.isSubmitting || isGenerating}
         >
           {form.formState.isSubmitting ? "Saving..." : "Save Word"}
         </Button>
