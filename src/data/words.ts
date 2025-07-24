@@ -62,7 +62,7 @@ export const allWords: VocabularyWord[] = [
   { id: "3-4", japanese: "電車", reading: "でんしゃ", meaning: "Train", deckId: "3" },
   { id: "3-5", japanese: "地下鉄", reading: "ちかてつ", meaning: "Subway", deckId: "3" },
   { id: "3-6", japanese: "バス", reading: "ばす", meaning: "Bus", deckId: "3" },
-  { id: "3-7", japanese: "タクシー", reading: "たくしー", meaning: "Taxi", deckId: "3" },
+  { id: "3-7", japanese: "タクシー", reading: "たくしい", meaning: "Taxi", deckId: "3" },
   { id: "3-8", japanese: "ホテル", reading: "ほてる", meaning: "Hotel", deckId: "3" },
   { id: "3-9", japanese: "予約", reading: "よやく", meaning: "Reservation", deckId: "3" },
   { id: "3-10", japanese: "地図", reading: "ちず", meaning: "Map", deckId: "3" },
