@@ -272,14 +272,13 @@ export function ListeningTestViewer({ words, userId }: ListeningTestViewerProps)
                         getInputBorderColor()
                     )}
                  />
-                 {answerStatus === 'incorrect' && currentWord && (
-                    <div className="mt-2 text-center text-lg font-semibold text-red-700 dark:text-red-400 animate-in fade-in">
-                        {currentWord.japanese} ({currentWord.reading})
-                    </div>
-                 )}
-                  {answerStatus === 'correct' && currentWord && (
-                    <div className="mt-2 text-center text-lg font-semibold text-green-700 dark:text-green-400 animate-in fade-in">
-                        {currentWord.japanese} ({currentWord.reading})
+                 {(answerStatus === 'correct' || answerStatus === 'incorrect') && currentWord && (
+                    <div className={cn(
+                        "mt-2 text-center text-lg font-semibold animate-in fade-in",
+                        answerStatus === 'correct' ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'
+                    )}>
+                        <p>{currentWord.japanese} ({currentWord.reading})</p>
+                        <p className="text-base text-muted-foreground mt-1">{currentWord.meaning}</p>
                     </div>
                  )}
                  {answerStatus !== 'idle' && (
@@ -336,4 +335,3 @@ export function ListeningTestViewer({ words, userId }: ListeningTestViewerProps)
     </div>
   );
 }
-
