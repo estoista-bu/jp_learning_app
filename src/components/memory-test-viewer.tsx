@@ -174,9 +174,13 @@ export function MemoryTestViewer({ words, isKana = false, userId }: MemoryTestVi
   
   const checkAnswer = (answer: string) => {
     if (answerStatus !== 'idle' || !currentWord) return;
-    const isCorrect = isKana
-      ? wanakana.toHiragana(answer.trim()) === currentWord.reading
-      : wanakana.toHiragana(answer.trim()) === wanakana.toHiragana(currentWord.reading);
+
+    // Convert both the input and the correct reading to Romaji for a flexible comparison
+    // This handles cases like 'arerugii' vs 'arerugi-'
+    const submittedRomaji = wanakana.toRomaji(wanakana.toHiragana(answer.trim()));
+    const correctRomaji = wanakana.toRomaji(currentWord.reading);
+    
+    const isCorrect = submittedRomaji === correctRomaji;
     handleGuess(isCorrect, answer);
   };
   
