@@ -8,6 +8,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Keyword is required' }, { status: 400 });
   }
 
+  // Jisho API may not handle single-character searches well, especially for kana.
+  // This prevents unnecessary API calls and potential errors.
+  if (keyword.length < 2) {
+    return NextResponse.json({ data: [] });
+  }
+
   try {
     const response = await fetch(`https://jisho.org/api/v1/search/words?keyword=${encodeURIComponent(keyword)}`);
     if (!response.ok) {
