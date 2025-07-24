@@ -32,23 +32,24 @@ Existing words:
 - {{this}}
 {{/each}}
 
-For each new, unique vocabulary word, provide the standard Japanese writing (with Kanji), the reading in hiragana, and the English meaning.
-
 VERY IMPORTANT: Generate exactly {{numWords}} words. Do not generate more or less than this amount.
 `,
 });
 
-// Helper function to call the Jisho API proxy
+// Helper function to call the Jisho API directly
 async function searchJisho(keyword: string): Promise<JishoResult[]> {
-  // In a server-side context, you need to provide the full URL
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-  const response = await fetch(`${baseUrl}/api/jisho?keyword=${encodeURIComponent(keyword)}`);
-  if (!response.ok) {
-    console.error(`Jisho API request failed for "${keyword}" with status ${response.status}`);
+  try {
+    const response = await fetch(`https://jisho.org/api/v1/search/words?keyword=${encodeURIComponent(keyword)}`);
+    if (!response.ok) {
+      console.error(`Jisho API request failed for "${keyword}" with status ${response.status}`);
+      return [];
+    }
+    const data = await response.json();
+    return data.data || [];
+  } catch (error) {
+    console.error(`Jisho API request failed for "${keyword}":`, error);
     return [];
   }
-  const data = await response.json();
-  return data.data || [];
 }
 
 const generateWordsFlow = ai.defineFlow(
