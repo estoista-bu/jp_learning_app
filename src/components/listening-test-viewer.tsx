@@ -207,8 +207,14 @@ export function ListeningTestViewer({ words, userId }: ListeningTestViewerProps)
     setIsPlaying(true);
     const utterance = new SpeechSynthesisUtterance(currentWord.reading);
     utterance.lang = 'ja-JP';
-    utterance.onend = () => setIsPlaying(false);
-    utterance.onerror = () => setIsPlaying(false);
+    utterance.onend = () => {
+        setIsPlaying(false);
+        inputRef.current?.focus();
+    };
+    utterance.onerror = () => {
+        setIsPlaying(false);
+        inputRef.current?.focus();
+    };
     
     window.speechSynthesis.speak(utterance);
   };
@@ -330,3 +336,4 @@ export function ListeningTestViewer({ words, userId }: ListeningTestViewerProps)
     </div>
   );
 }
+
