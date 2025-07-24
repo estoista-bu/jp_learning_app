@@ -209,16 +209,6 @@ export function ListeningTestViewer({ words, userId }: ListeningTestViewerProps)
     
     window.speechSynthesis.speak(utterance);
   };
-  
-  useEffect(() => {
-    if (currentWord && answerStatus === 'idle') {
-      // Auto-play audio for the new word
-      const utterance = new SpeechSynthesisUtterance(currentWord.reading);
-      utterance.lang = 'ja-JP';
-      window.speechSynthesis.speak(utterance);
-    }
-  }, [currentWord]);
-
 
   const getBackgroundColor = () => {
     if (answerStatus === 'correct') return 'bg-green-200 dark:bg-green-900';
