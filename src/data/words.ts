@@ -50,7 +50,7 @@ export const allWords: VocabularyWord[] = [
   { id: "2-20", japanese: "朝ご飯", reading: "あさごはん", meaning: "Breakfast", deckId: "2" },
   { id: "2-21", japanese: "昼ご飯", reading: "ひるごはん", meaning: "Lunch", deckId: "2" },
   { id: "2-22", japanese: "晩ご飯", reading: "ばんごはん", meaning: "Dinner", deckId: "2" },
-  { id: "2-23", japanese: "アレルギー", reading: "アレルギー", meaning: "Allergy", deckId: "2" },
+  { id: "2-23", japanese: "アレルギー", reading: "あれるぎい", meaning: "Allergy", deckId: "2" },
   { id: "2-24", japanese: "辛い", reading: "からい", meaning: "Spicy", deckId: "2" },
   { id: "2-25", japanese: "甘い", reading: "あまい", meaning: "Sweet", deckId: "2" },
 
@@ -79,7 +79,7 @@ export const allWords: VocabularyWord[] = [
   { id: "3-21", japanese: "写真", reading: "しゃしん", meaning: "Photograph", deckId: "3" },
   { id: "3-22", japanese: "出口", reading: "でぐち", meaning: "Exit", deckId: "3" },
   { id: "3-23", japanese: "入口", reading: "いりぐち", meaning: "Entrance", deckId: "3" },
-  { id: "3-24", japanese: "トイレ", reading: "トイレ", meaning: "Toilet / Restroom", deckId: "3" },
+  { id: "3-24", japanese: "トイレ", reading: "といれ", meaning: "Toilet / Restroom", deckId: "3" },
   { id: "3-25", japanese: "飛行機", reading: "ひこうき", meaning: "Airplane", deckId: "3" },
 
   // Deck: Hiragana
