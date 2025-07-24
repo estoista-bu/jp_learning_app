@@ -282,7 +282,7 @@ export function Flashcard({
         {/* Back of the card */}
         <Card className="absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col items-center justify-between overflow-hidden">
            {editButtons}
-           <div className="w-full h-12 flex justify-start items-center px-4">
+           <div className="w-full h-12 flex justify-start items-center px-4" onClick={stopPropagation}>
               {jlptLevel && (
                   <Badge variant="secondary">{jlptLevel}</Badge>
               )}
