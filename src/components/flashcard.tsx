@@ -99,7 +99,7 @@ export function Flashcard({
 
   const stopPropagation = (e: React.MouseEvent) => {
     e.stopPropagation();
-  }
+  };
 
   const handlePlayAudio = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -177,13 +177,13 @@ export function Flashcard({
       <AlertDialog>
           <AlertDialogTrigger asChild>
               <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-destructive"
-              onClick={stopPropagation}
-              aria-label={`Remove ${word.japanese}`}
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                onClick={stopPropagation}
+                aria-label={`Remove ${word.japanese}`}
               >
-              <X className="h-4 w-4" />
+                <X className="h-4 w-4" />
               </Button>
           </AlertDialogTrigger>
           <AlertDialogContent onClick={stopPropagation}>
@@ -282,7 +282,7 @@ export function Flashcard({
         {/* Back of the card */}
         <Card className="absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col items-center justify-between overflow-hidden">
            {editButtons}
-           <div className="w-full h-12 flex justify-start items-center px-4">
+           <div className="w-full h-12 flex justify-start items-center px-4" onClick={stopPropagation}>
               {jlptLevel && (
                   <Badge variant="secondary">{jlptLevel}</Badge>
               )}
