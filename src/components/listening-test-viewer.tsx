@@ -33,6 +33,7 @@ export function ListeningTestViewer({ words, userId }: ListeningTestViewerProps)
   const [showStats, setShowStats] = useState(false);
   const [isEnterLocked, setIsEnterLocked] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [playCount, setPlayCount] = useState(0);
 
   const [sessionCorrect, setSessionCorrect] = useState(0);
   const [sessionTotal, setSessionTotal] = useState(0);
@@ -106,6 +107,7 @@ export function ListeningTestViewer({ words, userId }: ListeningTestViewerProps)
     setInputValue('');
     setAnswerStatus('idle');
     setIsEnterLocked(true);
+    setPlayCount(0); // Reset play count for new word
   }, [selectNextWord]);
   
   useEffect(() => {
@@ -197,10 +199,11 @@ export function ListeningTestViewer({ words, userId }: ListeningTestViewerProps)
 
   const handlePlayAudio = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (typeof window === 'undefined' || !window.speechSynthesis || isPlaying || !currentWord) {
+    if (typeof window === 'undefined' || !window.speechSynthesis || isPlaying || !currentWord || playCount >= 2) {
       return;
     }
-
+    
+    setPlayCount(prev => prev + 1);
     setIsPlaying(true);
     const utterance = new SpeechSynthesisUtterance(currentWord.reading);
     utterance.lang = 'ja-JP';
@@ -223,6 +226,7 @@ export function ListeningTestViewer({ words, userId }: ListeningTestViewerProps)
   }
   
   const maxWeight = Math.max(...weightedWords.map(w => w.weight), 1);
+  const playsLeft = 2 - playCount;
 
   return (
     <div className={cn("flex flex-col w-full h-full transition-colors duration-300", getBackgroundColor())}>
@@ -232,10 +236,15 @@ export function ListeningTestViewer({ words, userId }: ListeningTestViewerProps)
                 key={`${currentWord.id}`}
                 className="w-full text-center animate-in fade-in"
             >
-              <Button onClick={handlePlayAudio} disabled={isPlaying} size="lg" variant="outline" className="h-24 w-24 rounded-full">
-                {isPlaying ? <Loader2 className="h-10 w-10 animate-spin" /> : <Volume2 className="h-10 w-10" />}
-                <span className="sr-only">Play Word</span>
-              </Button>
+              <div className="flex flex-col items-center gap-2">
+                <Button onClick={handlePlayAudio} disabled={isPlaying || playsLeft <= 0} size="lg" variant="outline" className="h-24 w-24 rounded-full">
+                  {isPlaying ? <Loader2 className="h-10 w-10 animate-spin" /> : <Volume2 className="h-10 w-10" />}
+                  <span className="sr-only">Play Word</span>
+                </Button>
+                <span className="text-xs text-muted-foreground">
+                    {playsLeft > 0 ? `${playsLeft} play${playsLeft > 1 ? 's' : ''} left` : 'No plays left'}
+                </span>
+              </div>
             </div>
             ) : (
                  <p className="text-muted-foreground">Loading test...</p>
