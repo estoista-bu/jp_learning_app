@@ -280,15 +280,10 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
         return (
           <div className="flex-1 flex flex-col items-center justify-center p-4 gap-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
-                <Card onClick={() => handleSetMode('view')} className="p-6 text-center cursor-pointer hover:bg-muted transition-colors">
-                <Eye className="h-10 w-10 mx-auto text-primary mb-2"/>
-                <h2 className="text-lg font-bold">View Each</h2>
-                <p className="text-sm text-muted-foreground">Review cards one by one.</p>
-                </Card>
                 <Card onClick={() => handleSetMode('list')} className="p-6 text-center cursor-pointer hover:bg-muted transition-colors">
                 <ListChecks className="h-10 w-10 mx-auto text-primary/80 mb-2"/>
-                <h2 className="text-lg font-bold">View as List</h2>
-                <p className="text-sm text-muted-foreground">See all words at once.</p>
+                <h2 className="text-lg font-bold">View Words</h2>
+                <p className="text-sm text-muted-foreground">See all words in the deck.</p>
                 </Card>
                 {userRole !== 'admin' && (
                 <Card onClick={() => handleSetMode('test')} className="p-6 text-center cursor-pointer hover:bg-muted transition-colors">
