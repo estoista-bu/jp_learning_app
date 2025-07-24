@@ -6,7 +6,7 @@ import type { VocabularyWord, WordMasteryStats } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { Mic, MicOff, ArrowRight, RefreshCw, XCircle, CheckCircle, ServerCrash, Volume2, Loader2 } from 'lucide-react';
+import { Mic, MicOff, ArrowRight, RefreshCw, XCircle, CheckCircle, ServerCrash, Volume2, Loader2, Bug } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { textToSpeech } from '@/ai/flows/text-to-speech-flow';
 
@@ -132,13 +132,14 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
   }, []);
   
   const handleGuess = useCallback((guessed: boolean) => {
-    if (!currentWord) return;
+    if (!currentWord || status !== 'idle') return;
     
     // Update session stats
     setSessionTotal(prev => prev + 1);
     if (guessed) {
       setSessionCorrect(prev => prev + 1);
       setStatus('correct');
+      setTranscript('Correct (Debug)'); // Set debug transcript
     } else {
       setStatus('incorrect');
     }
@@ -171,7 +172,7 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
             return w;
         });
     });
-  }, [currentWord, userId, generateAndSetAudio]);
+  }, [currentWord, userId, generateAndSetAudio, status]);
 
   const checkAnswer = useCallback((spokenText: string) => {
     if (!currentWord) return;
@@ -180,8 +181,36 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
     const normalizedReading = currentWord.reading.replace(/\s/g, '');
     const normalizedJapanese = currentWord.japanese.replace(/\s/g, '');
 
-    handleGuess(normalizedSpoken === normalizedReading || normalizedSpoken === normalizedJapanese);
-  }, [currentWord, handleGuess]);
+    const isCorrect = normalizedSpoken === normalizedReading || normalizedSpoken === normalizedJapanese;
+
+    // We call handleGuess here, but we need to update the status differently for real answers vs debug.
+    setStatus(isCorrect ? 'correct' : 'incorrect');
+    setSessionTotal(prev => prev + 1);
+    if (isCorrect) {
+      setSessionCorrect(prev => prev + 1);
+    }
+    generateAndSetAudio(currentWord.reading);
+
+    const masteryStats: Record<string, WordMasteryStats> = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
+    if (!masteryStats[currentWord.id]) {
+      masteryStats[currentWord.id] = { correct: 0, incorrect: 0, weight: 1 };
+    }
+    let currentWeight = masteryStats[currentWord.id].weight ?? 1;
+    if (isCorrect) {
+       masteryStats[currentWord.id].correct = (masteryStats[currentWord.id].correct || 0) + 1;
+       currentWeight /= 8;
+    } else {
+       masteryStats[currentWord.id].incorrect = (masteryStats[currentWord.id].incorrect || 0) + 1;
+       currentWeight *= 10;
+    }
+    masteryStats[currentWord.id].weight = currentWeight;
+    localStorage.setItem(`wordMasteryStats_${userId}`, JSON.stringify(masteryStats));
+
+    setWeightedWords(prevWords => 
+      prevWords.map(w => (w.id === currentWord.id ? { ...w, weight: currentWeight } : w))
+    );
+
+  }, [currentWord, userId, generateAndSetAudio]);
   
   // This effect now correctly links the transcript to the checkAnswer function.
   useEffect(() => {
@@ -326,18 +355,34 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
           </CardContent>
         </Card>
 
-        <Button 
-          onClick={handleStartListening} 
-          disabled={status === 'listening' || status === 'processing'}
-          size="lg"
-          className={cn(
-            "w-full max-w-xs",
-            status === 'listening' && 'bg-blue-600 hover:bg-blue-700 animate-pulse'
+        <div className="w-full max-w-xs space-y-2">
+          <Button 
+            onClick={handleStartListening} 
+            disabled={status !== 'idle' && status !== 'error'}
+            size="lg"
+            className={cn(
+              "w-full",
+              status === 'listening' && 'bg-blue-600 hover:bg-blue-700 animate-pulse'
+            )}
+          >
+            {status === 'listening' ? <Mic className="mr-2 h-5 w-5"/> : <MicOff className="mr-2 h-5 w-5" />}
+            {status === 'listening' ? 'Listening...' : 'Start Listening'}
+          </Button>
+
+          {/* DEBUG BUTTON START */}
+          {status === 'idle' && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleGuess(true)}
+              className="text-xs text-muted-foreground"
+            >
+              <Bug className="mr-2 h-3 w-3" />
+              Debug: Mark as Correct
+            </Button>
           )}
-        >
-          {status === 'listening' ? <Mic className="mr-2 h-5 w-5"/> : <MicOff className="mr-2 h-5 w-5" />}
-          {status === 'listening' ? 'Listening...' : 'Start Listening'}
-        </Button>
+          {/* DEBUG BUTTON END */}
+        </div>
       </div>
       
       <div className="min-h-[120px]">
