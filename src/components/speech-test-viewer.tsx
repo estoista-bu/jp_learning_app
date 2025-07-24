@@ -4,10 +4,14 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { VocabularyWord, WordMasteryStats } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Mic, MicOff, ArrowRight, RefreshCw, XCircle, CheckCircle, ServerCrash, Volume2, Loader2, Bug } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Checkbox } from './ui/checkbox';
+import { Label } from './ui/label';
+import { ScrollArea } from './ui/scroll-area';
+import { Progress } from './ui/progress';
 
 interface WeightedWord extends VocabularyWord {
   weight: number;
@@ -37,6 +41,7 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
   const [sessionTotal, setSessionTotal] = useState(0);
   const [isSupported, setIsSupported] = useState(true);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [showStats, setShowStats] = useState(false);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const nextButtonRef = useRef<HTMLButtonElement>(null);
@@ -286,10 +291,12 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
       }
     }
   };
+  
+  const maxWeight = Math.max(...weightedWords.map(w => w.weight), 1);
 
   return (
-    <div className="flex flex-col w-full h-full p-4 space-y-4" onKeyUp={handleKeyUp} tabIndex={0}>
-      <div className="space-y-2">
+    <div className="flex flex-col w-full h-full" onKeyUp={handleKeyUp} tabIndex={0}>
+       <div className="p-4 space-y-2">
         <div className="flex justify-between items-center text-sm text-muted-foreground">
            <Button onClick={handleRestart} variant="outline" size="sm">
               <RefreshCw className="mr-2 h-4 w-4" />
@@ -299,7 +306,7 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6">
+      <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6 px-4">
         <Card className="w-full max-w-md">
           <CardContent className="p-6">
             <p className="font-headline text-primary drop-shadow-sm text-7xl md:text-8xl break-all">
@@ -308,6 +315,32 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
             <p className="text-muted-foreground mt-2 text-xl">{currentWord.meaning}</p>
           </CardContent>
         </Card>
+        
+        {showStats && (
+            <Card className="w-full max-w-md animate-in fade-in">
+                <CardHeader>
+                    <CardTitle>Word Weights</CardTitle>
+                    <CardDescription>
+                        Higher weights mean a word is more likely to appear next.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ScrollArea className="h-48">
+                        <div className="p-4 space-y-4 pr-3">
+                            {weightedWords.sort((a, b) => b.weight - a.weight).map(word => (
+                                <div key={word.id}>
+                                    <div className="flex justify-between text-sm mb-1">
+                                        <span className="truncate pr-2">{word.japanese}</span>
+                                        <span className="font-mono text-muted-foreground">{word.weight.toFixed(2)}</span>
+                                    </div>
+                                    <Progress value={(word.weight / maxWeight) * 100} />
+                                </div>
+                            ))}
+                        </div>
+                    </ScrollArea>
+                </CardContent>
+            </Card>
+        )}
 
         <div className="w-full max-w-xs space-y-2">
            {status === 'idle' && (
@@ -338,8 +371,7 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
         </div>
       </div>
       
-      <div className="min-h-[120px]">
-        
+      <div className="p-4 min-h-[120px]">
         {(status === 'correct' || status === 'incorrect') && (
           <div className="space-y-4 animate-in fade-in">
             <div className={cn(
@@ -380,6 +412,15 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
           </Alert>
         )}
       </div>
+       <footer className="flex items-center justify-between p-4 border-t">
+            <div className="flex items-center space-x-2">
+                <Checkbox id="show-stats" checked={showStats} onCheckedChange={(checked) => setShowStats(!!checked)} />
+                <Label htmlFor="show-stats" className="text-sm font-medium">Stats</Label>
+            </div>
+            <div className="w-1/3 flex justify-end">
+                 {/* Placeholder for potential right-side controls */}
+            </div>
+        </footer>
     </div>
   );
 }
