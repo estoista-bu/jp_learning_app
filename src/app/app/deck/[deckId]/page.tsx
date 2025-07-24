@@ -282,7 +282,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
                 <Card onClick={() => handleSetMode('list')} className="p-6 text-center cursor-pointer hover:bg-muted transition-colors">
                 <ListChecks className="h-10 w-10 mx-auto text-primary/80 mb-2"/>
-                <h2 className="text-lg font-bold">View Words</h2>
+                <h2 className="text-lg font-bold">{isKanaDeck ? "View Kana" : "View Words"}</h2>
                 <p className="text-sm text-muted-foreground">See all words in the deck.</p>
                 </Card>
                 {userRole !== 'admin' && (
@@ -382,4 +382,3 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     </div>
   );
 }
-
