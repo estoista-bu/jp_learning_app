@@ -54,7 +54,7 @@ export function Flashcard({
   const { toast } = useToast();
 
   useEffect(() => {
-    if (isKana || mode === 'test') {
+    if (mode === 'test') {
       return;
     }
   
@@ -67,7 +67,7 @@ export function Flashcard({
         if (!response.ok) return;
 
         const data = await response.json();
-        const resultWithJlpt = data.data?.find((r: JishoResult) => r.japanese[0].word === word.japanese && r.jlpt && r.jlpt.length > 0);
+        const resultWithJlpt = data.data?.find((r: JishoResult) => (r.japanese[0].word === word.japanese || r.japanese[0].reading === word.japanese) && r.jlpt && r.jlpt.length > 0);
         
         if (resultWithJlpt && resultWithJlpt.jlpt) {
             const level = resultWithJlpt.jlpt[0]
@@ -84,7 +84,7 @@ export function Flashcard({
     };
   
     fetchJishoData();
-  }, [word, isKana, mode, jlptLevel]);
+  }, [word, mode, jlptLevel]);
 
 
   const handleEdit = (e: React.MouseEvent) => {
@@ -289,7 +289,7 @@ export function Flashcard({
             {editButtons}
            <div className="w-full flex-grow flex flex-col items-center justify-center p-4 text-center">
             {jlptLevel && (
-                <div className="absolute top-2 left-2 z-20">
+                <div className="absolute top-2 left-2 z-20" onClick={(e) => e.stopPropagation()}>
                     <Badge variant="secondary">{jlptLevel}</Badge>
                 </div>
             )}
