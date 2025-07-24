@@ -1,11 +1,11 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Pencil, Volume2, Loader2,ThumbsUp, ThumbsDown, Star } from "lucide-react";
 import * as wanakana from 'wanakana';
 import { cn } from "@/lib/utils";
-import type { VocabularyWord, SentenceGenerationOutput, Difficulty } from "@/lib/types";
+import type { VocabularyWord, SentenceGenerationOutput, Difficulty, JishoResult } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +22,7 @@ import {
 import { generateSentence } from "@/ai/flows/generate-sentence-flow";
 import { useToast } from "@/hooks/use-toast";
 import { GeneratedSentence } from "./generated-sentence";
+import { Badge } from "./ui/badge";
 
 interface FlashcardProps {
   word: VocabularyWord;
@@ -49,7 +50,41 @@ export function Flashcard({
   const [isPlaying, setIsPlaying] = useState(false);
   const [generatedSentence, setGeneratedSentence] = useState<SentenceGenerationOutput | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [jlptLevel, setJlptLevel] = useState<string | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (isKana || mode === 'test') {
+      return;
+    }
+  
+    const fetchJishoData = async () => {
+      // Don't re-fetch if we already have the level
+      if (jlptLevel) return;
+
+      try {
+        const response = await fetch(`/api/jisho?keyword=${encodeURIComponent(word.japanese)}`);
+        if (!response.ok) return;
+
+        const data = await response.json();
+        const resultWithJlpt = data.data?.find((r: JishoResult) => r.japanese[0].word === word.japanese && r.jlpt && r.jlpt.length > 0);
+        
+        if (resultWithJlpt && resultWithJlpt.jlpt) {
+            const level = resultWithJlpt.jlpt[0]
+              .replace('jlpt-', '')
+              .toUpperCase();
+            setJlptLevel(level);
+        } else {
+            setJlptLevel(null);
+        }
+      } catch (error) {
+        console.error("Failed to fetch Jisho data for JLPT level", error);
+        setJlptLevel(null);
+      }
+    };
+  
+    fetchJishoData();
+  }, [word, isKana, mode, jlptLevel]);
 
 
   const handleEdit = (e: React.MouseEvent) => {
@@ -247,7 +282,11 @@ export function Flashcard({
         {/* Back of the card */}
         <Card className="absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col items-center justify-between overflow-hidden">
            {editButtons}
-           <div className="w-full h-12"></div>
+           <div className="w-full h-12 flex justify-start items-center px-4">
+              {jlptLevel && (
+                  <Badge variant="secondary">{jlptLevel}</Badge>
+              )}
+           </div>
            
            <CardContent className="p-4 text-center flex-grow w-full">
             <div className="flex items-center justify-center relative">
@@ -282,5 +321,3 @@ export function Flashcard({
     </div>
   );
 }
-
-    
