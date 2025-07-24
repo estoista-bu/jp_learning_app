@@ -282,14 +282,13 @@ export function Flashcard({
         {/* Back of the card */}
         <Card className="absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col items-center justify-between overflow-hidden">
            {editButtons}
-           <div className="w-full h-12 flex justify-start items-center px-4" onClick={stopPropagation}>
-              {jlptLevel && (
-                  <Badge variant="secondary">{jlptLevel}</Badge>
-              )}
-           </div>
-           
-           <CardContent className="p-4 text-center flex-grow w-full">
-            <div className="flex items-center justify-center relative">
+           <div className="flex-grow w-full flex flex-col items-center justify-center p-4 text-center">
+            {jlptLevel && (
+                <div className="absolute top-2 left-2 z-20">
+                    <Badge variant="secondary">{jlptLevel}</Badge>
+                </div>
+            )}
+            <div className="flex items-center justify-center relative w-full">
               <div className="flex-1">
                 <p className="font-body text-3xl font-semibold text-accent break-all">
                   {word.reading}
@@ -312,7 +311,7 @@ export function Flashcard({
                   )}
                 </Button>
             </div>
-           </CardContent>
+           </div>
 
            {memoryTestControls}
            {isFlipped && mode === 'view' && sentenceGenerator}
