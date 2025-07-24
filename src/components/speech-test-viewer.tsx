@@ -132,21 +132,19 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
   }, []);
   
   const handleGuess = useCallback((guessed: boolean) => {
-    if (!currentWord || status !== 'idle') return;
+    if (!currentWord) return;
     
-    // Update session stats
     setSessionTotal(prev => prev + 1);
     if (guessed) {
       setSessionCorrect(prev => prev + 1);
       setStatus('correct');
-      setTranscript('Correct (Debug)'); // Set debug transcript
+      setTranscript('Correct (Debug)');
     } else {
       setStatus('incorrect');
     }
     
     generateAndSetAudio(currentWord.reading);
 
-    // This part updates word-specific stats for future test weighting
     const masteryStats: Record<string, WordMasteryStats> = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
     if (!masteryStats[currentWord.id]) {
       masteryStats[currentWord.id] = { correct: 0, incorrect: 0, weight: 1 };
@@ -156,34 +154,27 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
 
     if (guessed) {
        masteryStats[currentWord.id].correct = (masteryStats[currentWord.id].correct || 0) + 1;
-       currentWeight = currentWeight / 8;
+       currentWeight /= 8;
     } else {
        masteryStats[currentWord.id].incorrect = (masteryStats[currentWord.id].incorrect || 0) + 1;
-       currentWeight = currentWeight * 10;
+       currentWeight *= 10;
     }
     masteryStats[currentWord.id].weight = currentWeight;
     localStorage.setItem(`wordMasteryStats_${userId}`, JSON.stringify(masteryStats));
 
-    setWeightedWords(prevWords => {
-        return prevWords.map(w => {
-            if (w.id === currentWord.id) {
-                return { ...w, weight: currentWeight };
-            }
-            return w;
-        });
-    });
-  }, [currentWord, userId, generateAndSetAudio, status]);
+    setWeightedWords(prevWords => 
+        prevWords.map(w => (w.id === currentWord.id ? { ...w, weight: currentWeight } : w))
+    );
+  }, [currentWord, userId, generateAndSetAudio]);
 
   const checkAnswer = useCallback((spokenText: string) => {
     if (!currentWord) return;
-    // Normalize by removing spaces which speech recognition sometimes adds
     const normalizedSpoken = spokenText.replace(/\s/g, '');
     const normalizedReading = currentWord.reading.replace(/\s/g, '');
     const normalizedJapanese = currentWord.japanese.replace(/\s/g, '');
 
     const isCorrect = normalizedSpoken === normalizedReading || normalizedSpoken === normalizedJapanese;
 
-    // We call handleGuess here, but we need to update the status differently for real answers vs debug.
     setStatus(isCorrect ? 'correct' : 'incorrect');
     setSessionTotal(prev => prev + 1);
     if (isCorrect) {
@@ -212,7 +203,6 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
 
   }, [currentWord, userId, generateAndSetAudio]);
   
-  // This effect now correctly links the transcript to the checkAnswer function.
   useEffect(() => {
     if (transcript && status === 'processing') {
       checkAnswer(transcript);
@@ -368,9 +358,13 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
             {status === 'listening' ? <Mic className="mr-2 h-5 w-5"/> : <MicOff className="mr-2 h-5 w-5" />}
             {status === 'listening' ? 'Listening...' : 'Start Listening'}
           </Button>
-
-          {/* DEBUG BUTTON START */}
-          {status === 'idle' && (
+        </div>
+      </div>
+      
+      <div className="min-h-[120px]">
+        {/* DEBUG BUTTON START */}
+        {status === 'idle' && (
+          <div className="text-center mb-2">
             <Button
               variant="outline"
               size="sm"
@@ -380,12 +374,10 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
               <Bug className="mr-2 h-3 w-3" />
               Debug: Mark as Correct
             </Button>
-          )}
-          {/* DEBUG BUTTON END */}
-        </div>
-      </div>
-      
-      <div className="min-h-[120px]">
+          </div>
+        )}
+        {/* DEBUG BUTTON END */}
+        
         {(status === 'correct' || status === 'incorrect') && (
           <div className="space-y-4 animate-in fade-in">
             <div className={cn(
@@ -442,3 +434,4 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
     </div>
   );
 }
+
