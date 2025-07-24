@@ -81,7 +81,10 @@ export function VocabularyListViewer({ words, onEdit, onRemove, onSelectWord, ma
   return (
     <>
       <div className="flex-1 flex flex-col min-h-0">
-        <div className="flex justify-end p-2 border-b">
+        <div className="flex justify-between items-center p-2 border-b">
+            <p className="text-sm text-muted-foreground px-2">
+                Total Words: {words.length}
+            </p>
              <Button variant="outline" size="sm" onClick={onRefreshStats}>
                 <RefreshCw className="mr-2 h-4 w-4"/>
                 Refresh Weights
