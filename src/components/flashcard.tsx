@@ -261,7 +261,10 @@ export function Flashcard({
         )}
       >
         {/* Front of the card */}
-        <Card className="absolute w-full h-full [backface-visibility:hidden] flex items-center justify-center overflow-hidden">
+        <Card className={cn(
+            "absolute w-full h-full [backface-visibility:hidden] flex items-center justify-center overflow-hidden",
+            isFlipped && "pointer-events-none"
+            )}>
           {editButtons}
           {isMastered && mode === 'view' && (
               <div className="absolute top-2 left-2 z-20">
@@ -280,9 +283,11 @@ export function Flashcard({
         </Card>
 
         {/* Back of the card */}
-        <Card className="absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col items-center justify-between overflow-hidden">
-           {editButtons}
-           <div className="flex-grow w-full flex flex-col items-center justify-center p-4 text-center">
+        <Card className={cn(
+            "absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col items-center justify-between overflow-hidden",
+            !isFlipped && "pointer-events-none"
+            )}>
+           <div className="w-full flex-grow flex flex-col items-center justify-center p-4 text-center">
             {jlptLevel && (
                 <div className="absolute top-2 left-2 z-20">
                     <Badge variant="secondary">{jlptLevel}</Badge>
