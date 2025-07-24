@@ -265,7 +265,6 @@ export function Flashcard({
             "absolute w-full h-full [backface-visibility:hidden] flex items-center justify-center overflow-hidden",
             isFlipped && "pointer-events-none"
             )}>
-          {editButtons}
           {isMastered && mode === 'view' && (
               <div className="absolute top-2 left-2 z-20">
                   <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
@@ -287,6 +286,7 @@ export function Flashcard({
             "absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col items-center justify-between overflow-hidden",
             !isFlipped && "pointer-events-none"
             )}>
+            {editButtons}
            <div className="w-full flex-grow flex flex-col items-center justify-center p-4 text-center">
             {jlptLevel && (
                 <div className="absolute top-2 left-2 z-20">
