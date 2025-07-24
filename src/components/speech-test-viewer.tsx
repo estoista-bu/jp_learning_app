@@ -8,7 +8,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Mic, MicOff, ArrowRight, RefreshCw, XCircle, CheckCircle, ServerCrash, Volume2, Loader2, Bug } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { textToSpeech } from '@/ai/flows/text-to-speech-flow';
 
 interface WeightedWord extends VocabularyWord {
   weight: number;
@@ -37,13 +36,10 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
   const [sessionCorrect, setSessionCorrect] = useState(0);
   const [sessionTotal, setSessionTotal] = useState(0);
   const [isSupported, setIsSupported] = useState(true);
-  const [audioDataUri, setAudioDataUri] = useState<string | null>(null);
-  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const nextButtonRef = useRef<HTMLButtonElement>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
 
 
   // This effect runs when the component unmounts (e.g., user clicks back)
@@ -108,7 +104,6 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
     }
     setTranscript('');
     setStatus('idle');
-    setAudioDataUri(null);
   }, [selectNextWord]);
   
    useEffect(() => {
@@ -116,24 +111,6 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
          nextButtonRef.current.focus();
      }
   }, [status]);
-
-
-  const generateAndSetAudio = useCallback(async (text: string) => {
-    if (!text) { // Prevent calling TTS with an empty string
-        console.error("TTS generation skipped: text is empty.");
-        return;
-    }
-    setIsGeneratingAudio(true);
-    try {
-        const result = await textToSpeech({ text });
-        setAudioDataUri(result.audioDataUri);
-    } catch (error) {
-        console.error("TTS generation failed", error);
-        setAudioDataUri(null); // Clear on failure
-    } finally {
-        setIsGeneratingAudio(false);
-    }
-  }, []);
   
   const handleGuess = useCallback((guessed: boolean) => {
     if (!currentWord) return;
@@ -142,12 +119,11 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
     if (guessed) {
       setSessionCorrect(prev => prev + 1);
       setStatus('correct');
-      setTranscript('Correct (Debug)');
+      // For debug button, we won't have a transcript, so set a placeholder
+      if (!transcript) setTranscript('Correct (Debug)');
     } else {
       setStatus('incorrect');
     }
-    
-    generateAndSetAudio(currentWord.reading);
 
     const masteryStats: Record<string, WordMasteryStats> = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
     if (!masteryStats[currentWord.id]) {
@@ -169,7 +145,7 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
     setWeightedWords(prevWords => 
         prevWords.map(w => (w.id === currentWord.id ? { ...w, weight: currentWeight } : w))
     );
-  }, [currentWord, userId, generateAndSetAudio]);
+  }, [currentWord, userId, transcript]);
 
   const checkAnswer = useCallback((spokenText: string) => {
     if (!currentWord) return;
@@ -259,15 +235,24 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
     setSessionTotal(0);
     setStatus('idle');
     setTranscript('');
-    setAudioDataUri(null);
     goToNext();
   };
 
-  const playAudio = () => {
-    if (audioRef.current) {
-        audioRef.current.play();
+  const handlePlayAudio = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (typeof window === 'undefined' || !window.speechSynthesis || isPlayingAudio || !currentWord) {
+      return;
     }
+
+    setIsPlayingAudio(true);
+    const utterance = new SpeechSynthesisUtterance(currentWord.reading);
+    utterance.lang = 'ja-JP';
+    utterance.onend = () => setIsPlayingAudio(false);
+    utterance.onerror = () => setIsPlayingAudio(false);
+    
+    window.speechSynthesis.speak(utterance);
   };
+
 
   if (!isSupported) {
     return (
@@ -325,6 +310,19 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
         </Card>
 
         <div className="w-full max-w-xs space-y-2">
+           {status === 'idle' && (
+            <div className="text-center mb-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleGuess(true)}
+                className="text-xs text-muted-foreground"
+              >
+                <Bug className="mr-2 h-3 w-3" />
+                Debug: Mark as Correct
+              </Button>
+            </div>
+          )}
           <Button 
             onClick={handleStartListening} 
             disabled={status !== 'idle' && status !== 'error'}
@@ -341,19 +339,6 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
       </div>
       
       <div className="min-h-[120px]">
-        {status === 'idle' && (
-          <div className="text-center mb-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleGuess(true)}
-              className="text-xs text-muted-foreground"
-            >
-              <Bug className="mr-2 h-3 w-3" />
-              Debug: Mark as Correct
-            </Button>
-          </div>
-        )}
         
         {(status === 'correct' || status === 'incorrect') && (
           <div className="space-y-4 animate-in fade-in">
@@ -370,23 +355,10 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                  <span>Correct:</span>
                  <span className="font-semibold text-accent">{currentWord.reading}</span>
-                 {isGeneratingAudio ? (
-                    <Button variant="ghost" size="icon" disabled className="h-6 w-6"><Loader2 className="h-4 w-4 animate-spin"/></Button>
-                 ) : audioDataUri ? (
-                    <>
-                     <Button variant="ghost" size="icon" onClick={playAudio} disabled={isPlayingAudio} className="h-6 w-6">
-                       <Volume2 className="h-4 w-4"/>
-                       <span className="sr-only">Play pronunciation</span>
-                     </Button>
-                     <audio 
-                        ref={audioRef} 
-                        src={audioDataUri} 
-                        onPlay={() => setIsPlayingAudio(true)}
-                        onEnded={() => setIsPlayingAudio(false)}
-                        className="hidden"
-                     />
-                    </>
-                 ) : null}
+                  <Button variant="ghost" size="icon" onClick={handlePlayAudio} disabled={isPlayingAudio} className="h-6 w-6">
+                    {isPlayingAudio ? <Loader2 className="h-4 w-4 animate-spin"/> : <Volume2 className="h-4 w-4"/>}
+                    <span className="sr-only">Play pronunciation</span>
+                  </Button>
               </div>
             </div>
             
@@ -411,4 +383,3 @@ export function SpeechTestViewer({ words, userId }: SpeechTestViewerProps) {
     </div>
   );
 }
-
