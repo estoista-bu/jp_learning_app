@@ -3,7 +3,7 @@
 
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus, Eye, BrainCircuit, ListChecks, Mic } from "lucide-react";
+import { ArrowLeft, Plus, Eye, BrainCircuit, ListChecks, Mic, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { allDecks as initialDecks } from "@/data/decks";
@@ -64,12 +64,21 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     }
     setIsMounted(true);
   }, [router]);
+  
+  const refreshMasteryStats = () => {
+    if (!userId) return;
+    const storedMasteryStats = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
+    setMasteryStats(storedMasteryStats);
+    toast({
+      title: "Weights Refreshed",
+      description: "The word list has been updated with the latest mastery data.",
+    });
+  };
 
   useEffect(() => {
     if (!userId) return;
 
-    const storedMasteryStats = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
-    setMasteryStats(storedMasteryStats);
+    refreshMasteryStats();
 
     const userDecks: Deck[] = JSON.parse(localStorage.getItem(`userDecks_${userId}`) || "[]");
     const groupDecks: Deck[] = JSON.parse(localStorage.getItem('allGroupDecks') || '[]');
@@ -183,6 +192,9 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
 
 
   const handleSetMode = (newMode: DeckViewMode) => {
+    if (newMode === 'list') {
+        refreshMasteryStats();
+    }
     setPreviousMode(mode);
     setMode(newMode);
   }
@@ -191,6 +203,9 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     if (userRole === 'admin' && mode !== 'select') {
         router.push('/app');
         return;
+    }
+    if (previousMode === 'list') {
+        refreshMasteryStats();
     }
     setMode(previousMode);
     setPreviousMode('select');
@@ -255,6 +270,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
                     onSelectWord={handleSelectWordFromList} 
                     masteryStats={masteryStats}
                     masteryThreshold={MASTERY_THRESHOLD}
+                    onRefreshStats={refreshMasteryStats}
                 />;
       case "select":
       default:
@@ -360,5 +376,3 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     </div>
   );
 }
-
-    
