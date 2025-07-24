@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookCopy, Brain, Percent, Trophy, BarChart2, GraduationCap, RefreshCw, Volume2 } from 'lucide-react';
+import { BookCopy, Brain, Percent, Trophy, BarChart2, GraduationCap, RefreshCw, Volume2, Mic } from 'lucide-react';
 import { allDecks as initialDecks } from '@/data/decks';
 import { allWords } from '@/data/words';
 import { quizzes as allProvidedQuizzes } from '@/data/quizzes';
@@ -263,16 +263,16 @@ export function StatsPage({ userId }: StatsPageProps) {
                             <CardContent>
                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                                     <div>
-                                        <p className="text-sm text-muted-foreground">Recall</p>
+                                        <p className="text-sm text-muted-foreground flex items-center justify-center gap-1"><Brain className="h-3 w-3" /> Recall</p>
                                         <p className="text-2xl font-bold text-primary">{memoryRate.toFixed(1)}<span className="text-lg">%</span></p>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-muted-foreground">Pronunciation</p>
-                                        <p className="text-2xl font-bold text-primary">{pronunciationRate.toFixed(1)}<span className="text-lg">%</span></p>
+                                        <p className="text-sm text-muted-foreground flex items-center justify-center gap-1"><Volume2 className="h-3 w-3" /> Listening</p>
+                                        <p className="text-2xl font-bold text-primary">{listeningRate.toFixed(1)}<span className="text-lg">%</span></p>
                                     </div>
                                      <div>
-                                        <p className="text-sm text-muted-foreground">Listening</p>
-                                        <p className="text-2xl font-bold text-primary">{listeningRate.toFixed(1)}<span className="text-lg">%</span></p>
+                                        <p className="text-sm text-muted-foreground flex items-center justify-center gap-1"><Mic className="h-3 w-3" /> Speech</p>
+                                        <p className="text-2xl font-bold text-primary">{pronunciationRate.toFixed(1)}<span className="text-lg">%</span></p>
                                     </div>
                                 </div>
                             </CardContent>

@@ -3,7 +3,7 @@
 
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus, Eye, BrainCircuit, ListChecks, Volume2, RefreshCw } from "lucide-react";
+import { ArrowLeft, Plus, Eye, BrainCircuit, ListChecks, Volume2, RefreshCw, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { allDecks as initialDecks } from "@/data/decks";
@@ -13,6 +13,7 @@ import { FlashcardViewer } from "@/components/flashcard-viewer";
 import { MemoryTestViewer } from "@/components/memory-test-viewer";
 import { VocabularyListViewer } from "@/components/vocabulary-list-viewer";
 import { ListeningTestViewer } from "@/components/listening-test-viewer";
+import { SpeechTestViewer } from "@/components/speech-test-viewer";
 import {
   Sheet,
   SheetContent,
@@ -26,7 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
 type VocabularyFormData = Omit<VocabularyWord, "id" | "deckId">;
-type DeckViewMode = "select" | "view" | "test" | "list" | "listening";
+type DeckViewMode = "select" | "view" | "test" | "list" | "listening" | "speech";
 const MASTERY_THRESHOLD = 10;
 
 export default function DeckPage({ params: paramsProp }: { params: { deckId: string } }) {
@@ -262,6 +263,8 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
         return <MemoryTestViewer words={words} userId={userId} isKana={isKanaDeck} />;
        case "listening":
         return <ListeningTestViewer words={words} userId={userId} />;
+       case "speech":
+        return <SpeechTestViewer words={words} userId={userId} />;
        case "list":
         return <VocabularyListViewer 
                     words={shuffledWords} 
@@ -276,29 +279,36 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
       default:
         return (
           <div className="flex-1 flex flex-col items-center justify-center p-4 gap-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                <Card onClick={() => handleSetMode('view')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+                <Card onClick={() => handleSetMode('view')} className="p-6 text-center cursor-pointer hover:bg-muted transition-colors">
                 <Eye className="h-10 w-10 mx-auto text-primary mb-2"/>
                 <h2 className="text-lg font-bold">View Each</h2>
                 <p className="text-sm text-muted-foreground">Review cards one by one.</p>
                 </Card>
-                <Card onClick={() => handleSetMode('list')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
+                <Card onClick={() => handleSetMode('list')} className="p-6 text-center cursor-pointer hover:bg-muted transition-colors">
                 <ListChecks className="h-10 w-10 mx-auto text-primary/80 mb-2"/>
                 <h2 className="text-lg font-bold">View as List</h2>
                 <p className="text-sm text-muted-foreground">See all words at once.</p>
                 </Card>
                 {userRole !== 'admin' && (
-                <Card onClick={() => handleSetMode('test')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
+                <Card onClick={() => handleSetMode('test')} className="p-6 text-center cursor-pointer hover:bg-muted transition-colors">
                     <BrainCircuit className="h-10 w-10 mx-auto text-accent mb-2"/>
                     <h2 className="text-lg font-bold">Memory Test</h2>
                     <p className="text-sm text-muted-foreground">Test your recall.</p>
                 </Card>
                 )}
                 {userRole !== 'admin' && (
-                <Card onClick={() => handleSetMode('listening')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
+                <Card onClick={() => handleSetMode('listening')} className="p-6 text-center cursor-pointer hover:bg-muted transition-colors">
                     <Volume2 className="h-10 w-10 mx-auto text-accent mb-2"/>
                     <h2 className="text-lg font-bold">Listening Test</h2>
-                    <p className="text-sm text-muted-foreground">Test your listening.</p>
+                    <p className="text-sm text-muted-foreground">Test listening comprehension.</p>
+                </Card>
+                )}
+                 {userRole !== 'admin' && (
+                <Card onClick={() => handleSetMode('speech')} className="p-6 text-center cursor-pointer hover:bg-muted transition-colors">
+                    <Mic className="h-10 w-10 mx-auto text-accent mb-2"/>
+                    <h2 className="text-lg font-bold">Speech Test</h2>
+                    <p className="text-sm text-muted-foreground">Test your pronunciation.</p>
                 </Card>
                 )}
             </div>
@@ -312,11 +322,12 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     if (mode === "view") return `${deck?.name || "..."} - Word View`;
     if (mode === "test") return `${deck?.name || "..."} - Memory Test`;
     if (mode === "listening") return `${deck?.name || "..."} - Listening Test`;
+    if (mode === "speech") return `${deck?.name || "..."} - Speech Test`;
     if (mode === "list") return `${deck?.name || "..."} - Word List`;
     return deck?.name || "...";
   }
 
-  const canAddWords = !isKanaDeck && mode !== 'test' && mode !== 'listening';
+  const canAddWords = !isKanaDeck && mode !== 'test' && mode !== 'listening' && mode !== 'speech';
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-800">
