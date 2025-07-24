@@ -22,10 +22,11 @@ interface WeightedWord extends VocabularyWord {
 
 interface MemoryTestViewerProps {
   words: VocabularyWord[];
+  isKana?: boolean;
   userId: string;
 }
 
-export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
+export function MemoryTestViewer({ words, isKana = false, userId }: MemoryTestViewerProps) {
   const [weightedWords, setWeightedWords] = useState<WeightedWord[]>([]);
   const [currentWord, setCurrentWord] = useState<WeightedWord | null>(null);
   const [inputValue, setInputValue] = useState('');
@@ -173,7 +174,9 @@ export function MemoryTestViewer({ words, userId }: MemoryTestViewerProps) {
   
   const checkAnswer = (answer: string) => {
     if (answerStatus !== 'idle' || !currentWord) return;
-    const isCorrect = wanakana.toHiragana(answer.trim()) === currentWord.reading;
+    const isCorrect = isKana
+      ? wanakana.toHiragana(answer.trim()) === currentWord.reading
+      : wanakana.toHiragana(answer.trim()) === wanakana.toHiragana(currentWord.reading);
     handleGuess(isCorrect, answer);
   };
   
