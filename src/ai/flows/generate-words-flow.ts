@@ -71,10 +71,18 @@ const generateWordsFlow = ai.defineFlow(
         wordsToGenerate = numWords + 15; // Standard buffer
     }
 
-    const { output } = await generateWordsPrompt({
-      ...input,
-      numWords: wordsToGenerate,
-    });
+    let output: WordGenerationOutput | null = null;
+    try {
+        const result = await generateWordsPrompt({
+            ...input,
+            numWords: wordsToGenerate,
+        });
+        output = result.output;
+    } catch (error) {
+        console.error("AI word generation failed, returning empty list.", error);
+        // Return an empty list of words if the AI fails.
+        return { words: [] };
+    }
     
     if (!output?.words) {
       throw new Error('No output from word generation flow');

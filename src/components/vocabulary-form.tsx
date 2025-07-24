@@ -82,7 +82,7 @@ export function VocabularyForm({ onSaveWords, wordToEdit, deckId, deckName, exis
   const japaneseValue = useWatch({ control: form.control, name: 'japanese' });
 
   const fetchSuggestions = useCallback(async (keyword: string) => {
-    if (keyword.length < 1) {
+    if (keyword.length < 2) {
       setSuggestions([]);
       setIsSuggestionsOpen(false);
       return;
@@ -170,7 +170,13 @@ export function VocabularyForm({ onSaveWords, wordToEdit, deckId, deckName, exis
           numWords: numWordsToGenerate 
         });
 
-        if (autoAddWords) {
+        if (result.words.length === 0) {
+             toast({
+                title: "AI Generation Limit Reached",
+                description: "The AI model is currently overloaded. Please try again later.",
+                variant: "destructive"
+            });
+        } else if (autoAddWords) {
           onSaveWords(result.words);
         } else {
           setAiSuggestions(result.words);
