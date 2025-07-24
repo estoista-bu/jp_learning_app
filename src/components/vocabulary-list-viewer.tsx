@@ -27,6 +27,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { MoreHorizontal, Star } from "lucide-react";
 import { useState, useMemo } from "react";
 import { ScrollArea } from "./ui/scroll-area";
@@ -95,9 +101,18 @@ export function VocabularyListViewer({ words, onEdit, onRemove, onSelectWord, ma
                 </TableCell>
                 <TableCell>{word.meaning}</TableCell>
                 <TableCell>
-                  <Badge variant="outline" className={cn("border-transparent", weightCategory.className)}>
-                    {weightCategory.label}
-                  </Badge>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Badge variant="outline" className={cn("border-transparent", weightCategory.className)}>
+                          {weightCategory.label}
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Weight: {word.weight.toFixed(4)}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </TableCell>
                 <TableCell className="text-center">
                   {isMastered && <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 inline-block" />}
