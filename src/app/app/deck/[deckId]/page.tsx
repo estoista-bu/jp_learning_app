@@ -293,10 +293,10 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
 
   const getHeaderTitle = () => {
     if (mode === "select") return deck?.name || "...";
-    if (mode === "view") return "View Each";
+    if (mode === "view") return `${deck?.name || "..."} - Word View`;
     if (mode === "test") return "Memory Test";
     if (mode === "speech") return "Speech Test";
-    if (mode === "list") return "Word List";
+    if (mode === "list") return `${deck?.name || "..."} - Word List`;
     return deck?.name || "...";
   }
 
