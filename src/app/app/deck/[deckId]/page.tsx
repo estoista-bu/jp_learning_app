@@ -292,7 +292,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
                     <p className="text-sm text-muted-foreground">Test your recall.</p>
                 </Card>
                 )}
-                {userRole !== 'admin' && (
+                {userRole !== 'admin' && !isKanaDeck && (
                 <Card onClick={() => handleSetMode('listening')} className="p-6 text-center cursor-pointer hover:bg-muted transition-colors">
                     <Volume2 className="h-10 w-10 mx-auto text-accent mb-2"/>
                     <h2 className="text-lg font-bold">Listening Test</h2>
@@ -382,3 +382,4 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     </div>
   );
 }
+
