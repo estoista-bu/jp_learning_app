@@ -66,14 +66,16 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     setIsMounted(true);
   }, [router]);
   
-  const refreshMasteryStats = () => {
+  const refreshMasteryStats = (notify: boolean = false) => {
     if (!userId) return;
     const storedMasteryStats = JSON.parse(localStorage.getItem(`wordMasteryStats_${userId}`) || '{}');
     setMasteryStats(storedMasteryStats);
-    toast({
-      title: "Weights Refreshed",
-      description: "The word list has been updated with the latest mastery data.",
-    });
+    if (notify) {
+        toast({
+        title: "Weights Refreshed",
+        description: "The word list has been updated with the latest mastery data.",
+        });
+    }
   };
 
   useEffect(() => {
@@ -273,7 +275,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
                     onSelectWord={handleSelectWordFromList} 
                     masteryStats={masteryStats}
                     masteryThreshold={MASTERY_THRESHOLD}
-                    onRefreshStats={refreshMasteryStats}
+                    onRefreshStats={() => refreshMasteryStats(true)}
                 />;
       case "select":
       default:
