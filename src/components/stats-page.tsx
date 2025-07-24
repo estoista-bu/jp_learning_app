@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookCopy, Brain, Percent, Trophy, BarChart2, GraduationCap, RefreshCw } from 'lucide-react';
+import { BookCopy, Brain, Percent, Trophy, BarChart2, GraduationCap, RefreshCw, Volume2 } from 'lucide-react';
 import { allDecks as initialDecks } from '@/data/decks';
 import { allWords } from '@/data/words';
 import { quizzes as allProvidedQuizzes } from '@/data/quizzes';
@@ -50,6 +50,7 @@ export function StatsPage({ userId }: StatsPageProps) {
     const [deckStats, setDeckStats] = useState<{ name: string; wordCount: number; isCustom: boolean }[]>([]);
     const [memoryRate, setMemoryRate] = useState(0);
     const [pronunciationRate, setPronunciationRate] = useState(0);
+    const [listeningRate, setListeningRate] = useState(0);
     const [quizStats, setQuizStats] = useState<{ provided: QuizRates; ai: QuizRates }>({
         provided: { total: 0, correct: 0, dailyCorrect: 0, dailyTotal: 0, weeklyCorrect: 0, weeklyTotal: 0, monthlyCorrect: 0, monthlyTotal: 0 },
         ai: { total: 0, correct: 0, dailyCorrect: 0, dailyTotal: 0, weeklyCorrect: 0, weeklyTotal: 0, monthlyCorrect: 0, monthlyTotal: 0 }
@@ -89,6 +90,15 @@ export function StatsPage({ userId }: StatsPageProps) {
             setPronunciationRate((pronunciationScore / pronunciationTotal) * 100);
         } else {
             setPronunciationRate(0);
+        }
+        
+         // --- Listening Test Rate ---
+        const listeningScore = parseInt(localStorage.getItem(`listening_score_${userId}`) || '0', 10);
+        const listeningTotal = parseInt(localStorage.getItem(`listening_total_${userId}`) || '0', 10);
+        if (listeningTotal > 0) {
+            setListeningRate((listeningScore / listeningTotal) * 100);
+        } else {
+            setListeningRate(0);
         }
 
         // --- Quiz Stats ---
@@ -158,6 +168,8 @@ export function StatsPage({ userId }: StatsPageProps) {
         localStorage.removeItem(`cumulative_total_${userId}`);
         localStorage.removeItem(`pronunciation_score_${userId}`);
         localStorage.removeItem(`pronunciation_total_${userId}`);
+        localStorage.removeItem(`listening_score_${userId}`);
+        localStorage.removeItem(`listening_total_${userId}`);
         localStorage.removeItem(`quizResults_provided_${userId}`);
         localStorage.removeItem(`quizResults_ai_${userId}`);
         localStorage.removeItem(`wordMasteryStats_${userId}`);
@@ -220,7 +232,7 @@ export function StatsPage({ userId }: StatsPageProps) {
                 {/* Vocabulary Section */}
                 <section>
                     <h2 className="text-xl font-headline font-bold text-primary mb-2">Vocabulary Stats</h2>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-base">
@@ -249,14 +261,18 @@ export function StatsPage({ userId }: StatsPageProps) {
                                 <CardDescription>Cumulative scores from practice.</CardDescription>
                             </CardHeader>
                             <CardContent>
-                               <div className="grid grid-cols-2 gap-4 text-center">
+                               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                                     <div>
-                                        <p className="text-sm text-muted-foreground">Recall Rate</p>
-                                        <p className="text-3xl font-bold text-primary">{memoryRate.toFixed(1)}<span className="text-lg">%</span></p>
+                                        <p className="text-sm text-muted-foreground">Recall</p>
+                                        <p className="text-2xl font-bold text-primary">{memoryRate.toFixed(1)}<span className="text-lg">%</span></p>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-muted-foreground">Pronunciation Rate</p>
-                                        <p className="text-3xl font-bold text-primary">{pronunciationRate.toFixed(1)}<span className="text-lg">%</span></p>
+                                        <p className="text-sm text-muted-foreground">Pronunciation</p>
+                                        <p className="text-2xl font-bold text-primary">{pronunciationRate.toFixed(1)}<span className="text-lg">%</span></p>
+                                    </div>
+                                     <div>
+                                        <p className="text-sm text-muted-foreground">Listening</p>
+                                        <p className="text-2xl font-bold text-primary">{listeningRate.toFixed(1)}<span className="text-lg">%</span></p>
                                     </div>
                                 </div>
                             </CardContent>

@@ -3,7 +3,7 @@
 
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus, Eye, BrainCircuit, ListChecks, Mic, RefreshCw } from "lucide-react";
+import { ArrowLeft, Plus, Eye, BrainCircuit, ListChecks, Volume2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { allDecks as initialDecks } from "@/data/decks";
@@ -12,7 +12,7 @@ import type { Deck, VocabularyWord, User, UserRole, WordMasteryStats } from "@/l
 import { FlashcardViewer } from "@/components/flashcard-viewer";
 import { MemoryTestViewer } from "@/components/memory-test-viewer";
 import { VocabularyListViewer } from "@/components/vocabulary-list-viewer";
-import { SpeechTestViewer } from "@/components/speech-test-viewer";
+import { ListeningTestViewer } from "@/components/listening-test-viewer";
 import {
   Sheet,
   SheetContent,
@@ -26,7 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
 type VocabularyFormData = Omit<VocabularyWord, "id" | "deckId">;
-type DeckViewMode = "select" | "view" | "test" | "list" | "speech";
+type DeckViewMode = "select" | "view" | "test" | "list" | "listening";
 const MASTERY_THRESHOLD = 10;
 
 export default function DeckPage({ params: paramsProp }: { params: { deckId: string } }) {
@@ -259,9 +259,9 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
                     masteryThreshold={MASTERY_THRESHOLD}
                 />;
       case "test":
-        return <MemoryTestViewer words={words} userId={userId} />;
-       case "speech":
-        return <SpeechTestViewer words={words} userId={userId} />;
+        return <MemoryTestViewer words={words} userId={userId} isKana={isKanaDeck} />;
+       case "listening":
+        return <ListeningTestViewer words={words} userId={userId} />;
        case "list":
         return <VocabularyListViewer 
                     words={shuffledWords} 
@@ -295,10 +295,10 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
                 </Card>
                 )}
                 {userRole !== 'admin' && (
-                <Card onClick={() => handleSetMode('speech')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
-                    <Mic className="h-10 w-10 mx-auto text-accent mb-2"/>
-                    <h2 className="text-lg font-bold">Speech Test</h2>
-                    <p className="text-sm text-muted-foreground">Test your pronunciation.</p>
+                <Card onClick={() => handleSetMode('listening')} className="w-full p-6 text-center cursor-pointer hover:bg-muted transition-colors">
+                    <Volume2 className="h-10 w-10 mx-auto text-accent mb-2"/>
+                    <h2 className="text-lg font-bold">Listening Test</h2>
+                    <p className="text-sm text-muted-foreground">Test your listening.</p>
                 </Card>
                 )}
             </div>
@@ -311,12 +311,12 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
     if (mode === "select") return deck?.name || "...";
     if (mode === "view") return `${deck?.name || "..."} - Word View`;
     if (mode === "test") return `${deck?.name || "..."} - Memory Test`;
-    if (mode === "speech") return `${deck?.name || "..."} - Speech Test`;
+    if (mode === "listening") return `${deck?.name || "..."} - Listening Test`;
     if (mode === "list") return `${deck?.name || "..."} - Word List`;
     return deck?.name || "...";
   }
 
-  const canAddWords = !isKanaDeck && mode !== 'test' && mode !== 'speech';
+  const canAddWords = !isKanaDeck && mode !== 'test' && mode !== 'listening';
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-800">
