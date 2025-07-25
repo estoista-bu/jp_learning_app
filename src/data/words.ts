@@ -4,6 +4,7 @@ import { hiragana, katakana } from "@/data/kana";
 import { n5Words } from "@/data/n5-words";
 import { n4Words } from "@/data/n4-words";
 import { n3Words } from "@/data/n3-words";
+import { n2Words } from "@/data/n2-words";
 
 export const allWords: VocabularyWord[] = [
   // Deck 1: Greetings & Common Phrases
@@ -93,6 +94,9 @@ export const allWords: VocabularyWord[] = [
 
   // Deck: JLPT N3
   ...n3Words,
+
+  // Deck: JLPT N2
+  ...n2Words,
 
   // Deck: Hiragana
   ...hiragana.map((kana, i) => ({ id: `h-${i}`, japanese: kana.j, reading: kana.j, meaning: kana.r, deckId: 'hiragana' })),

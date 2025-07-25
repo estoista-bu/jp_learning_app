@@ -8,6 +8,7 @@ export const allDecks: Deck[] = [
   { id: "jlpt-n5", name: "JLPT N5 Vocabulary", description: "A comprehensive list of JLPT N5 vocabulary words.", category: "user" },
   { id: "jlpt-n4", name: "JLPT N4 Vocabulary", description: "Essential vocabulary for the JLPT N4 level.", category: "user" },
   { id: "jlpt-n3", name: "JLPT N3 Vocabulary", description: "A comprehensive list of JLPT N3 vocabulary words.", category: "user" },
+  { id: "jlpt-n2", name: "JLPT N2 Vocabulary", description: "A comprehensive list of JLPT N2 vocabulary words.", category: "user" },
   { id: "hiragana", name: "Hiragana", description: "The basic Japanese phonetic script.", category: "kana" },
   { id: "katakana", name: "Katakana", description: "Phonetic script for foreign words.", category: "kana" },
 ];
