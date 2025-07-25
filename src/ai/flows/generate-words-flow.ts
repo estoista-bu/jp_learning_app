@@ -60,8 +60,8 @@ const generateWordsFlow = ai.defineFlow(
   },
   async (input) => {
     const { deckName, numWords, existingWords } = input;
-    const jlptMatch = deckName.match(/JLPT N([1-5])/i);
-    const jlptLevel = jlptMatch ? `jlpt-n${jlptMatch[1]}` : null;
+    const jlptMatch = deckName.match(/JLPT (N[1-5])/i);
+    const jlptLevel = jlptMatch ? `jlpt-${jlptMatch[1].toLowerCase()}` : null;
 
     let wordsToGenerate = numWords;
     // If it's a JLPT deck, we need to generate more words initially to have enough to filter from.
@@ -115,7 +115,7 @@ const generateWordsFlow = ai.defineFlow(
       );
 
       if (isCorrectLevel) {
-        verifiedWords.push(word);
+        verifiedWords.push({ ...word, jlpt: jlptMatch![1] });
       }
     }
 

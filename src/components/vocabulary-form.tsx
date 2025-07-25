@@ -39,6 +39,7 @@ const formSchema = z.object({
   japanese: z.string().min(1, "Japanese word is required."),
   reading: z.string().min(1, "Reading is required."),
   meaning: z.string().min(1, "Meaning is required."),
+  jlpt: z.string().optional(),
 });
 
 type VocabularyFormData = Omit<VocabularyWord, "id" | "deckId">;
@@ -65,6 +66,7 @@ export function VocabularyForm({ onSaveWords, wordToEdit, deckId, deckName, exis
       japanese: "",
       reading: "",
       meaning: "",
+      jlpt: "",
     },
   });
 
@@ -103,7 +105,7 @@ export function VocabularyForm({ onSaveWords, wordToEdit, deckId, deckName, exis
       setSuggestions([]);
       setIsSuggestionsOpen(false);
     } finally {
-      setIsLoading(false);
+      setIsLoading(true);
     }
   }, []);
 
@@ -130,6 +132,7 @@ export function VocabularyForm({ onSaveWords, wordToEdit, deckId, deckName, exis
         japanese: "",
         reading: "",
         meaning: "",
+        jlpt: "",
       });
     }
   }, [wordToEdit, form]);
@@ -145,17 +148,22 @@ export function VocabularyForm({ onSaveWords, wordToEdit, deckId, deckName, exis
     const japanese = result.japanese[0]?.word || result.japanese[0]?.reading || "";
     const reading = result.japanese[0]?.reading || "";
     const meaning = result.senses[0]?.english_definitions.join(', ') || "";
+    const jlptLevel = result.jlpt?.[0] || "";
+
     form.setValue("japanese", japanese, { shouldValidate: true });
     form.setValue("reading", reading, { shouldValidate: true });
     form.setValue("meaning", meaning, { shouldValidate: true });
+    form.setValue("jlpt", jlptLevel.replace('jlpt-','').toUpperCase());
+
     setIsSuggestionsOpen(false);
     setSuggestions([]);
   };
   
-  const handleAiSuggestionClick = (word: { japanese: string; reading: string; meaning: string; }) => {
+  const handleAiSuggestionClick = (word: VocabularyFormData) => {
     form.setValue("japanese", word.japanese, { shouldValidate: true });
     form.setValue("reading", word.reading, { shouldValidate: true });
     form.setValue("meaning", word.meaning, { shouldValidate: true });
+    form.setValue("jlpt", word.jlpt || "");
     setAiSuggestions([]);
   };
   
@@ -177,7 +185,7 @@ export function VocabularyForm({ onSaveWords, wordToEdit, deckId, deckName, exis
                 variant: "destructive"
             });
         } else if (autoAddWords) {
-          onSaveWords(result.words);
+          onSaveWords(result.words as VocabularyFormData[]);
         } else {
           setAiSuggestions(result.words);
         }
@@ -272,6 +280,19 @@ export function VocabularyForm({ onSaveWords, wordToEdit, deckId, deckName, exis
             </FormItem>
           )}
         />
+         <FormField
+          control={form.control}
+          name="jlpt"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>JLPT Level (Optional)</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g. N5" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {!wordToEdit && (
             <div className="space-y-2">
@@ -355,7 +376,7 @@ export function VocabularyForm({ onSaveWords, wordToEdit, deckId, deckName, exis
                         <p className="text-xs font-semibold text-muted-foreground mb-2 px-1">Suggestions:</p>
                         <div className="flex flex-wrap gap-2">
                             {aiSuggestions.map((word, i) => (
-                                <Button key={i} type="button" variant="secondary" size="sm" onClick={() => handleAiSuggestionClick(word)}>
+                                <Button key={i} type="button" variant="secondary" size="sm" onClick={() => handleAiSuggestionClick(word as VocabularyFormData)}>
                                     {word.japanese}
                                 </Button>
                             ))}
