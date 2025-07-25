@@ -104,3 +104,5 @@ export const allWords: VocabularyWord[] = [
   // Deck: Katakana
    ...katakana.map((kana, i) => ({ id: `k-${i}`, japanese: kana.j, reading: kana.h, meaning: kana.r, deckId: 'katakana' })),
 ];
+
+    

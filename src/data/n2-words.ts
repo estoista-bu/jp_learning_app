@@ -403,3 +403,5 @@ export const n2Words: VocabularyWord[] = [
   { id: "n2-399", japanese: "未熟", reading: "みじゅく", meaning: "unripe, immature, inexperienced", deckId: "jlpt-n2", jlpt: "N2" },
   { id: "n2-400", japanese: "見窄らしい", reading: "みすぼらしい", meaning: "shabby, wretched", deckId: "jlpt-n2", jlpt: "N2" }
 ]
+
+    
