@@ -7,6 +7,7 @@ export type VocabularyWord = {
   reading: string;
   meaning: string;
   deckId: string;
+  jlpt?: string; // Add optional jlpt level
 };
 
 export type Deck = {
@@ -104,6 +105,7 @@ export interface JishoResult {
     english_definitions: string[];
     parts_of_speech: string[];
   }[];
+  jlpt?: string[];
 }
 
 // Schemas for AI Word Generation

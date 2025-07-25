@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { X, Pencil, Volume2, Loader2,ThumbsUp, ThumbsDown, Star } from "lucide-react";
 import * as wanakana from 'wanakana';
 import { cn } from "@/lib/utils";
-import type { VocabularyWord, SentenceGenerationOutput, Difficulty, JishoResult } from "@/lib/types";
+import type { VocabularyWord, SentenceGenerationOutput, Difficulty } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,42 +50,7 @@ export function Flashcard({
   const [isPlaying, setIsPlaying] = useState(false);
   const [generatedSentence, setGeneratedSentence] = useState<SentenceGenerationOutput | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [jlptLevel, setJlptLevel] = useState<string | null>(null);
   const { toast } = useToast();
-
-  useEffect(() => {
-    if (mode === 'test') {
-      return;
-    }
-  
-    const fetchJishoData = async () => {
-      // Don't re-fetch if we already have the level
-      if (jlptLevel) return;
-
-      try {
-        const response = await fetch(`/api/jisho?keyword=${encodeURIComponent(word.japanese)}`);
-        if (!response.ok) return;
-
-        const data = await response.json();
-        const resultWithJlpt = data.data?.find((r: JishoResult) => (r.japanese[0].word === word.japanese || r.japanese[0].reading === word.japanese) && r.jlpt && r.jlpt.length > 0);
-        
-        if (resultWithJlpt && resultWithJlpt.jlpt) {
-            const level = resultWithJlpt.jlpt[0]
-              .replace('jlpt-', '')
-              .toUpperCase();
-            setJlptLevel(level);
-        } else {
-            setJlptLevel(null);
-        }
-      } catch (error) {
-        console.error("Failed to fetch Jisho data for JLPT level", error);
-        setJlptLevel(null);
-      }
-    };
-  
-    fetchJishoData();
-  }, [word, mode, jlptLevel]);
-
 
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -288,9 +253,9 @@ export function Flashcard({
             )}>
             {editButtons}
            <div className="w-full flex-grow flex flex-col items-center justify-center p-4 text-center">
-            {jlptLevel && (
+            {word.jlpt && (
                 <div className="absolute top-2 left-2 z-20" onClick={(e) => e.stopPropagation()}>
-                    <Badge variant="secondary">{jlptLevel}</Badge>
+                    <Badge variant="secondary">{word.jlpt}</Badge>
                 </div>
             )}
             <div className="flex items-center justify-center relative w-full">
