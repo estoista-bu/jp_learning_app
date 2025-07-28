@@ -78,9 +78,11 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck, userId }: V
     setEditingDeck(null);
   };
 
-  const handleConfirmRemove = (id: string) => {
-    onRemoveDeck(id);
-    setDeletingDeck(null);
+  const handleConfirmRemove = () => {
+    if (deletingDeck) {
+      onRemoveDeck(deletingDeck.id);
+      setDeletingDeck(null);
+    }
   };
 
   const getMasteryRate = (deckId: string) => {
@@ -101,7 +103,7 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck, userId }: V
   }
   
   const userDecks = decks.filter(d => d.category === 'user' || d.category === 'group');
-  const jlptDecks = decks.filter(d => d.category === 'jlpt').sort((a,b) => a.id.localeCompare(b.id));
+  const jlptDecks = decks.filter(d => d.category === 'jlpt').sort((a,b) => b.id.localeCompare(a.id));
 
   return (
     <div className="flex flex-col h-full">
@@ -264,7 +266,7 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck, userId }: V
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setDeletingDeck(null)}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={() => handleConfirmRemove(deletingDeck!.id)}>Continue</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -272,3 +274,4 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck, userId }: V
     </div>
   );
 }
+
