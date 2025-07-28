@@ -36,13 +36,14 @@ const wordSelectorPrompt = ai.definePrompt({
 The student's deck is called: "{{deckName}}".
 {{#if deckTopic}}The student wants to add words related to the topic: "{{deckTopic}}".{{/if}}
 
-Your task is to select exactly {{numWords}} words from the provided "Word Bank".
+Your task is to select words from the provided "Word Bank".
 
 Rules for selection:
 1.  The selected words MUST come only from the "Word Bank" below.
 2.  You MUST NOT select any words from the "Existing Words" list.
 3.  If a "Deck Topic" is provided, select words that best match that topic (e.g., if the topic is 'verbs', select verbs).
-4.  If you cannot find {{numWords}} matching words (because they are all in "Existing Words" or don't match the topic), return as many as you can. If you can't find any, return an empty list.
+4.  If you cannot find enough matching words (because they are all in "Existing Words" or don't match the topic), return as many as you can. If you can't find any, return an empty list.
+5.  **VERY IMPORTANT**: Return exactly {{numWords}} words if possible. Do not generate more or less than this amount unless there are not enough words in the bank.
 
 Word Bank (Select from here):
 {{#each wordBank}}
@@ -65,8 +66,6 @@ const generateWordsPrompt = ai.definePrompt({
   prompt: `You are an expert Japanese language teacher creating a vocabulary list for a student.
 The student is creating a flashcard deck with the title: "{{deckName}}".
 {{#if deckTopic}}The student wants to add words related to the topic: "{{deckTopic}}".{{/if}}
-
-Your task is to generate relevant Japanese vocabulary words related to this topic.
 
 The student's deck already contains the following words. You MUST NOT generate any of these words.
 Existing words:
@@ -119,7 +118,7 @@ const generateWordsFlow = ai.defineFlow(
         throw new Error('No output from word selection flow');
       }
       
-      // FIX: Filter out incomplete objects that the AI might return
+      // Filter out incomplete objects that the AI might return
       const validatedWords = output.words.filter(
         word => word.japanese && word.reading && word.meaning
       );
@@ -133,7 +132,7 @@ const generateWordsFlow = ai.defineFlow(
         throw new Error('No output from word generation flow');
       }
 
-      // FIX: Filter out incomplete objects that the AI might return
+      // Filter out incomplete objects that the AI might return
       const validatedWords = output.words.filter(
         word => word.japanese && word.reading && word.meaning
       );

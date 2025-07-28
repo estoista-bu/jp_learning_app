@@ -384,7 +384,7 @@ export const n2Words: VocabularyWord[] = [
   { id: "n2-481", japanese: "下品", reading: "げひん", meaning: "vulgarity,meanness,indecency,coarseness", deckId: "jlpt-n2", jlpt: "N2" },
   { id: "n2-482", japanese: "煙い", reading: "けむい", meaning: "smoky", deckId: "jlpt-n2", jlpt: "N2" },
   { id: "n2-483", japanese: "蹴る", reading: "ける", meaning: "to kick", deckId: "jlpt-n2", jlpt: "N2" },
-  { id: "n2-484", japanese: "けれど/けれども", reading: "", meaning: "but,however", deckId: "jlpt-n2", jlpt: "N2" },
+  { id: "n2-484", japanese: "けれど/けれども", reading: "けれど/けれども", meaning: "but,however", deckId: "jlpt-n2", jlpt: "N2" },
   { id: "n2-485", japanese: "険しい", reading: "けわしい", meaning: "inaccessible place,sharp eyes", deckId: "jlpt-n2", jlpt: "N2" },
   { id: "n2-486", japanese: "見学", reading: "けんがく", meaning: "inspection,study by observation,field trip", deckId: "jlpt-n2", jlpt: "N2" },
   { id: "n2-487", japanese: "謙虚", reading: "けんきょ", meaning: "modesty,humility", deckId: "jlpt-n2", jlpt: "N2" },
