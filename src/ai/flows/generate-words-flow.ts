@@ -41,7 +41,7 @@ Your task is to select words from the provided "Word Bank".
 Rules for selection:
 1.  The selected words MUST come only from the "Word Bank" below.
 2.  You MUST NOT select any words from the "Existing Words" list.
-3.  If a "Deck Topic" is provided, select words that best match that topic (e.g., if the topic is 'verbs', select verbs).
+3.  {{#if deckTopic}}If a "Deck Topic" is provided, you MUST ONLY select words that are {{deckTopic}}s. Do not include any other parts of speech.{{/if}}
 4.  If you cannot find enough matching words (because they are all in "Existing Words" or don't match the topic), return as many as you can. If you can't find any, return an empty list.
 5.  **VERY IMPORTANT**: Return exactly {{numWords}} words if possible. Do not generate more or less than this amount unless there are not enough words in the bank.
 
@@ -85,28 +85,41 @@ const generateWordsFlow = ai.defineFlow(
     outputSchema: WordGenerationOutputSchema,
   },
   async (input) => {
-    const { deckName, existingWords, numWords } = input;
+    const { deckName, existingWords } = input;
     
     // Check if the deck name is for a specific JLPT level
     const jlptMatch = deckName.match(/JLPT (N[1-5])/i);
-    
-    if (jlptMatch) {
-      const level = jlptMatch[1].toUpperCase() as keyof typeof levelMap;
-      const wordBank = levelMap[level] || [];
+    const jlptLevels = deckName.match(/N[1-5]/gi) || [];
+
+    if (jlptLevels.length > 0) {
+      const uniqueLevels = [...new Set(jlptLevels.map(l => l.toUpperCase() as keyof typeof levelMap))];
       
+      let combinedWordBank = uniqueLevels.flatMap(level => levelMap[level] || []);
+
       // Filter out words that already exist in the user's deck
-      const availableWords = wordBank.filter(word => !existingWords.includes(word.japanese));
+      let availableWords = combinedWordBank.filter(word => !existingWords.includes(word.japanese));
+
+      // Determine topic from deck name (e.g., "Verbs", "Adjectives")
+      const deckTopic = deckName
+        .replace(/JLPT N[1-5]/gi, '')
+        .replace(/\//g, '')
+        .trim()
+        .toLowerCase();
+        
+      // If a topic is specified (and it's not just 'vocabulary'), pre-filter the word bank.
+      if (deckTopic && deckTopic !== 'vocabulary' && deckTopic !== 'vocab') {
+          // A simple but effective way to filter by part of speech
+          const topicSingular = deckTopic.endsWith('s') ? deckTopic.slice(0, -1) : deckTopic;
+          availableWords = availableWords.filter(word => 
+              word.meaning.toLowerCase().includes(topicSingular)
+          );
+      }
 
       if (availableWords.length === 0) {
         // No new words to suggest from this JLPT level
         return { words: [] };
       }
-
-      // Determine topic from deck name (e.g., "Verbs", "Food")
-      const deckTopic = deckName
-        .replace(/JLPT N[1-5]/i, '')
-        .trim();
-
+      
       // Use AI to select the best words from the available list
       const { output } = await wordSelectorPrompt({
         ...input,
