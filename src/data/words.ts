@@ -5,6 +5,7 @@ import { n5Words } from "@/data/n5-words";
 import { n4Words } from "@/data/n4-words";
 import { n3Words } from "@/data/n3-words";
 import { n2Words } from "@/data/n2-words";
+import { n1Words } from "@/data/n1-words";
 
 export const allWords: VocabularyWord[] = [
   // Deck 1: Greetings & Common Phrases
@@ -98,11 +99,12 @@ export const allWords: VocabularyWord[] = [
   // Deck: JLPT N2
   ...n2Words,
 
+  // Deck: JLPT N1
+  ...n1Words,
+
   // Deck: Hiragana
   ...hiragana.map((kana, i) => ({ id: `h-${i}`, japanese: kana.j, reading: kana.j, meaning: kana.r, deckId: 'hiragana' })),
 
   // Deck: Katakana
    ...katakana.map((kana, i) => ({ id: `k-${i}`, japanese: kana.j, reading: kana.h, meaning: kana.r, deckId: 'katakana' })),
 ];
-
-    
