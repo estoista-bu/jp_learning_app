@@ -73,9 +73,11 @@ export function VocabularyListViewer({ words, onEdit, onRemove, onSelectWord, ma
     return { label: 'Low', className: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' };
   };
 
-  const handleConfirmRemove = (id: string) => {
-    onRemove(id);
-    setDeletingWord(null);
+  const handleConfirmRemove = () => {
+    if (deletingWord) {
+      onRemove(deletingWord.id);
+      setDeletingWord(null);
+    }
   };
 
   return (
@@ -169,7 +171,7 @@ export function VocabularyListViewer({ words, onEdit, onRemove, onSelectWord, ma
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => handleConfirmRemove(deletingWord!.id)}>Continue</AlertDialogAction>
+            <AlertDialogAction onClick={handleConfirmRemove}>Continue</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
