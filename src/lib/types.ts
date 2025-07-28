@@ -7,7 +7,7 @@ export type VocabularyWord = {
   reading: string;
   meaning: string;
   deckId: string;
-  jlpt?: string; // Add optional jlpt level
+  jlpt?: string; 
 };
 
 export type Deck = {
@@ -15,7 +15,7 @@ export type Deck = {
   name: string;
   description?: string;
   category?: 'user' | 'kana' | 'group' | 'jlpt';
-  groupId?: string; // Added to associate decks with groups
+  groupId?: string; 
 };
 
 export type GrammarLesson = {
@@ -56,7 +56,7 @@ export type User = {
   username: string;
   password?: string;
   role: UserRole;
-  groups?: string[]; // Array of group IDs
+  groups?: string[]; 
 }
 
 export type Group = {
@@ -108,21 +108,25 @@ export interface JishoResult {
   jlpt?: string[];
 }
 
-// Schemas for AI Word Generation
-export const WordGenerationInputSchema = z.object({
-  deckName: z.string().describe("The topic or title of the deck for which to generate vocabulary."),
-  existingWords: z.array(z.string()).describe("A list of Japanese words that are already in the deck to avoid generating duplicates."),
-  numWords: z.number().int().min(1).max(100).describe("The number of words to generate."),
-});
-export type WordGenerationInput = z.infer<typeof WordGenerationInputSchema>;
-
-export const WordGenerationOutputSchema = z.object({
-  words: z.array(z.object({
+const WordSchema = z.object({
     japanese: z.string().describe("The vocabulary word in Japanese (using Kanji where appropriate)."),
     reading: z.string().describe("The reading of the word in Hiragana."),
     meaning: z.string().describe("The English meaning of the word."),
     jlpt: z.string().optional().describe("The JLPT level of the word, if applicable."),
-  }))
+});
+
+// Schemas for AI Word Generation
+export const WordGenerationInputSchema = z.object({
+  deckName: z.string().describe("The topic or title of the deck for which to generate vocabulary."),
+  deckTopic: z.string().optional().describe("An optional specific topic for the words, like 'verbs' or 'food'."),
+  existingWords: z.array(z.string()).describe("A list of Japanese words that are already in the deck to avoid generating duplicates."),
+  numWords: z.number().int().min(1).max(100).describe("The number of words to generate."),
+  wordBank: z.array(WordSchema).optional().describe("An optional bank of words to select from, used for JLPT decks.")
+});
+export type WordGenerationInput = z.infer<typeof WordGenerationInputSchema>;
+
+export const WordGenerationOutputSchema = z.object({
+  words: z.array(WordSchema)
 });
 export type WordGenerationOutput = z.infer<typeof WordGenerationOutputSchema>;
 

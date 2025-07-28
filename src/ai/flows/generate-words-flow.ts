@@ -12,8 +12,49 @@ import {
   WordGenerationOutputSchema,
   type WordGenerationInput,
   type WordGenerationOutput,
-  type JishoResult
 } from '@/lib/types';
+import { n5Words } from '@/data/n5-words';
+import { n4Words } from '@/data/n4-words';
+import { n3Words } from '@/data/n3-words';
+import { n2Words } from '@/data/n2-words';
+import { n1Words } from '@/data/n1-words';
+
+const levelMap = {
+  N5: n5Words,
+  N4: n4Words,
+  N3: n3Words,
+  N2: n2Words,
+  N1: n1Words,
+};
+
+const wordSelectorPrompt = ai.definePrompt({
+  name: 'wordSelectorPrompt',
+  model: 'googleai/gemini-1.5-flash',
+  input: { schema: WordGenerationInputSchema },
+  output: { schema: WordGenerationOutputSchema },
+  prompt: `You are an expert Japanese language teacher helping a student build a vocabulary deck.
+The student's deck is called: "{{deckName}}".
+{{#if deckTopic}}The student wants to add words related to the topic: "{{deckTopic}}".{{/if}}
+
+Your task is to select exactly {{numWords}} words from the provided "Word Bank".
+
+Rules for selection:
+1.  The selected words MUST come only from the "Word Bank" below.
+2.  You MUST NOT select any words from the "Existing Words" list.
+3.  If a "Deck Topic" is provided, select words that best match that topic (e.g., if the topic is 'verbs', select verbs).
+4.  If you cannot find {{numWords}} matching words (because they are all in "Existing Words" or don't match the topic), return as many as you can. If you can't find any, return an empty list.
+
+Word Bank (Select from here):
+{{#each wordBank}}
+- {{this.japanese}} ({{this.reading}}): {{this.meaning}}
+{{/each}}
+
+Existing Words (Do NOT select these):
+{{#each existingWords}}
+- {{this}}
+{{/each}}
+`,
+});
 
 
 const generateWordsPrompt = ai.definePrompt({
@@ -23,6 +64,7 @@ const generateWordsPrompt = ai.definePrompt({
   output: { schema: WordGenerationOutputSchema },
   prompt: `You are an expert Japanese language teacher creating a vocabulary list for a student.
 The student is creating a flashcard deck with the title: "{{deckName}}".
+{{#if deckTopic}}The student wants to add words related to the topic: "{{deckTopic}}".{{/if}}
 
 Your task is to generate relevant Japanese vocabulary words related to this topic.
 
@@ -36,21 +78,6 @@ VERY IMPORTANT: Generate exactly {{numWords}} words. Do not generate more or les
 `,
 });
 
-// Helper function to call the Jisho API directly
-async function searchJisho(keyword: string): Promise<JishoResult[]> {
-  try {
-    const response = await fetch(`https://jisho.org/api/v1/search/words?keyword=${encodeURIComponent(keyword)}`);
-    if (!response.ok) {
-      console.error(`Jisho API request failed for "${keyword}" with status ${response.status}`);
-      return [];
-    }
-    const data = await response.json();
-    return data.data || [];
-  } catch (error) {
-    console.error(`Jisho API request failed for "${keyword}":`, error);
-    return [];
-  }
-}
 
 const generateWordsFlow = ai.defineFlow(
   {
@@ -59,67 +86,50 @@ const generateWordsFlow = ai.defineFlow(
     outputSchema: WordGenerationOutputSchema,
   },
   async (input) => {
-    const { deckName, numWords, existingWords } = input;
+    const { deckName, existingWords, numWords } = input;
+    
+    // Check if the deck name is for a specific JLPT level
     const jlptMatch = deckName.match(/JLPT (N[1-5])/i);
-    const jlptLevel = jlptMatch ? `jlpt-${jlptMatch[1].toLowerCase()}` : null;
-
-    let wordsToGenerate = numWords;
-    // If it's a JLPT deck, we need to generate more words initially to have enough to filter from.
-    if (jlptLevel) {
-        wordsToGenerate = Math.min(100, numWords * 5); // Ask for 5x more, max 100
-    } else {
-        wordsToGenerate = numWords + 15; // Standard buffer
-    }
-
-    let output: WordGenerationOutput | null = null;
-    try {
-        const result = await generateWordsPrompt({
-            ...input,
-            numWords: wordsToGenerate,
-        });
-        output = result.output;
-    } catch (error) {
-        console.error("AI word generation failed, returning empty list.", error);
-        // Return an empty list of words if the AI fails.
-        return { words: [] };
-    }
     
-    if (!output?.words) {
-      throw new Error('No output from word generation flow');
-    }
-    
-    // If it's not a JLPT deck, just trim and return
-    if (!jlptLevel) {
-        const trimmedWords = output.words.slice(0, numWords);
-        return { words: trimmedWords };
-    }
-
-    // If it IS a JLPT deck, verify each word
-    const verifiedWords: WordGenerationOutput['words'] = [];
-    
-    for (const word of output.words) {
-      if (verifiedWords.length >= numWords) {
-        break; // Stop once we have enough words
-      }
-
-      // Skip if the word already exists in the user's deck
-      if(existingWords.includes(word.japanese)) {
-        continue;
-      }
-
-      const results = await searchJisho(word.japanese);
+    if (jlptMatch) {
+      const level = jlptMatch[1].toUpperCase() as keyof typeof levelMap;
+      const wordBank = levelMap[level] || [];
       
-      // Check if any of the Jisho results contain the correct JLPT tag
-      const isCorrectLevel = results.some(result => 
-        result.jlpt?.includes(jlptLevel)
-      );
+      // Filter out words that already exist in the user's deck
+      const availableWords = wordBank.filter(word => !existingWords.includes(word.japanese));
 
-      if (isCorrectLevel) {
-        verifiedWords.push({ ...word, jlpt: jlptMatch![1] });
+      if (availableWords.length === 0) {
+        // No new words to suggest from this JLPT level
+        return { words: [] };
       }
-    }
 
-    return { words: verifiedWords };
+      // Determine topic from deck name (e.g., "Verbs", "Food")
+      const deckTopic = deckName
+        .replace(/JLPT N[1-5]/i, '')
+        .trim();
+
+      // Use AI to select the best words from the available list
+      const { output } = await wordSelectorPrompt({
+        ...input,
+        deckTopic: deckTopic || undefined, // Provide topic if it exists
+        wordBank: availableWords,
+      });
+
+      if (!output) {
+        throw new Error('No output from word selection flow');
+      }
+
+      // The prompt already handles picking the right number and avoiding duplicates.
+      return { words: output.words };
+      
+    } else {
+      // If it's not a JLPT deck, use the original generation logic
+      const { output } = await generateWordsPrompt(input);
+      if (!output) {
+        throw new Error('No output from word generation flow');
+      }
+      return { words: output.words };
+    }
   }
 );
 

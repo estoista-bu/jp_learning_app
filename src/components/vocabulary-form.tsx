@@ -180,8 +180,8 @@ export function VocabularyForm({ onSaveWords, wordToEdit, deckId, deckName, exis
 
         if (result.words.length === 0) {
              toast({
-                title: "AI Generation Limit Reached",
-                description: "The AI model is currently overloaded. Please try again later.",
+                title: "No More Words Found",
+                description: `The AI couldn't find any new words for this topic in the source list.`,
                 variant: "destructive"
             });
         } else if (autoAddWords) {
@@ -349,7 +349,7 @@ export function VocabularyForm({ onSaveWords, wordToEdit, deckId, deckName, exis
                            </div>
                            <Alert variant="destructive" className="bg-orange-50 border-orange-200 text-orange-800 dark:bg-orange-950 dark:border-orange-800 dark:text-orange-300 [&>svg]:text-orange-600">
                              <AlertDescription className="text-xs">
-                                AI can make mistakes, please confirm with external source if unsure.
+                                AI can make mistakes. Please confirm with external sources if you are unsure.
                              </AlertDescription>
                            </Alert>
                         </div>
