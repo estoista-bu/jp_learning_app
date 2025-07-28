@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, Book, MoreHorizontal, ChevronDown, Group } from "lucide-react";
+import { Plus, Book, MoreHorizontal, ChevronDown, Group, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -36,6 +36,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Progress } from "./ui/progress";
+import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 
 type KanaSelection = "hiragana" | "katakana";
 const MASTERY_THRESHOLD = 10;
@@ -100,6 +101,7 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck, userId }: V
   }
   
   const userDecks = decks.filter(d => d.category === 'user' || d.category === 'group');
+  const jlptDecks = decks.filter(d => d.category === 'jlpt').sort((a,b) => a.id.localeCompare(b.id));
 
   return (
     <div className="flex flex-col h-full">
@@ -117,9 +119,9 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck, userId }: V
             </DialogTrigger>
           </header>
 
-          <div className="flex-1 p-4 pt-2 overflow-y-auto">
-            <div className="grid gap-4">
-               <Card>
+          <div className="flex-1 p-4 pt-2 overflow-y-auto space-y-6">
+            <div className="space-y-4">
+              <Card>
                   <CardHeader className="p-4 flex flex-row items-center justify-between">
                      <Link href={`/app/deck/${selectedKana}`} className="flex-1">
                       <div className="flex items-center gap-2">
@@ -146,7 +148,46 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck, userId }: V
                     </DropdownMenu>
                   </CardHeader>
               </Card>
-
+            </div>
+            
+            {jlptDecks.length > 0 && (
+              <div className="space-y-2">
+                  <h3 className="font-headline text-md font-semibold flex items-center gap-2 text-primary/90 px-2">
+                     <Crown className="h-4 w-4"/>
+                     JLPT Core Vocabulary
+                  </h3>
+                   <ScrollArea className="w-full whitespace-nowrap">
+                     <div className="flex w-max space-x-4 pb-4">
+                        {jlptDecks.map((deck) => {
+                          const masteryRate = getMasteryRate(deck.id);
+                          return (
+                             <Card key={deck.id} className="w-48">
+                                <Link href={`/app/deck/${deck.id}`} className="block h-full">
+                                    <div className="flex flex-col h-full p-4">
+                                        <div className="flex items-center gap-2">
+                                            <Book className="h-5 w-5 text-primary/80" />
+                                            <CardTitle className="text-base truncate">{deck.name.replace(' Vocabulary', '')}</CardTitle>
+                                        </div>
+                                        <CardDescription className="text-xs mt-1 flex-grow">{deck.description}</CardDescription>
+                                        <div className="space-y-1 mt-4">
+                                            <div className="flex justify-between items-center">
+                                                <p className="text-xs text-muted-foreground">Mastery</p>
+                                                <span className="text-xs text-muted-foreground font-mono">{masteryRate.toFixed(0)}%</span>
+                                            </div>
+                                            <Progress value={masteryRate} className="h-2 w-full" />
+                                        </div>
+                                    </div>
+                                </Link>
+                              </Card>
+                          )
+                        })}
+                     </div>
+                     <ScrollBar orientation="horizontal" />
+                   </ScrollArea>
+              </div>
+            )}
+            
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {userDecks.map((deck) => {
                 const masteryRate = getMasteryRate(deck.id);
                 const isEditable = deck.category === 'user';

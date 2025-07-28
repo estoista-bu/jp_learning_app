@@ -14,7 +14,7 @@ export type Deck = {
   id: string;
   name: string;
   description?: string;
-  category?: 'user' | 'kana' | 'group';
+  category?: 'user' | 'kana' | 'group' | 'jlpt';
   groupId?: string; // Added to associate decks with groups
 };
 
@@ -121,6 +121,7 @@ export const WordGenerationOutputSchema = z.object({
     japanese: z.string().describe("The vocabulary word in Japanese (using Kanji where appropriate)."),
     reading: z.string().describe("The reading of the word in Hiragana."),
     meaning: z.string().describe("The English meaning of the word."),
+    jlpt: z.string().optional().describe("The JLPT level of the word, if applicable."),
   }))
 });
 export type WordGenerationOutput = z.infer<typeof WordGenerationOutputSchema>;
