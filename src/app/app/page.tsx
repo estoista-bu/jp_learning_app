@@ -22,6 +22,9 @@ import { AiQuizGenerator } from "@/components/ai-quiz-generator";
 import { StatsPage } from "@/components/stats-page";
 import { useRouter } from "next/navigation";
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
+import { auth } from '@/lib/firebase';
+import { onAuthStateChanged, signOut, type User as FirebaseUser } from "firebase/auth";
+import { users } from '@/lib/users';
 
 type AppView = "vocabulary" | "grammar" | "stats";
 type GrammarView = "main" | "lessons" | "lesson" | "quizzes" | "quiz" | "checker" | "ai-quiz-generator";
@@ -37,17 +40,28 @@ export default function AppPage() {
 
 
   useEffect(() => {
-    const storedUserId = localStorage.getItem("userId");
-    if (!storedUserId) {
-      router.push('/login');
-      return;
-    }
-    
-    // In a real app, you'd fetch user data. Here we simulate it.
-    const { users } = require('@/lib/users');
-    const user = users.find((u: User) => u.id === storedUserId) || null;
-    setCurrentUser(user);
-    setIsMounted(true);
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
+      if (firebaseUser) {
+        // Find the user role from our mock user data
+        const localUser = users.find(u => u.id === firebaseUser.uid);
+        if (localUser) {
+          setCurrentUser({
+            id: firebaseUser.uid,
+            username: firebaseUser.displayName || localUser.username,
+            role: localUser.role,
+            groups: localUser.groups
+          });
+        } else {
+           // Handle case where user exists in Firebase but not in our local list
+           router.push('/login');
+        }
+      } else {
+        router.push('/login');
+      }
+      setIsMounted(true);
+    });
+
+    return () => unsubscribe();
   }, [router]);
   
   useEffect(() => {
@@ -178,8 +192,8 @@ export default function AppPage() {
     }, 100);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('userId');
+  const handleLogout = async () => {
+    await signOut(auth);
     router.push('/login');
   };
 

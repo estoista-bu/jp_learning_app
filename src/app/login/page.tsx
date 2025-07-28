@@ -8,41 +8,46 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { users } from '@/lib/users';
 import Link from 'next/link';
+import { auth } from '@/lib/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    setTimeout(() => {
-      const user = users.find(u => u.username === username);
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-      if (user && user.password === password) {
-        // In a real app, you would use a secure session/token method.
-        // For this demo, we'll use localStorage.
-        localStorage.setItem('userId', user.id);
-        toast({
-          title: 'Login Successful',
-          description: `Welcome back, ${username}!`,
-        });
-        router.push('/app');
+      toast({
+        title: 'Login Successful',
+        description: `Welcome back, ${user.displayName || user.email}!`,
+      });
+      router.push('/app');
+    } catch (error: any) {
+      console.error("Firebase Auth Error:", error);
+      let description = 'Invalid email or password.';
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        description = 'Invalid email or password. Please try again.';
       } else {
-        toast({
-          title: 'Login Failed',
-          description: 'Invalid username or password.',
-          variant: 'destructive',
-        });
-        setIsLoading(false);
+        description = 'An unexpected error occurred. Please try again later.';
       }
-    }, 500); // Simulate network delay
+      toast({
+        title: 'Login Failed',
+        description,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -60,13 +65,13 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
-                type="text"
-                placeholder="user or admin"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                id="email"
+                type="email"
+                placeholder="user@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isLoading}
               />
@@ -76,7 +81,7 @@ export default function LoginPage() {
               <Input
                 id="password"
                 type="password"
-                placeholder="password or adminpass"
+                placeholder="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -89,13 +94,11 @@ export default function LoginPage() {
           </form>
            <div className="mt-4 text-center text-xs text-muted-foreground">
              <p>Demo accounts:</p>
-             <p>User: user / pass: password</p>
-             <p>Admin: admin / pass: adminpass</p>
+             <p>user@example.com / pass: password</p>
+             <p>admin@example.com / pass: adminpass</p>
            </div>
         </CardContent>
       </Card>
     </div>
   );
 }
-
-    

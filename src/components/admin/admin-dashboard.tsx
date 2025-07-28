@@ -29,6 +29,9 @@ import {
   SidebarProvider
 } from '@/components/ui/sidebar';
 import { users as defaultUsers } from '@/lib/users';
+import { auth } from '@/lib/firebase';
+import { onAuthStateChanged, type User as FirebaseUser } from 'firebase/auth';
+
 
 interface AdminDashboardProps {
   currentUser: User;
@@ -45,6 +48,16 @@ function AdminDashboardContent({ currentUser, onLogout }: AdminDashboardProps) {
   const [groupDecks, setGroupDecks] = useState<Deck[]>([]);
   const { setOpenMobile } = useSidebar();
   const [isMounted, setIsMounted] = useState(false);
+  const [adminDisplayName, setAdminDisplayName] = useState<string>('');
+  
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
+      if (firebaseUser) {
+        setAdminDisplayName(firebaseUser.displayName || firebaseUser.email || 'Admin');
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     // Load users from localStorage or use defaults
@@ -190,7 +203,7 @@ function AdminDashboardContent({ currentUser, onLogout }: AdminDashboardProps) {
                       </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Admin: {currentUser.username}</DropdownMenuLabel>
+                      <DropdownMenuLabel>Admin: {adminDisplayName}</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onSelect={onLogout}>
                           <LogOut className="mr-2 h-4 w-4" />
