@@ -42,14 +42,15 @@ export default function AppPage() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-        // Find the user role from our mock user data
-        const localUser = users.find(u => u.id === firebaseUser.uid);
+        // Match firebase user by email to local user by username
+        const emailName = firebaseUser.email?.split('@')[0];
+        const localUser = users.find(u => u.username === emailName);
+
         if (localUser) {
           setCurrentUser({
-            id: firebaseUser.uid,
+            ...localUser,
+            id: firebaseUser.uid, // Use Firebase UID as the canonical ID
             username: firebaseUser.displayName || localUser.username,
-            role: localUser.role,
-            groups: localUser.groups
           });
         } else {
            // Handle case where user exists in Firebase but not in our local list
