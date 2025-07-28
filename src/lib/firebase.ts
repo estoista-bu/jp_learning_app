@@ -3,12 +3,12 @@ import { initializeApp, getApps, getApp, type FirebaseOptions } from 'firebase/a
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig: FirebaseOptions = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  "projectId": "nihongo-mastery-yf6qk",
+  "appId": "1:204478234981:web:058eed5f05b0cd9e1d218c",
+  "storageBucket": "nihongo-mastery-yf6qk.firebasestorage.app",
+  "apiKey": "AIzaSyAYax2NoCc7AhC6UvUonR71mx-TVoUSWs4",
+  "authDomain": "nihongo-mastery-yf6qk.firebaseapp.com",
+  "messagingSenderId": "204478234981",
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
