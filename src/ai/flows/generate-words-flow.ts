@@ -118,9 +118,13 @@ const generateWordsFlow = ai.defineFlow(
       if (!output) {
         throw new Error('No output from word selection flow');
       }
+      
+      // FIX: Filter out incomplete objects that the AI might return
+      const validatedWords = output.words.filter(
+        word => word.japanese && word.reading && word.meaning
+      );
 
-      // The prompt already handles picking the right number and avoiding duplicates.
-      return { words: output.words };
+      return { words: validatedWords };
       
     } else {
       // If it's not a JLPT deck, use the original generation logic
@@ -128,7 +132,13 @@ const generateWordsFlow = ai.defineFlow(
       if (!output) {
         throw new Error('No output from word generation flow');
       }
-      return { words: output.words };
+
+      // FIX: Filter out incomplete objects that the AI might return
+      const validatedWords = output.words.filter(
+        word => word.japanese && word.reading && word.meaning
+      );
+
+      return { words: validatedWords };
     }
   }
 );
