@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  env: {
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    GOOGLE_API_KEY: process.env.GOOGLE_API_KEY,
+    API_BASE_URL: process.env.API_BASE_URL || 'https://192.168.1.200:3001/api',
+  },
   images: {
     remotePatterns: [
       {

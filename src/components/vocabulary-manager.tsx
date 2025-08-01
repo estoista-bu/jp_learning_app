@@ -2,6 +2,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+
 import Link from "next/link";
 import { Plus, Book, MoreHorizontal, ChevronDown, Group, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -71,12 +73,26 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck, userId }: V
     }
     setIsFormOpen(open);
   };
-  
-  const handleSaveDeck = (deckData: Omit<Deck, "id" | "category" | "groupId">, id?: string) => {
-    onSaveDeck(deckData, id);
+  const router = useRouter();
+
+  // const handleSaveDeck = (deckData: Omit<Deck, "id" | "category" | "groupId">, id?: string) => {
+  //   onSaveDeck(deckData, id);
+  //   setIsFormOpen(false);
+  //   setEditingDeck(null);
+  // };
+  const handleSaveDeck = async (deckData: Omit<Deck, "id" | "category" | "groupId">, id?: string) => {
+    const savedDeck = await onSaveDeck(deckData, id);
+
+    if (!id && savedDeck?.id) {
+      // ✅ Redirect to new deck
+      router.push(`/app/deck/${savedDeck.id}`);
+    }
+
     setIsFormOpen(false);
     setEditingDeck(null);
   };
+
+
 
   const handleConfirmRemove = () => {
     if (deletingDeck) {
@@ -193,6 +209,10 @@ export function VocabularyManager({ decks, onSaveDeck, onRemoveDeck, userId }: V
               {userDecks.map((deck) => {
                 const masteryRate = getMasteryRate(deck.id);
                 const isEditable = deck.category === 'user';
+                console.log('Rendering deck:', deck);
+                if (!deck.id) {
+                  console.warn('⚠️ Missing deck.id for key!');
+                }
                 return (
                   <Card key={deck.id} className="relative group">
                     {isEditable && (

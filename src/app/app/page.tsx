@@ -1,6 +1,8 @@
 
 "use client";
-
+import { addDeck } from '@/lib/api'; // make sure this is imported
+import { getDecks } from '@/lib/api';
+import { deleteDeck } from '@/lib/api';
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VocabularyManager } from "@/components/vocabulary-manager";
@@ -22,9 +24,7 @@ import { AiQuizGenerator } from "@/components/ai-quiz-generator";
 import { StatsPage } from "@/components/stats-page";
 import { useRouter } from "next/navigation";
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
-import { auth } from '@/lib/firebase';
-import { onAuthStateChanged, signOut, type User as FirebaseUser } from "firebase/auth";
-import { users } from '@/lib/users';
+import { getUser, isAuthenticated, logout } from '@/lib/api';
 
 type AppView = "vocabulary" | "grammar" | "stats";
 type GrammarView = "main" | "lessons" | "lesson" | "quizzes" | "quiz" | "checker" | "ai-quiz-generator";
@@ -38,63 +38,97 @@ export default function AppPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
-      if (firebaseUser) {
-        // Match firebase user by email to local user by username
-        const emailName = firebaseUser.email?.split('@')[0];
-        const localUser = users.find(u => u.username === emailName);
+    // Check if user is authenticated
+    if (!isAuthenticated()) {
+      router.push('/login');
+      return;
+    }
 
-        if (localUser) {
+    // Get user data from localStorage
+    const userData = getUser();
+    if (userData) {
           setCurrentUser({
-            ...localUser,
-            id: firebaseUser.uid, // Use Firebase UID as the canonical ID
-            username: firebaseUser.displayName || localUser.username,
+        id: userData.id,
+        username: userData.username,
+        role: userData.role,
+        groups: userData.groups || []
           });
         } else {
-           // Handle case where user exists in Firebase but not in our local list
            router.push('/login');
         }
-      } else {
-        router.push('/login');
-      }
+    
       setIsMounted(true);
-    });
-
-    return () => unsubscribe();
   }, [router]);
   
+  // useEffect(() => {
+  //   if (!currentUser) return;
+  
+  //   try {
+  //     // 1. Load user-specific decks from localStorage
+  //     const userDecks: Deck[] = JSON.parse(localStorage.getItem(`userDecks_${currentUser.id}`) || '[]');
+  
+  //     // 2. Load all group decks from localStorage
+  //     const allGroupDecks: Deck[] = JSON.parse(localStorage.getItem('allGroupDecks') || '[]');
+  
+  //     // 3. Filter group decks to find those relevant to the current user
+  //     const userGroupIds = currentUser.groups || [];
+  //     const relevantGroupDecks = allGroupDecks.filter(deck => userGroupIds.includes(deck.groupId!));
+  
+  //     // 4. Combine initial decks, user decks, and relevant group decks
+  //     const combinedDecks = [...initialDecks, ...userDecks, ...relevantGroupDecks];
+  
+  //     // 5. Use a Map to ensure decks are unique by ID, preserving user/group versions over initial ones
+  //     const uniqueDecks = Array.from(new Map(combinedDecks.map(deck => [deck.id, deck])).values());
+  //     setDecks(uniqueDecks);
+      
+  //     const storedAiQuiz = sessionStorage.getItem(`ai-generated-quiz_${currentUser.id}`);
+  //     if (storedAiQuiz) {
+  //       setSelectedQuiz(JSON.parse(storedAiQuiz));
+  //     }
+  //   } catch (error) {
+  //     console.error("Failed to parse from localStorage", error);
+  //      // Fallback to initial decks if local storage fails
+  //     setDecks(initialDecks);
+  //   }
+  // }, [currentUser]);
+
   useEffect(() => {
     if (!currentUser) return;
-  
-    try {
-      // 1. Load user-specific decks from localStorage
-      const userDecks: Deck[] = JSON.parse(localStorage.getItem(`userDecks_${currentUser.id}`) || '[]');
-  
-      // 2. Load all group decks from localStorage
-      const allGroupDecks: Deck[] = JSON.parse(localStorage.getItem('allGroupDecks') || '[]');
-  
-      // 3. Filter group decks to find those relevant to the current user
-      const userGroupIds = currentUser.groups || [];
-      const relevantGroupDecks = allGroupDecks.filter(deck => userGroupIds.includes(deck.groupId!));
-  
-      // 4. Combine initial decks, user decks, and relevant group decks
-      const combinedDecks = [...initialDecks, ...userDecks, ...relevantGroupDecks];
-  
-      // 5. Use a Map to ensure decks are unique by ID, preserving user/group versions over initial ones
-      const uniqueDecks = Array.from(new Map(combinedDecks.map(deck => [deck.id, deck])).values());
-      setDecks(uniqueDecks);
-      
-      const storedAiQuiz = sessionStorage.getItem(`ai-generated-quiz_${currentUser.id}`);
-      if (storedAiQuiz) {
-        setSelectedQuiz(JSON.parse(storedAiQuiz));
+
+    const loadDecks = async () => {
+      try {
+        const backendDecksResponse = await getDecks(currentUser.id);
+        const backendDecks: Deck[] = backendDecksResponse.data || [];
+
+        // Load user-specific decks from localStorage
+        const userDecks: Deck[] = JSON.parse(localStorage.getItem(`userDecks_${currentUser.id}`) || '[]');
+
+        // Load all group decks from localStorage
+        const allGroupDecks: Deck[] = JSON.parse(localStorage.getItem('allGroupDecks') || '[]');
+
+        const userGroupIds = currentUser.groups || [];
+        const relevantGroupDecks = allGroupDecks.filter(deck => userGroupIds.includes(deck.groupId!));
+
+        // Combine all
+        const combinedDecks = [...initialDecks, ...backendDecks, ...userDecks, ...relevantGroupDecks];
+        const uniqueDecks = Array.from(new Map(combinedDecks.map(deck => [deck.id, deck])).values());
+
+        setDecks(uniqueDecks);
+
+        // Optionally restore AI quiz
+        const storedAiQuiz = sessionStorage.getItem(`ai-generated-quiz_${currentUser.id}`);
+        if (storedAiQuiz) {
+          setSelectedQuiz(JSON.parse(storedAiQuiz));
+        }
+
+      } catch (error) {
+        console.error("Failed to load decks:", error);
+        setDecks(initialDecks);
       }
-    } catch (error) {
-      console.error("Failed to parse from localStorage", error);
-       // Fallback to initial decks if local storage fails
-      setDecks(initialDecks);
-    }
+    };
+
+    loadDecks();
   }, [currentUser]);
 
 
@@ -111,20 +145,89 @@ export default function AppPage() {
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
   const [animation, setAnimation] = useState<'in' | 'out' | null>(null);
 
-  const saveDeck = (deckData: Omit<Deck, "id" | "category">, id?: string) => {
-    if (id) {
-      setDecks(prev => 
-        prev.map(d => (d.id === id ? { ...d, ...deckData, category: "user" } : d))
-      );
-    } else {
-      const newDeck: Deck = { ...deckData, id: Date.now().toString(), category: "user" as const };
-      setDecks(prev => [...prev, newDeck]);
+
+const saveDeck = async (
+  deckData: Omit<Deck, "id" | "category">,
+  id?: string,
+  onSuccess?: (newDeckId: string) => void // 👈 pass a callback if needed
+) => {
+  if (id) {
+    setDecks(prev =>
+      prev.map(d => (d.id === id ? { ...d, ...deckData, category: "user" } : d))
+    );
+  } else {
+    try {
+      const response = await addDeck({
+        name: deckData.name,
+        description: deckData.description,
+        userId: currentUser!.id,
+      });
+
+      if (!response.error && response.data) {
+        const newDeck: Deck = {
+          ...deckData,
+          id: response.data.id,
+          category: 'user',
+        };
+        setDecks(prev => [...prev, newDeck]);
+
+        // 🔁 Pass newDeck.id to any callback
+        if (onSuccess) onSuccess(newDeck.id);
+
+      } else {
+        console.error("Deck creation failed:", response.error || response.message);
+      }
+    } catch (error) {
+      console.error("Error calling addDeck:", error);
+    }
+  }
+};
+
+// const saveDeck = async (deckData: Omit<Deck, "id" | "category">, id?: string) => {
+//   if (id) {
+//     setDecks(prev =>
+//       prev.map(d => (d.id === id ? { ...d, ...deckData, category: "user" } : d))
+//     );
+//   } else {
+//     try {
+//       // ✅ Save to backend
+//       const response = await addDeck({
+//         name: deckData.name,
+//         description: deckData.description,
+//         userId: currentUser!.id, // ensure this is passed
+//       });
+
+//       if (!response.error && response.data) {
+//         // Replace temp ID with actual DB ID
+//         const newDeck: Deck = {
+//           ...deckData,
+//           id: response.data.id,
+//           category: 'user',
+//         };
+//         setDecks(prev => [...prev, newDeck]);
+//       } else {
+//         console.error("Deck creation failed:", response.error || response.message);
+//       }
+//     } catch (error) {
+//       console.error("Error calling addDeck:", error);
+//     }
+//   }
+// };
+
+  
+  // const removeDeck = (id: string) => {
+  //   setDecks((prev) => prev.filter((deck) => deck.id !== id));
+  // };
+  const removeDeck = async (id: string) => {
+    try {
+      await deleteDeck(id); // call backend
+      setDecks(prev => prev.filter(deck => deck.id !== id)); // update local state
+    } catch (err) {
+      console.error('❌ Error deleting deck:', err);
+      alert('Failed to delete deck.');
     }
   };
-  
-  const removeDeck = (id: string) => {
-    setDecks((prev) => prev.filter((deck) => deck.id !== id));
-  };
+
 
 
   const handleNavigateGrammar = (view: GrammarView, data: GrammarLesson | Quiz | null = null) => {
@@ -194,7 +297,7 @@ export default function AppPage() {
   };
 
   const handleLogout = async () => {
-    await signOut(auth);
+    await logout();
     router.push('/login');
   };
 

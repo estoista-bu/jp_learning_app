@@ -1,0 +1,144 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // User-specific data
+  profile   Profile?
+  decks     Deck[]
+  progress  Progress[]
+  // Add relation to track user's known words
+  knownWords WordProgress[]
+
+  @@map("users")
+}
+
+model Profile {
+  id          String  @id @default(cuid())
+  userId      String  @unique
+  firstName   String?
+  lastName    String?
+  avatar      String?
+  bio         String?
+  level       Int     @default(1)
+  experience  Int     @default(0)
+  
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model WordProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  wordId      String
+  strength    Int      @default(0)  // 0-100 indicating mastery level
+  lastReviewed DateTime @default(now())
+  nextReview  DateTime @default(now())
+  reviewCount Int      @default(0)
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  word        Word     @relation(fields: [wordId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, wordId])
+  @@map("word_progress")
+}
+
+model Word {
+  id          String     @id @default(cuid())
+  japanese    String
+  reading     String
+  meaning     String
+  jlptLevel   String?    // N1, N2, N3, N4, N5
+  type        String?    // noun, verb, adjective, etc.
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  // Relations
+  decks       DeckWord[]
+  progress    WordProgress[]
+
+  @@map("words")
+}
+
+model DeckWord {
+  id        String   @id @default(cuid())
+  deckId    String
+  wordId    String
+  addedAt   DateTime @default(now())
+  deck      Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  word      Word     @relation(fields: [wordId], references: [id], onDelete: Cascade)
+
+  @@unique([deckId, wordId], name: "deckId_wordId")
+  @@map("deck_words")
+}
+
+model Deck {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  userId      String
+  category    String     @default("user")
+  isPublic    Boolean    @default(false)
+  words       DeckWord[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cards       Card[]
+  progress    Progress[]
+
+  @@map("decks")
+}
+
+model Card {
+  id          String   @id @default(cuid())
+  deckId      String
+  front       String   // Japanese text
+  back        String   // English translation
+  reading     String?  // Hiragana/Katakana reading
+  example     String?  // Example sentence
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  deck        Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+
+  @@map("cards")
+}
+
+model Progress {
+  id        String   @id @default(cuid())
+  userId    String
+  deckId    String
+  cardId    String?
+  score     Int      @default(0)
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deck      Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+
+  @@map("progress")
+}
+
+enum Role {
+  USER
+  ADMIN
+}

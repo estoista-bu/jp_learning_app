@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "module": "NodeNext",              // ← FIXED
+    "target": "ESNext",
+    "moduleResolution": "NodeNext",    // ← VALID pairing
+    "outDir": "build-data",
+    "rootDir": "src",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false
+  },
+  "include": ["src/data/**/*.ts"]
+}

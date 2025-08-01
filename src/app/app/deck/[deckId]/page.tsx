@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect, use } from "react";
+import { addWordsToDeck } from "@/lib/api"; // or wherever you defined it
 import Link from "next/link";
 import { ArrowLeft, Plus, Eye, BrainCircuit, ListChecks, Volume2, RefreshCw, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,8 @@ import {
 import { VocabularyForm } from "@/components/vocabulary-form";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { getUser, isAuthenticated } from "@/lib/api";
+import { getDeckWords } from "@/lib/api"; // make sure you have this
 
 type VocabularyFormData = Omit<VocabularyWord, "id" | "deckId">;
 type DeckViewMode = "select" | "view" | "test" | "list" | "listening" | "speech";
@@ -35,6 +38,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
   const params = use(paramsProp);
   const { deckId } = params;
   const { toast } = useToast();
+  
 
   const [deck, setDeck] = useState<Deck | null>(null);
   const [words, setWords] = useState<VocabularyWord[]>([]);
@@ -51,18 +55,22 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
   const [masteryStats, setMasteryStats] = useState<Record<string, WordMasteryStats>>({});
 
   useEffect(() => {
-    const storedUserId = localStorage.getItem("userId");
-    if (!storedUserId) {
+    // Check if user is authenticated
+    if (!isAuthenticated()) {
       router.push('/login');
       return;
     }
-    setUserId(storedUserId);
 
-    const { users } = require('@/lib/users');
-    const user: User | undefined = users.find((u: User) => u.id === storedUserId);
-    if (user) {
-        setUserRole(user.role);
+    // Get user data from localStorage
+    const userData = getUser();
+    if (userData) {
+      setUserId(userData.id);
+      setUserRole(userData.role);
+    } else {
+      router.push('/login');
+      return;
     }
+    
     setIsMounted(true);
   }, [router]);
   
@@ -112,6 +120,27 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
       setShuffledWords([...loadedWords].sort(() => Math.random() - 0.5));
     }
   }, [deckId, userId]);
+
+  useEffect(() => {
+  const loadWordsFromBackend = async () => {
+    if (deck && userId && isUserDeck) {
+      try {
+        const updatedWords = await getDeckWords(deckId);
+        setWords(updatedWords);
+      } catch (err) {
+        console.error("Failed to fetch words from backend:", err);
+        toast({
+          title: "Error",
+          description: "Could not load latest words from the server.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  loadWordsFromBackend();
+}, [deckId, deck, userId, isUserDeck]);
+
   
   useEffect(() => {
     if (isMounted && isUserDeck && userId && deck) {
@@ -122,44 +151,80 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
   }, [words, deckId, isUserDeck, isMounted, userId, deck]);
 
 
-  const handleSaveWords = (wordsData: VocabularyFormData[], idToEdit?: string) => {
-    if (!userId || !deck) return;
-    let newWords: VocabularyWord[] = [...words];
+  // const handleSaveWords = (wordsData: VocabularyFormData[], idToEdit?: string) => {
+  //   if (!userId || !deck) return;
+  //   let newWords: VocabularyWord[] = [...words];
 
-    if (idToEdit) {
-      newWords = words.map((w) => (w.id === idToEdit ? { ...w, ...wordsData[0] } : w));
-      toast({
-        title: "Success!",
-        description: `The word "${wordsData[0].japanese}" has been updated.`,
-      });
-    } else {
-      const wordsToAdd = wordsData.map(data => ({
-        ...data,
-        id: `${Date.now()}-${Math.random()}`,
-        deckId: deckId,
-      }));
-      newWords = [...words, ...wordsToAdd];
-       toast({
-        title: "Success!",
-        description: `${wordsToAdd.length} new word(s) have been added.`,
-      });
-    }
+  //   if (idToEdit) {
+  //     newWords = words.map((w) => (w.id === idToEdit ? { ...w, ...wordsData[0] } : w));
+  //     toast({
+  //       title: "Success!",
+  //       description: `The word "${wordsData[0].japanese}" has been updated.`,
+  //     });
+  //   } else {
+  //     const wordsToAdd = wordsData.map(data => ({
+  //       ...data,
+  //       id: `${Date.now()}-${Math.random()}`,
+  //       deckId: deckId,
+  //     }));
+  //     newWords = [...words, ...wordsToAdd];
+  //      toast({
+  //       title: "Success!",
+  //       description: `${wordsToAdd.length} new word(s) have been added.`,
+  //     });
+  //   }
 
-    setWords(newWords);
+  //   setWords(newWords);
 
-    if (!isUserDeck) {
-        setIsUserDeck(true);
-        if (deck.category !== 'group') {
-            const userDecks: Deck[] = JSON.parse(localStorage.getItem(`userDecks_${userId}`) || "[]");
-            if (!userDecks.some(d => d.id === deckId) && deck) {
-                localStorage.setItem(`userDecks_${userId}`, JSON.stringify([...userDecks, deck]));
-            }
-        }
-    }
+  //   if (!isUserDeck) {
+  //       setIsUserDeck(true);
+  //       if (deck.category !== 'group') {
+  //           const userDecks: Deck[] = JSON.parse(localStorage.getItem(`userDecks_${userId}`) || "[]");
+  //           if (!userDecks.some(d => d.id === deckId) && deck) {
+  //               localStorage.setItem(`userDecks_${userId}`, JSON.stringify([...userDecks, deck]));
+  //           }
+  //       }
+  //   }
+
+  //   setIsFormOpen(false);
+  //   setWordToEdit(null);
+  // };
+
+
+
+const handleSaveWords = async (wordsData: VocabularyFormData[], idToEdit?: string) => {
+  if (!deckId) return;
+
+  try {
+    const wordsToAdd = wordsData.map(data => ({
+      text: data.japanese,
+      meaning: data.meaning,
+    }));
+
+    await addWordsToDeck(deckId, wordsToAdd);
+
+    // 🔥 Fetch the updated deck from backend
+    const updatedWords = await getDeckWords(deckId);
+    setWords(updatedWords); // 🔄 refresh state
+
+    toast({
+      title: "Success!",
+      description: `${wordsToAdd.length} word(s) saved to database.`,
+    });
 
     setIsFormOpen(false);
     setWordToEdit(null);
-  };
+  } catch (err) {
+    toast({
+      title: "Error",
+      description: "Failed to save words.",
+      variant: "destructive",
+    });
+    console.error(err);
+  }
+};
+
+
 
 
   const handleRemoveWord = (id: string) => {
@@ -376,7 +441,7 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
                         wordToEdit={wordToEdit}
                         deckId={deckId}
                         deckName={deck?.name || ''}
-                        existingWords={words.map(w => w.japanese)}
+                        existingWords={(words?.data ?? []).map(w => w.japanese)}
                     />
                 </SheetContent>
             </Sheet>

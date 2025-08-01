@@ -29,9 +29,7 @@ import {
   SidebarProvider
 } from '@/components/ui/sidebar';
 import { users as defaultUsers } from '@/lib/users';
-import { auth } from '@/lib/firebase';
-import { onAuthStateChanged, type User as FirebaseUser } from 'firebase/auth';
-
+import { getUser } from '@/lib/api';
 
 interface AdminDashboardProps {
   currentUser: User;
@@ -51,12 +49,11 @@ function AdminDashboardContent({ currentUser, onLogout }: AdminDashboardProps) {
   const [adminDisplayName, setAdminDisplayName] = useState<string>('');
   
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
-      if (firebaseUser) {
-        setAdminDisplayName(firebaseUser.displayName || firebaseUser.email || 'Admin');
-      }
-    });
-    return () => unsubscribe();
+    // Get admin display name from current user
+    const userData = getUser();
+    if (userData) {
+      setAdminDisplayName(userData.profile?.firstName || userData.username || 'Admin');
+    }
   }, []);
 
   useEffect(() => {

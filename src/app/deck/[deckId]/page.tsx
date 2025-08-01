@@ -23,6 +23,7 @@ import {
 import { VocabularyForm } from "@/components/vocabulary-form";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { getUser, isAuthenticated } from "@/lib/api";
 
 type VocabularyFormData = Omit<VocabularyWord, "id" | "deckId">;
 type DeckViewMode = "select" | "view" | "test" | "list";
@@ -46,12 +47,21 @@ export default function DeckPage({ params: paramsProp }: { params: { deckId: str
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    const storedUserId = localStorage.getItem("userId");
-    if (!storedUserId) {
+    // Check if user is authenticated
+    if (!isAuthenticated()) {
       router.push('/login');
       return;
     }
-    setUserId(storedUserId);
+
+    // Get user data from localStorage
+    const userData = getUser();
+    if (userData) {
+      setUserId(userData.id);
+    } else {
+      router.push('/login');
+      return;
+    }
+    
     setIsMounted(true);
   }, [router]);
 

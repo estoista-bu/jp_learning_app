@@ -6,13 +6,16 @@
  * - generateWords - A function that suggests new Japanese vocabulary words.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai, initializeAI } from '@/ai/genkit';
 import { 
   WordGenerationInputSchema, 
   WordGenerationOutputSchema,
   type WordGenerationInput,
   type WordGenerationOutput,
 } from '@/lib/types';
+
+// Initialize AI if not already initialized
+const aiInstance = ai || initializeAI();
 import { n5Words } from '@/data/n5-words';
 import { n4Words } from '@/data/n4-words';
 import { n3Words } from '@/data/n3-words';
@@ -27,7 +30,7 @@ const levelMap = {
   N1: n1Words,
 };
 
-const wordSelectorPrompt = ai.definePrompt({
+const wordSelectorPrompt = aiInstance.definePrompt({
   name: 'wordSelectorPrompt',
   model: 'googleai/gemini-1.5-flash',
   input: { schema: WordGenerationInputSchema },

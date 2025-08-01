@@ -190,13 +190,23 @@ export function VocabularyForm({ onSaveWords, wordToEdit, deckId, deckName, exis
           setAiSuggestions(result.words);
         }
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("AI Word generation failed", error);
-        toast({
-            title: "Generation Failed",
-            description: "Could not generate words. Please try again.",
-            variant: "destructive"
-        })
+        
+        // Check if it's an API key error
+        if (error.message?.includes('API key') || error.message?.includes('GEMINI_API_KEY') || error.message?.includes('GOOGLE_API_KEY')) {
+            toast({
+                title: "AI Feature Unavailable",
+                description: "Google API key not configured. Please add GOOGLE_API_KEY to your .env file to use AI features.",
+                variant: "destructive"
+            });
+        } else {
+            toast({
+                title: "Generation Failed",
+                description: "Could not generate words. Please try again.",
+                variant: "destructive"
+            });
+        }
     } finally {
         setIsGenerating(false);
     }

@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,8 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
-import { auth } from '@/lib/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { authApi } from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,26 +16,41 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [loginData, setLoginData] = useState<{ token: string; user: any } | null>(null); // 🌟
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      const result = await authApi.login(email, password);
 
-      toast({
-        title: 'Login Successful',
-        description: `Welcome back, ${user.displayName || user.email}!`,
-      });
-      router.push('/app');
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      if (result.data) {
+        toast({
+          title: 'Login Successful',
+          description: `Welcome back, ${result.data.user.profile?.firstName || result.data.user.username}!`,
+        });
+
+        setLoginData({
+          token: result.data.token,
+          user: result.data.user,
+        }); // ✅ Save to state
+      }
     } catch (error: any) {
-      console.error("Firebase Auth Error:", error);
+      console.error('Login Error:', error);
       let description = 'An unexpected error occurred. Please try again later.';
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+
+      if (
+        error.message.includes('Invalid credentials') ||
+        error.message.includes('Wrong email or password')
+      ) {
         description = 'Wrong email or password';
       }
+
       toast({
         title: 'Login Failed',
         description,
@@ -48,13 +61,22 @@ export default function LoginPage() {
     }
   };
 
+  // ✅ Handle login effects only when loginData is set
+  useEffect(() => {
+    if (loginData) {
+      localStorage.setItem('token', loginData.token);
+      localStorage.setItem('user', JSON.stringify(loginData.user));
+      router.push('/app');
+    }
+  }, [loginData, router]);
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-muted/40">
-       <div className="absolute top-4 left-4">
-         <Button variant="outline" asChild>
-            <Link href="/">Home</Link>
-         </Button>
-       </div>
+      <div className="absolute top-4 left-4">
+        <Button variant="outline" asChild>
+          <Link href="/">Home</Link>
+        </Button>
+      </div>
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-headline">Nihongo Mastery</CardTitle>
@@ -90,11 +112,18 @@ export default function LoginPage() {
               {isLoading ? 'Logging in...' : 'Login'}
             </Button>
           </form>
-           <div className="mt-4 text-center text-xs text-muted-foreground">
-             <p>Demo accounts:</p>
-             <p>user@email.com / pass: password</p>
-             <p>admin@email.com / pass: adminpass</p>
-           </div>
+          <div className="mt-4 text-center text-xs text-muted-foreground">
+            <p>Demo accounts:</p>
+            <p>test@example.com / pass: password123</p>
+          </div>
+          <div className="mt-4 text-center text-sm">
+            <p className="text-muted-foreground">
+              Don't have an account?{' '}
+              <Link href="/register" className="text-primary hover:underline">
+                Register here
+              </Link>
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
